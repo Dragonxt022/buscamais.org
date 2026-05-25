@@ -84,7 +84,7 @@
   <% end %>
 
   <% if @artigo.imagem_capa_file.attached? %>
-    <div class="mb-8 rounded-xl overflow-hidden">
+    <div class="mb-8 rounded-xl overflow-hidden shimmer" data-controller="shimmer">
       <%= image_tag url_for(@artigo.imagem_capa_file),
           class: "w-full max-h-[480px] object-cover",
           alt: @artigo.titulo %>
@@ -153,7 +153,8 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
         <% @artigos_relacionados.each do |artigo| %>
           <article class="article-card">
-            <div class="article-card-img">
+            <div class="article-card-img <%= artigo.imagem_capa_file.attached? ? 'shimmer' : '' %>"
+                 <%= "data-controller=shimmer" if artigo.imagem_capa_file.attached? %>>
               <% if artigo.imagem_capa_file.attached? %>
                 <%= image_tag url_for(artigo.imagem_capa_file),
                     class: "w-full h-full object-cover",

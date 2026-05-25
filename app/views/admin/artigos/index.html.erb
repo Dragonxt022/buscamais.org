@@ -2,7 +2,8 @@
 <% content_for :page_subtitle, "Supervisione e edite seu feed de publicação global." %>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100"
-     data-controller="table-select"
+     data-controller="table-select shimmer"
+     data-shimmer-mode-value="table"
      data-table-select-confirm-message-value="Remover {count} artigo(s) selecionado(s)?\nEsta ação não pode ser desfeita.">
 
   <%# Filters %>
@@ -68,7 +69,8 @@
                    class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
           </td>
           <td class="px-2 py-3">
-            <div class="w-12 h-9 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+            <div class="w-12 h-9 rounded-lg overflow-hidden shrink-0 <%= artigo.imagem_capa_file.attached? ? 'shimmer' : 'bg-gray-100' %>"
+                 <%= "data-controller=shimmer" if artigo.imagem_capa_file.attached? %>>
               <% if artigo.imagem_capa_file.attached? %>
                 <%= image_tag url_for(artigo.imagem_capa_file), class: "w-full h-full object-cover", alt: "" %>
               <% else %>

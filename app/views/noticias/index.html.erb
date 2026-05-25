@@ -42,7 +42,9 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
     <% @ultimas.each do |artigo| %>
       <article class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
-        <a href="<%= noticia_path(artigo.slug) %>" class="block aspect-video overflow-hidden bg-gradient-to-br from-blue-50 to-gray-200">
+        <a href="<%= noticia_path(artigo.slug) %>"
+           class="block aspect-video overflow-hidden <%= artigo.imagem_capa_file.attached? ? 'shimmer' : 'bg-gradient-to-br from-blue-50 to-gray-200' %>"
+           data-controller="<%= artigo.imagem_capa_file.attached? ? 'shimmer' : '' %>">
           <% if artigo.imagem_capa_file.attached? %>
             <%= image_tag url_for(artigo.imagem_capa_file),
                 class: "w-full h-full object-cover hover:scale-105 transition-transform duration-300",
