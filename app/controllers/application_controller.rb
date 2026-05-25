@@ -5,8 +5,11 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   stale_when_importmap_changes
 
+  helper_method :cookie_consent_aceito?, :cookie_consent_pendente?
+
   before_action :configurar_pagy
   before_action :carregar_categorias_menu
+  before_action :carregar_notificacoes_nao_lidas
 
   rescue_from Pundit::NotAuthorizedError, with: :acesso_negado
 
@@ -49,10 +52,24 @@ class ApplicationController < ActionController::Base
     @categorias_menu = []
   end
 
+  def carregar_notificacoes_nao_lidas
+    return unless user_signed_in?
+    @notificacoes_nao_lidas_count = current_user.notifications.nao_lidas.count
+    @notificacoes_recentes = current_user.notifications.nao_lidas.recentes.limit(5)
+  end
+
   def requer_admin!
     unless current_user&.administrador?
       acesso_negado
     end
+  end
+
+  def cookie_consent_aceito?
+    cookies[:cookie_consent] == "accepted"
+  end
+
+  def cookie_consent_pendente?
+    cookies[:cookie_consent].blank?
   end
 
   def requer_editor!

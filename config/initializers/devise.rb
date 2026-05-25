@@ -276,6 +276,20 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
+  # Google OAuth — credenciais lidas do SiteSetting (banco) a cada requisição.
+  # Não requer reinício do servidor após salvar as chaves no painel admin.
+  config.omniauth :google_oauth2,
+    "pending",
+    "pending",
+    scope:       "email,profile",
+    info_fields: "email,name,picture",
+    prompt:      "select_account",
+    setup: ->(env) {
+      s = env["omniauth.strategy"]
+      s.options[:client_id]     = SiteSetting["google_client_id"].presence     || "not_configured"
+      s.options[:client_secret] = SiteSetting["google_client_secret"].presence || "not_configured"
+    }
+
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
   # change the failure app, you can configure them inside the config.warden block.

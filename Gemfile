@@ -19,6 +19,8 @@ gem "jbuilder"
 gem "rails-i18n", "~> 8.0"
 gem "dotenv-rails", groups: [:development, :test]
 gem "devise"
+gem "omniauth-google-oauth2"
+gem "omniauth-rails_csrf_protection"
 gem "pundit"
 gem "friendly_id"
 gem "pagy", "~> 9.3"

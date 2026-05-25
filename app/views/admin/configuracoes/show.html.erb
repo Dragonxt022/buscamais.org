@@ -1,0 +1,167 @@
+<div class="card max-w-3xl mx-auto">
+  <div class="card-header">
+    <h2 class="text-lg font-bold text-gray-900">Configurações do Site</h2>
+    <p class="text-sm text-gray-500 mt-0.5">Personalize as informações e aparência do portal.</p>
+  </div>
+
+  <%= form_with url: admin_configuracoes_path, method: :patch, class: "divide-y divide-gray-100" do |f| %>
+
+    <%# Site info %>
+    <div class="p-6 space-y-5">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Informações do Site</h3>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">
+          Título do Site <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="site_setting[site_titulo]"
+               value="<%= @configuracoes['site_titulo'] %>"
+               placeholder="Ex: Busca Mais"
+               class="input text-sm">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Descrição / SEO</label>
+        <textarea name="site_setting[site_descricao]" rows="3"
+                  placeholder="Descrição curta para SEO e redes sociais..."
+                  class="input text-sm resize-none"><%= @configuracoes['site_descricao'] %></textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">URL do Site</label>
+        <input type="url" name="site_setting[site_url]"
+               value="<%= @configuracoes['site_url'] %>"
+               placeholder="https://buscamais.org"
+               class="input text-sm">
+      </div>
+    </div>
+
+    <%# Branding %>
+    <div class="p-6 space-y-5">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Identidade Visual</h3>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">URL do Logotipo</label>
+        <input type="url" name="site_setting[logo_url]"
+               value="<%= @configuracoes['logo_url'] %>"
+               placeholder="https://..."
+               class="input text-sm">
+        <p class="text-xs text-gray-400 mt-1">URL de uma imagem hospedada para exibir como logo do portal.</p>
+        <% if @configuracoes['logo_url'].present? %>
+          <img src="<%= @configuracoes['logo_url'] %>" alt="Logo atual"
+               class="mt-2 h-10 rounded-md border border-gray-200 p-1 bg-white">
+        <% end %>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">URL do Favicon</label>
+        <input type="url" name="site_setting[favicon_url]"
+               value="<%= @configuracoes['favicon_url'] %>"
+               placeholder="https://.../favicon.png"
+               class="input text-sm">
+        <p class="text-xs text-gray-400 mt-1">Ícone pequeno exibido na aba do navegador (PNG ou ICO, 32×32).</p>
+        <% if @configuracoes['favicon_url'].present? %>
+          <img src="<%= @configuracoes['favicon_url'] %>" alt="Favicon atual"
+               class="mt-2 h-8 w-8 rounded border border-gray-200">
+        <% end %>
+      </div>
+    </div>
+
+    <%# Email %>
+    <div class="p-6 space-y-5">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Configurações de E-mail</h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">
+            E-mail Remetente <span class="text-red-500">*</span>
+          </label>
+          <input type="email" name="site_setting[email_remetente]"
+                 value="<%= @configuracoes['email_remetente'] %>"
+                 placeholder="noreply@seusite.com"
+                 class="input text-sm">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Nome do Remetente</label>
+          <input type="text" name="site_setting[email_nome]"
+                 value="<%= @configuracoes['email_nome'] %>"
+                 placeholder="Busca Mais"
+                 class="input text-sm">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Rodapé do E-mail</label>
+        <textarea name="site_setting[email_rodape]" rows="2"
+                  placeholder="Texto exibido no rodapé de todos os e-mails..."
+                  class="input text-sm resize-none"><%= @configuracoes['email_rodape'] %></textarea>
+      </div>
+    </div>
+
+    <%# Google OAuth %>
+    <div class="p-6 space-y-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <svg class="w-5 h-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Login com Google</h3>
+          <% if @configuracoes["google_client_id"].present? && @configuracoes["google_client_secret"].present? %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Ativo
+            </span>
+          <% else %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              Não configurado
+            </span>
+          <% end %>
+        </div>
+        <p class="text-xs text-gray-500 mb-4">
+          Permite que usuários criem conta ou entrem usando a conta Google.
+          Obtenha as credenciais em
+          <strong>console.cloud.google.com</strong> → APIs &amp; Serviços → Credenciais → Criar ID do cliente OAuth.
+          Na tela de configuração do Google, adicione a URI de redirecionamento autorizada:
+          <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs font-mono select-all"><%= "#{SiteSetting['site_url'].presence || request.base_url}/conta/auth/google_oauth2/callback" %></code>
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Client ID</label>
+          <input type="text" name="site_setting[google_client_id]"
+                 value="<%= @configuracoes['google_client_id'] %>"
+                 placeholder="123456789-abc...apps.googleusercontent.com"
+                 autocomplete="off"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Identificador público do aplicativo Google.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Client Secret</label>
+          <input type="password" name="site_setting[google_client_secret]"
+                 value="<%= @configuracoes['google_client_secret'] %>"
+                 placeholder="GOCSPX-..."
+                 autocomplete="new-password"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Chave secreta — nunca compartilhe publicamente.</p>
+        </div>
+      </div>
+
+      <% if @configuracoes["google_client_id"].present? %>
+        <p class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+          Após salvar novas credenciais, o login com Google começa a funcionar imediatamente na próxima tentativa — sem reiniciar o servidor.
+        </p>
+      <% end %>
+    </div>
+
+    <%# Actions %>
+    <div class="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3">
+      <button type="submit" class="btn-primary">
+        Salvar Configurações
+      </button>
+    </div>
+
+  <% end %>
+</div>

@@ -12,6 +12,9 @@
       <%= f.select :role, User.roles.keys.map { |r| [r.humanize, r] },
           { include_blank: "Todos os Papéis" },
           class: "px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+      <%= f.select :status, [["Todos", ""], ["Ativos", "ativo"], ["Inativos", "inativo"]],
+          { selected: params[:status] },
+          class: "px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
       <%= f.submit "Filtrar", class: "btn-primary" %>
       <%= link_to "Resetar", admin_usuarios_path, class: "text-sm text-blue-600 hover:underline self-center" %>
     <% end %>
@@ -46,13 +49,14 @@
         <th>Usuário</th>
         <th>E-mail</th>
         <th>Papel</th>
+        <th>Status</th>
         <th>Desde</th>
         <th>Ações</th>
       </tr>
     </thead>
     <tbody>
       <% @usuarios.each do |usuario| %>
-        <tr>
+        <tr class="<%= usuario.ativo? ? '' : 'opacity-60 bg-gray-50' %>">
           <td>
             <% unless usuario == current_user %>
               <input type="checkbox"
@@ -64,7 +68,7 @@
           </td>
           <td>
             <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              <div class="w-8 h-8 rounded-full <%= usuario.ativo? ? 'bg-blue-600' : 'bg-gray-400' %> flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 <%= usuario.nome.first.upcase %>
               </div>
               <span class="font-medium text-gray-900"><%= usuario.nome %></span>
@@ -77,16 +81,34 @@
               <%= usuario.role.humanize %>
             </span>
           </td>
+          <td>
+            <% if usuario.ativo? %>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Ativo
+              </span>
+            <% else %>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Inativo
+              </span>
+            <% end %>
+          </td>
           <td class="text-gray-500"><%= l usuario.created_at, format: :short %></td>
           <td>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
               <%= link_to "Editar", edit_admin_usuario_path(usuario),
                   class: "text-sm text-blue-600 hover:underline" %>
               <% unless usuario == current_user %>
+                <%# Toggle ativo/inativo %>
+                <%= button_to toggle_ativo_admin_usuario_path(usuario), method: :patch,
+                    data: { turbo_confirm: usuario.ativo? ? "Desativar #{usuario.nome}?" : "Ativar #{usuario.nome}?" },
+                    class: "text-sm #{usuario.ativo? ? 'text-amber-500 hover:text-amber-700' : 'text-green-600 hover:text-green-800'}" do %>
+                  <%= usuario.ativo? ? "Desativar" : "Ativar" %>
+                <% end %>
+                <%# Excluir %>
                 <%= button_to admin_usuario_path(usuario), method: :delete,
-                    data: { turbo_confirm: "Remover #{usuario.nome}?" },
+                    data: { turbo_confirm: "Excluir permanentemente #{usuario.nome}? Esta ação não pode ser desfeita." },
                     class: "text-sm text-red-500 hover:text-red-700" do %>
-                  Remover
+                  Excluir
                 <% end %>
               <% end %>
             </div>

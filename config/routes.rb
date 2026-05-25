@@ -2,7 +2,10 @@ Rails.application.routes.draw do
   devise_for :users,
     path: "conta",
     path_names: { sign_in: "entrar", sign_out: "sair", sign_up: "cadastro", password: "senha" },
-    controllers: { registrations: "users/registrations" }
+    controllers: {
+      registrations:      "users/registrations",
+      omniauth_callbacks: "users/omniauth_callbacks"
+    }
 
   get "up" => "rails/health#show", as: :rails_health_check
 
@@ -13,6 +16,9 @@ Rails.application.routes.draw do
   get  "noticias/:slug",                  to: "noticias#show",      as: :noticia
   get  "categoria/:slug",                 to: "noticias#categoria", as: :categoria
   post "comentarios",                     to: "comments#create",    as: :comentarios_publicos
+  post "comentarios/:id/curtir",          to: "comment_likes#toggle", as: :curtir_comentario
+
+  post "cookie_consent", to: "cookie_consents#create", as: :cookie_consent
 
   # Páginas institucionais
   get  "sobre-nos",   to: "paginas#sobre",          as: :sobre_nos
@@ -33,6 +39,13 @@ Rails.application.routes.draw do
     resources :salvos,      only: [:index, :create, :destroy]
     resource  :assinatura,  only: [:show, :update]
     resources :comentarios, only: [:index]
+    resources :notificacoes, only: [:index, :destroy] do
+      collection do
+        patch :marcar_todas_lidas
+        delete :bulk_destroy
+      end
+      member { patch :marcar_lida }
+    end
     get "configuracoes",    to: "configuracoes#edit"
     patch "configuracoes",  to: "configuracoes#update"
   end
@@ -64,7 +77,10 @@ Rails.application.routes.draw do
       collection { delete :bulk_destroy }
     end
     resources :usuarios do
-      member { patch :alterar_role }
+      member do
+        patch :alterar_role
+        patch :toggle_ativo
+      end
       collection { delete :bulk_destroy }
     end
     resources :categorias do
@@ -84,5 +100,6 @@ Rails.application.routes.draw do
       collection { delete :bulk_destroy }
     end
     get "analise", to: "dashboard#analise"
+    resource :configuracoes, only: [:show, :update]
   end
 end

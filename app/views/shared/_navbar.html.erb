@@ -40,8 +40,67 @@
             Painel
           <% end %>
         <% end %>
-        <%= link_to "Minha Conta", usuario_root_path,
+        <%= link_to "Minha Conta", current_user.administrador? ? admin_root_path : (current_user.editor? ? editor_root_path : usuario_root_path),
             class: "text-sm text-gray-600 hover:text-blue-600 hidden sm:inline" %>
+
+        <%# Notification bell %>
+        <div class="relative" data-controller="notification" data-notification-target="wrapper">
+          <button type="button"
+                  data-action="click->notification#toggle"
+                  data-notification-target="bell"
+                  class="relative p-1.5 text-gray-500 hover:text-blue-600 transition-colors"
+                  aria-label="Notificações">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+            <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+              <span class="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                <%= @notificacoes_nao_lidas_count > 9 ? "9+" : @notificacoes_nao_lidas_count %>
+              </span>
+            <% end %>
+          </button>
+
+          <%# Dropdown panel %>
+          <div data-notification-target="dropdown"
+               class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h4 class="text-sm font-bold text-gray-900">Notificações</h4>
+              <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                <%= button_to marcar_todas_lidas_usuario_notificacoes_path, method: :patch,
+                    class: "text-xs text-blue-600 hover:text-blue-700 font-medium bg-transparent border-none cursor-pointer" do %>
+                  Ler todas
+                <% end %>
+              <% end %>
+            </div>
+            <div class="max-h-72 overflow-y-auto">
+              <% if @notificacoes_recentes&.any? %>
+                <% @notificacoes_recentes.each do |n| %>
+                  <a href="<%= n.link %>"
+                     class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 <%= n.lida? ? 'opacity-60' : '' %>">
+                    <span class="text-lg shrink-0 mt-0.5"><%= n.icone %></span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-gray-800 leading-relaxed line-clamp-2"><%= n.mensagem %></p>
+                      <p class="text-[11px] text-gray-400 mt-0.5"><%= time_ago_in_words(n.created_at) %> atrás</p>
+                    </div>
+                    <% unless n.lida? %>
+                      <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                    <% end %>
+                  </a>
+                <% end %>
+              <% else %>
+                <div class="py-10 text-center">
+                  <p class="text-sm text-gray-400">Nenhuma notificação</p>
+                </div>
+              <% end %>
+            </div>
+            <div class="px-4 py-2.5 border-t border-gray-100 text-center">
+              <%= link_to "Ver todas as notificações →", usuario_notificacoes_path,
+                  class: "text-xs text-blue-600 hover:text-blue-700 font-medium" %>
+            </div>
+          </div>
+        </div>
+
         <%= button_to "Sair", destroy_user_session_path, method: :delete,
             class: "text-sm text-gray-500 hover:text-red-600 bg-transparent border-none cursor-pointer hidden sm:inline" %>
       <% else %>
@@ -152,9 +211,19 @@
               Painel
             <% end %>
           <% end %>
-          <%= link_to "Minha Conta", usuario_root_path,
+          <%= link_to "Minha Conta", current_user.administrador? ? admin_root_path : (current_user.editor? ? editor_root_path : usuario_root_path),
               class: "flex items-center px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50",
               data: { action: "click->navbar#closeMobile" } %>
+          <%= link_to usuario_notificacoes_path,
+              class: "flex items-center justify-between px-3 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50",
+              data: { action: "click->navbar#closeMobile" } do %>
+            <span>Notificações</span>
+            <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+              <span class="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
+                <%= @notificacoes_nao_lidas_count %>
+              </span>
+            <% end %>
+          <% end %>
           <%= button_to "Sair", destroy_user_session_path, method: :delete,
               class: "w-full flex items-center px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 text-sm font-medium",
               form: { class: "w-full" } %>

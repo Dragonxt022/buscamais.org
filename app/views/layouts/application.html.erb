@@ -12,6 +12,20 @@
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <%# ── Scripts de analytics/marketing ─────────────────────────────────────
+        Adicione aqui seus scripts de rastreamento (Google Analytics, Meta Pixel etc.).
+        - Se o usuário JÁ aceitou: renderiza como <script> normal (executa imediatamente).
+        - Se AINDA não decidiu ou recusou: renderiza como type="text/plain" (browser ignora
+          completamente). O Stimulus cookie_consent_controller ativa ao aceitar. %>
+    <% if cookie_consent_aceito? %>
+      <%= yield :analytics %>
+    <% else %>
+      <%# Bloco bloqueado — substitua o conteúdo abaixo pelos seus scripts reais %>
+      <script type="text/plain" data-consent="analytics" id="analytics-blocked">
+        <%== yield :analytics %>
+      </script>
+    <% end %>
   </head>
   <body class="bg-gray-50">
     <%= render "shared/flash" %>
@@ -20,5 +34,6 @@
       <%= yield %>
     </main>
     <%= render "shared/footer" %>
+    <%= render "shared/cookie_consent" %>
   </body>
 </html>

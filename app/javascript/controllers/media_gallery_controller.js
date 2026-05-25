@@ -59,7 +59,8 @@ export default class extends Controller {
               data-signed-id="${m.signed_id}"
               data-url="${m.url}"
               title="${m.nome}">
-        <img src="${m.url}" alt="${m.nome}" class="w-full h-full object-cover" loading="lazy">
+        <img src="${m.url}" alt="${m.nome}" class="w-full h-full object-cover"
+             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Crect fill=%22%23f3f4f6%22 width=%2224%22 height=%2224%22/%3E%3Cpath fill=%22%23d1d5db%22 d=%22M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z%22/%3E%3C/svg%3E'; this.onerror=null">
         <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-end">
           <span class="w-full text-white text-xs truncate px-1.5 py-1 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">${m.nome}</span>
         </div>

@@ -1,14 +1,18 @@
-<figure class="attachment attachment--<%= blob.representable? ? "preview" : "file" %> attachment--<%= blob.filename.extension %>">
-  <% if blob.representable? %>
-    <%= image_tag blob.representation(resize_to_limit: local_assigns[:in_gallery] ? [ 800, 600 ] : [ 1024, 768 ]) %>
-  <% end %>
-
-  <figcaption class="attachment__caption">
-    <% if caption = blob.try(:caption) %>
-      <%= caption %>
-    <% else %>
-      <span class="attachment__name"><%= blob.filename %></span>
-      <span class="attachment__size"><%= number_to_human_size blob.byte_size %></span>
-    <% end %>
-  </figcaption>
-</figure>
+<% if blob.representable? %>
+  <figure class="my-4 text-center">
+    <%= image_tag url_for(blob),
+        alt:     blob.filename.to_s,
+        loading: "lazy",
+        class:   "rounded-lg max-w-full inline-block" %>
+  </figure>
+<% else %>
+  <a href="<%= url_for(blob) %>" target="_blank" rel="noopener"
+     class="inline-flex items-center gap-2 text-blue-600 hover:underline text-sm">
+    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 10v6m0 0l-3-3m3 3l3-3m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    <%= blob.filename %>
+    <span class="text-gray-400">· <%= number_to_human_size(blob.byte_size) %></span>
+  </a>
+<% end %>

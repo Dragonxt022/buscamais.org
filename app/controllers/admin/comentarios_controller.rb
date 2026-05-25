@@ -28,6 +28,7 @@ class Admin::ComentariosController < Admin::BaseController
 
   def aprovar
     @comentario.update!(status: :aprovado)
+    Notification.notificar_aprovacao(@comentario)
     redirect_to admin_comentarios_path, notice: "Comentário aprovado."
   end
 

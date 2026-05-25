@@ -1,10 +1,12 @@
 class Admin::UsuariosController < Admin::BaseController
 
-  before_action :carregar_usuario, only: [:show, :edit, :update, :destroy, :alterar_role]
+  before_action :carregar_usuario, only: [:show, :edit, :update, :destroy, :alterar_role, :toggle_ativo]
 
   def index
     scope = User.order(created_at: :desc)
-    scope = scope.where(role: params[:role]) if params[:role].present?
+    scope = scope.where(role: params[:role])    if params[:role].present?
+    scope = scope.where(ativo: true)            if params[:status] == "ativo"
+    scope = scope.where(ativo: false)           if params[:status] == "inativo"
     scope = scope.where("nome LIKE ? OR email LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%") if params[:q].present?
     @pagy, @usuarios = pagy(scope)
   end
@@ -22,6 +24,10 @@ class Admin::UsuariosController < Admin::BaseController
   end
 
   def destroy
+    if @usuario == current_user
+      redirect_to admin_usuarios_path, alert: "Você não pode excluir sua própria conta."
+      return
+    end
     @usuario.destroy
     redirect_to admin_usuarios_path, notice: "Usuário removido."
   end
@@ -30,6 +36,16 @@ class Admin::UsuariosController < Admin::BaseController
     ids = Array(params[:ids]).map(&:to_i).reject { |id| id == current_user.id }
     count = User.where(id: ids).destroy_all.size
     redirect_to admin_usuarios_path, notice: "#{count} usuário(s) removido(s)."
+  end
+
+  def toggle_ativo
+    if @usuario == current_user
+      redirect_to admin_usuarios_path, alert: "Você não pode desativar sua própria conta."
+      return
+    end
+    @usuario.update!(ativo: !@usuario.ativo?)
+    status = @usuario.ativo? ? "ativado" : "desativado"
+    redirect_to admin_usuarios_path, notice: "Usuário #{status}."
   end
 
   def alterar_role

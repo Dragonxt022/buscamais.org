@@ -30,15 +30,17 @@ module ImagemUploader
 
   def serializar_midia(m)
     return {} unless m.arquivo.attached?
+    blob      = m.arquivo.blob
+    blob_path = rails_blob_path(blob)
     {
       id:        m.id,
       nome:      m.nome,
       descricao: m.descricao,
       tipo:      m.tipo,
       tamanho:   m.tamanho_formatado,
-      url:       url_for(m.arquivo),
-      signed_id: m.arquivo.blob.signed_id,
-      sgid:      m.arquivo.blob.to_sgid.to_s
+      url:       blob_path,
+      signed_id: blob.signed_id,
+      sgid:      blob.to_sgid.to_s
     }
   end
 end

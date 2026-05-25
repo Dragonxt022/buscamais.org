@@ -1,4 +1,6 @@
 class Editor::MidiasController < Editor::BaseController
+  include ImagemUploader
+  include ActionView::Helpers::NumberHelper
 
   def index
     scope = MediaFile.includes(arquivo_attachment: :blob).recentes
@@ -21,11 +23,16 @@ class Editor::MidiasController < Editor::BaseController
     @midia = MediaFile.new(user: current_user)
 
     if params[:media_file]&.dig(:arquivo).present?
-      arquivo = params[:media_file][:arquivo]
-      @midia.nome    = arquivo.original_filename
-      @midia.tipo    = arquivo.content_type
-      @midia.tamanho = arquivo.size
-      @midia.arquivo.attach(arquivo)
+      upload     = params[:media_file][:arquivo]
+      processado = processar_upload(upload)
+      @midia.nome    = processado[:nome]
+      @midia.tipo    = processado[:tipo]
+      @midia.tamanho = processado[:tamanho]
+      @midia.arquivo.attach(
+        io:           processado[:tempfile],
+        filename:     processado[:nome],
+        content_type: processado[:tipo]
+      )
     end
 
     respond_to do |format|
@@ -56,7 +63,7 @@ class Editor::MidiasController < Editor::BaseController
   def destroy
     @midia = MediaFile.find(params[:id])
     authorize @midia, :destroy?
-    @midia.arquivo.purge_later if @midia.arquivo.attached?
+    @midia.arquivo.purge if @midia.arquivo.attached?
     @midia.destroy
 
     respond_to do |format|
@@ -69,7 +76,7 @@ class Editor::MidiasController < Editor::BaseController
     ids = Array(params[:ids]).map(&:to_i)
     midias = MediaFile.where(id: ids)
     midias.each { |m| authorize m, :destroy? }
-    midias.each { |m| m.arquivo.purge_later if m.arquivo.attached? }
+    midias.each { |m| m.arquivo.purge if m.arquivo.attached? }
     count = midias.destroy_all.size
 
     respond_to do |format|
@@ -82,18 +89,5 @@ class Editor::MidiasController < Editor::BaseController
 
   def midia_params
     params.require(:media_file).permit(:nome, :descricao)
-  end
-
-  def serializar_midia(m)
-    return {} unless m.arquivo.attached?
-    {
-      id:        m.id,
-      nome:      m.nome,
-      descricao: m.descricao,
-      tipo:      m.tipo,
-      tamanho:   m.tamanho_formatado,
-      url:       url_for(m.arquivo),
-      signed_id: m.arquivo.blob.signed_id
-    }
   end
 end

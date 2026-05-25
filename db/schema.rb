@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_25_180554) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -60,7 +60,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
 
   create_table "articles", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.datetime "agendado_em"
-    t.bigint "author_id", null: false
+    t.bigint "author_id"
     t.bigint "category_id"
     t.text "conteudo"
     t.datetime "created_at", null: false
@@ -94,15 +94,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
     t.index ["slug"], name: "index_categories_on_slug", unique: true
   end
 
+  create_table "comment_likes", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "comment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["comment_id"], name: "index_comment_likes_on_comment_id"
+    t.index ["user_id", "comment_id"], name: "index_comment_likes_on_user_id_and_comment_id", unique: true
+    t.index ["user_id"], name: "index_comment_likes_on_user_id"
+  end
+
   create_table "comments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.integer "aprovado_por"
     t.bigint "article_id", null: false
     t.text "conteudo", null: false
     t.datetime "created_at", null: false
+    t.integer "likes_count", default: 0, null: false
+    t.integer "parent_id"
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["article_id"], name: "index_comments_on_article_id"
+    t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["status"], name: "index_comments_on_status"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
@@ -131,6 +144,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
     t.index ["user_id"], name: "index_media_files_on_user_id"
   end
 
+  create_table "notifications", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "dados"
+    t.boolean "lida", default: false, null: false
+    t.bigint "notificable_id"
+    t.string "notificable_type"
+    t.string "tipo", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["notificable_type", "notificable_id"], name: "index_notifications_on_notificable_type_and_notificable_id"
+    t.index ["user_id", "lida"], name: "index_notifications_on_user_id_and_lida"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "reading_histories", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.bigint "article_id", null: false
     t.datetime "created_at", null: false
@@ -151,6 +178,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
     t.index ["article_id"], name: "index_saved_articles_on_article_id"
     t.index ["user_id", "article_id"], name: "index_saved_articles_on_user_id_and_article_id", unique: true
     t.index ["user_id"], name: "index_saved_articles_on_user_id"
+  end
+
+  create_table "site_settings", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.string "chave", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "valor"
+    t.index ["chave"], name: "index_site_settings_on_chave", unique: true
   end
 
   create_table "subscriptions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -184,18 +219,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.boolean "ativo", default: true, null: false
     t.string "avatar"
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "nome"
+    t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "role"
+    t.string "uid"
     t.datetime "updated_at", null: false
+    t.index ["ativo"], name: "index_users_on_ativo"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -205,9 +245,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_222608) do
   add_foreign_key "article_tags", "tags"
   add_foreign_key "articles", "categories"
   add_foreign_key "articles", "users", column: "author_id"
+  add_foreign_key "comment_likes", "comments"
+  add_foreign_key "comment_likes", "users"
   add_foreign_key "comments", "articles"
   add_foreign_key "comments", "users"
   add_foreign_key "media_files", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "reading_histories", "articles"
   add_foreign_key "reading_histories", "users"
   add_foreign_key "saved_articles", "articles"

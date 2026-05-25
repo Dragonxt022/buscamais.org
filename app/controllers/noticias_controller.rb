@@ -17,7 +17,11 @@ class NoticiasController < ApplicationController
   def show
     @artigo = Article.publicados.friendly.find(params[:slug])
     @artigo.increment!(:visualizacoes)
-    @comentarios = @artigo.comments.aprovados.includes(:user).recentes
+    @comentarios = @artigo.comments.aprovados.raiz
+                          .includes(:user, comment_likes: :user,
+                                    replies: [:user, :comment_likes,
+                                             { replies: [:user, :comment_likes] }])
+                          .recentes
     @artigos_relacionados = Article.publicados
                                    .with_attached_imagem_capa_file
                                    .where(category: @artigo.category)
