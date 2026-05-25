@@ -4,7 +4,8 @@
     <p class="text-sm text-gray-500 mt-0.5">Personalize as informações e aparência do portal.</p>
   </div>
 
-  <%= form_with url: admin_configuracoes_path, method: :patch, class: "divide-y divide-gray-100" do |f| %>
+  <%= form_with url: admin_configuracoes_path, method: :patch,
+      multipart: true, class: "divide-y divide-gray-100" do |f| %>
 
     <%# Site info %>
     <div class="p-6 space-y-5">
@@ -36,34 +37,79 @@
       </div>
     </div>
 
-    <%# Branding %>
-    <div class="p-6 space-y-5">
+    <%# Branding — upload real de arquivos %>
+    <div class="p-6 space-y-6">
       <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Identidade Visual</h3>
 
+      <%# Logo %>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">URL do Logotipo</label>
-        <input type="url" name="site_setting[logo_url]"
-               value="<%= @configuracoes['logo_url'] %>"
-               placeholder="https://..."
-               class="input text-sm">
-        <p class="text-xs text-gray-400 mt-1">URL de uma imagem hospedada para exibir como logo do portal.</p>
-        <% if @configuracoes['logo_url'].present? %>
-          <img src="<%= @configuracoes['logo_url'] %>" alt="Logo atual"
-               class="mt-2 h-10 rounded-md border border-gray-200 p-1 bg-white">
-        <% end %>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Logotipo do Site</label>
+        <div class="flex items-center gap-4">
+          <%# Preview %>
+          <div class="w-24 h-14 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+            <% if @branding.logo.attached? %>
+              <img src="<%= @branding.logo_url %>" alt="Logo atual" class="max-w-full max-h-full object-contain p-1">
+            <% else %>
+              <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            <% end %>
+          </div>
+
+          <%# Upload %>
+          <div class="flex-1">
+            <label class="relative cursor-pointer inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <%= @branding.logo.attached? ? "Trocar Logo" : "Enviar Logo" %>
+              <input type="file" name="branding_logo" accept="image/*" class="sr-only"
+                     onchange="this.closest('label').querySelector('span.fn') && (this.closest('label').querySelector('span.fn').textContent = this.files[0]?.name || '')">
+            </label>
+            <p class="text-xs text-gray-400 mt-1.5">PNG, SVG ou WebP — recomendado 300×80px</p>
+            <% if @branding.logo.attached? %>
+              <label class="inline-flex items-center gap-1 mt-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
+                <input type="checkbox" name="remover_logo" value="1" class="w-3.5 h-3.5">
+                Remover logo atual
+              </label>
+            <% end %>
+          </div>
+        </div>
       </div>
 
+      <%# Favicon %>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1.5">URL do Favicon</label>
-        <input type="url" name="site_setting[favicon_url]"
-               value="<%= @configuracoes['favicon_url'] %>"
-               placeholder="https://.../favicon.png"
-               class="input text-sm">
-        <p class="text-xs text-gray-400 mt-1">Ícone pequeno exibido na aba do navegador (PNG ou ICO, 32×32).</p>
-        <% if @configuracoes['favicon_url'].present? %>
-          <img src="<%= @configuracoes['favicon_url'] %>" alt="Favicon atual"
-               class="mt-2 h-8 w-8 rounded border border-gray-200">
-        <% end %>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Favicon (aba do navegador)</label>
+        <div class="flex items-center gap-4">
+          <%# Preview %>
+          <div class="w-12 h-12 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+            <% if @branding.favicon.attached? %>
+              <img src="<%= @branding.favicon_url %>" alt="Favicon atual" class="max-w-full max-h-full object-contain">
+            <% else %>
+              <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+            <% end %>
+          </div>
+
+          <%# Upload %>
+          <div class="flex-1">
+            <label class="relative cursor-pointer inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <%= @branding.favicon.attached? ? "Trocar Favicon" : "Enviar Favicon" %>
+              <input type="file" name="branding_favicon" accept="image/png,image/x-icon,image/svg+xml" class="sr-only">
+            </label>
+            <p class="text-xs text-gray-400 mt-1.5">PNG ou ICO — 32×32px ou 64×64px</p>
+            <% if @branding.favicon.attached? %>
+              <label class="inline-flex items-center gap-1 mt-1.5 text-xs text-red-500 hover:text-red-700 cursor-pointer">
+                <input type="checkbox" name="remover_favicon" value="1" class="w-3.5 h-3.5">
+                Remover favicon atual
+              </label>
+            <% end %>
+          </div>
+        </div>
       </div>
     </div>
 

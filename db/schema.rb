@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_180554) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -178,6 +178,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_180554) do
     t.index ["article_id"], name: "index_saved_articles_on_article_id"
     t.index ["user_id", "article_id"], name: "index_saved_articles_on_user_id_and_article_id", unique: true
     t.index ["user_id"], name: "index_saved_articles_on_user_id"
+  end
+
+  create_table "site_brandings", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "site_settings", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|

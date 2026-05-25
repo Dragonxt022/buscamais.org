@@ -7,7 +7,12 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
-    <link rel="icon" href="/icon.png" type="image/png">
+    <% _branding = SiteBranding.instance %>
+    <% if _branding.favicon.attached? %>
+      <link rel="icon" href="<%= _branding.favicon_url %>" type="<%= _branding.favicon.blob.content_type %>">
+    <% else %>
+      <link rel="icon" href="/icon.png" type="image/png">
+    <% end %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>

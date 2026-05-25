@@ -2,7 +2,6 @@ class SiteSetting < ApplicationRecord
   CHAVES = %w[
     site_titulo site_descricao site_url
     email_remetente email_nome email_rodape
-    logo_url favicon_url
     google_client_id google_client_secret
   ].freeze
 
