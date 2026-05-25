@@ -1,0 +1,94 @@
+<% content_for :title, "Boletim Informativo - Busca Mais" %>
+
+<%# Hero com gradiente real %>
+<div class="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-24 px-4 text-center">
+  <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+  </div>
+  <h1 class="text-4xl md:text-5xl font-bold mb-4 text-white">Boletim Informativo</h1>
+  <p class="text-blue-100 text-lg max-w-xl mx-auto mb-10">
+    As principais notícias do dia, selecionadas pela nossa equipe editorial, diretamente no seu e-mail. Gratuito.
+  </p>
+
+  <%= form_with url: boletim_path, method: :post, class: "max-w-md mx-auto" do |f| %>
+    <div class="flex gap-2 shadow-xl shadow-blue-900/30">
+      <%= email_field_tag :email, nil,
+          required: true,
+          placeholder: "seu@email.com",
+          class: "flex-1 px-4 py-3.5 rounded-l-xl text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 rounded-r-none" %>
+      <button type="submit"
+              class="bg-white text-blue-700 font-bold px-6 py-3.5 rounded-r-xl hover:bg-blue-50 transition-colors shrink-0 text-sm">
+        Assinar →
+      </button>
+    </div>
+    <p class="text-blue-200 text-xs mt-3">Cancelamento a qualquer momento. Sem spam.</p>
+  <% end %>
+</div>
+
+<%# O que você recebe %>
+<div class="max-w-4xl mx-auto px-4 py-16">
+  <h2 class="text-2xl font-bold text-gray-900 text-center mb-12">O que você vai receber</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+      <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+      </div>
+      <h3 class="font-bold text-gray-900 text-lg mb-2">Resumo Matinal</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Todo dia útil, as notícias mais importantes do Brasil e do mundo, antes das 8h.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+      <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <h3 class="font-bold text-gray-900 text-lg mb-2">Análise Semanal</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Toda sexta, um editorial aprofundado sobre o tema que marcou a semana.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+      <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <h3 class="font-bold text-gray-900 text-lg mb-2">Reportagens Exclusivas</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">Assinantes recebem primeiro acesso a grandes reportagens e investigações.</p>
+    </div>
+  </div>
+
+  <%# Rodapé legal %>
+  <div class="bg-gray-50 rounded-2xl border border-gray-100 p-8 text-center">
+    <div class="flex items-center justify-center gap-8 text-sm text-gray-500 mb-5 flex-wrap">
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+        Completamente gratuito
+      </span>
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+        Zero spam
+      </span>
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+        </svg>
+        Cancele quando quiser
+      </span>
+    </div>
+    <p class="text-xs text-gray-400">
+      Ao se inscrever, você concorda com nossa
+      <%= link_to "Política de Privacidade", privacidade_path, class: "text-blue-600 hover:underline" %>.
+      Seus dados nunca serão compartilhados com terceiros.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,322 @@
+<%# locals: (midias:, pagy:, ns:) %>
+<% midia_url    = ->(m) { ns == "admin" ? admin_midia_path(m)  : editor_midia_path(m) }
+   index_url    = ns == "admin" ? admin_midias_path            : editor_midias_path
+   bulk_url     = ns == "admin" ? bulk_destroy_admin_midias_path : bulk_destroy_editor_midias_path
+%>
+
+<div data-controller="midias">
+
+  <%# ── Toolbar ── %>
+  <div class="card-header flex-wrap gap-3 border-b border-gray-100">
+
+    <%# Search %>
+    <%= form_with url: index_url, method: :get, class: "flex gap-2 flex-1 min-w-52" do |f| %>
+      <div class="relative flex-1">
+        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <%= f.search_field :q, value: params[:q], placeholder: "Buscar por nome…", class: "input pl-9 text-sm" %>
+      </div>
+      <%= f.submit "Buscar", class: "btn-secondary text-sm" %>
+    <% end %>
+
+    <%# Upload %>
+    <%= form_with url: index_url, method: :post, multipart: true do |f| %>
+      <%= f.file_field "media_file[arquivo]", id: "#{ns}_upload_file", class: "sr-only",
+          accept: "image/*,video/mp4,application/pdf", multiple: true,
+          onchange: "this.form.submit()" %>
+      <label for="<%= ns %>_upload_file"
+             class="btn-primary flex items-center gap-2 cursor-pointer text-sm shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        Fazer Upload
+      </label>
+    <% end %>
+
+    <%# View toggle %>
+    <div class="flex items-center bg-gray-100 rounded-lg p-0.5 shrink-0">
+      <button type="button" data-view-btn="grid" data-action="click->midias#setGrid"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Grade
+      </button>
+      <button type="button" data-view-btn="list" data-action="click->midias#setList"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+        </svg>
+        Lista
+      </button>
+    </div>
+
+  </div>
+
+  <%# ── Bulk actions bar ── %>
+  <div data-midias-target="bulkBar"
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+    <span class="text-sm font-semibold text-blue-700" data-midias-target="selectedCount"></span>
+    <button type="button"
+            data-action="click->midias#deleteSelected"
+            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+      Excluir selecionados
+    </button>
+    <button type="button" data-action="click->midias#cancelSelection"
+            class="text-sm text-gray-500 hover:text-gray-700">
+      Cancelar
+    </button>
+  </div>
+
+  <%# ── Grid view ── %>
+  <div data-midias-target="gridView" class="p-5">
+    <% if midias.empty? %>
+      <div class="py-20 text-center">
+        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+        <p class="text-gray-400 text-sm">Nenhum arquivo encontrado.</p>
+      </div>
+    <% else %>
+      <div class="mb-3 flex items-center gap-2">
+        <label class="flex items-center gap-2 text-xs text-gray-500 cursor-pointer select-none">
+          <input type="checkbox" data-select-all data-action="change->midias#onSelectAll"
+                 class="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 cursor-pointer">
+          Selecionar todos
+        </label>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        <% midias.each do |midia| %>
+          <div data-midias-target="item"
+               data-id="<%= midia.id %>"
+               data-delete-url="<%= midia_url.call(midia) %>"
+               data-update-url="<%= midia_url.call(midia) %>"
+               data-nome="<%= midia.nome %>"
+               data-descricao="<%= midia.descricao %>"
+               data-preview-url="<%= midia.arquivo.attached? && midia.imagem? ? url_for(midia.arquivo) : "" %>"
+               class="group relative border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition-all bg-white">
+
+            <%# Checkbox %>
+            <label class="absolute top-2 left-2 z-10 cursor-pointer">
+              <input type="checkbox"
+                     data-midias-target="checkbox"
+                     data-action="change->midias#onSelect"
+                     class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity shadow">
+            </label>
+
+            <%# Thumbnail %>
+            <div class="aspect-square bg-gray-100 overflow-hidden">
+              <% if midia.arquivo.attached? && midia.imagem? %>
+                <%= image_tag url_for(midia.arquivo),
+                    class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
+                    alt: midia.nome %>
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center">
+                  <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                </div>
+              <% end %>
+            </div>
+
+            <%# Type badge %>
+            <span class="absolute top-2 right-2 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded uppercase leading-none">
+              <%= midia.tipo&.split("/")&.last&.upcase || "?" %>
+            </span>
+
+            <%# Hover overlay with actions %>
+            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button type="button" data-action="click->midias#openEdit"
+                      title="Editar"
+                      class="w-8 h-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center text-gray-700 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <% if midia.arquivo.attached? %>
+                <%= link_to url_for(midia.arquivo), target: "_blank",
+                    title: "Ver original",
+                    class: "w-8 h-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center text-gray-700 transition-colors" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                <% end %>
+              <% end %>
+              <button type="button" data-action="click->midias#deleteOne"
+                      title="Excluir"
+                      class="w-8 h-8 bg-white/90 hover:bg-red-50 rounded-lg flex items-center justify-center text-red-500 hover:text-red-600 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+
+            <%# Caption %>
+            <div class="px-2 py-2">
+              <p class="text-xs font-medium text-gray-800 truncate" data-nome-label><%= midia.nome %></p>
+              <p class="text-[11px] text-gray-400"><%= midia.tamanho_formatado %> · <%= l midia.created_at, format: :short %></p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ── List view ── %>
+  <div data-midias-target="listView" class="hidden">
+    <% if midias.empty? %>
+      <p class="py-12 text-center text-sm text-gray-400">Nenhum arquivo encontrado.</p>
+    <% else %>
+      <table class="table-admin w-full">
+        <thead>
+          <tr>
+            <th class="w-8">
+              <input type="checkbox" data-select-all data-action="change->midias#onSelectAll"
+                     class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+            </th>
+            <th>Arquivo</th>
+            <th class="hidden sm:table-cell">Tipo</th>
+            <th class="hidden md:table-cell">Tamanho</th>
+            <th class="hidden md:table-cell">Data</th>
+            <th class="text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% midias.each do |midia| %>
+            <tr data-midias-target="item"
+                data-id="<%= midia.id %>"
+                data-delete-url="<%= midia_url.call(midia) %>"
+                data-update-url="<%= midia_url.call(midia) %>"
+                data-nome="<%= midia.nome %>"
+                data-descricao="<%= midia.descricao %>"
+                data-preview-url="<%= midia.arquivo.attached? && midia.imagem? ? url_for(midia.arquivo) : "" %>"
+                class="hover:bg-gray-50 transition-colors">
+              <td>
+                <input type="checkbox"
+                       data-midias-target="checkbox"
+                       data-action="change->midias#onSelect"
+                       class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+              </td>
+              <td>
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 shrink-0">
+                    <% if midia.arquivo.attached? && midia.imagem? %>
+                      <%= image_tag url_for(midia.arquivo), class: "w-full h-full object-cover", alt: "" %>
+                    <% else %>
+                      <div class="w-full h-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                      </div>
+                    <% end %>
+                  </div>
+                  <span class="text-sm font-medium text-gray-800 truncate max-w-48" data-nome-label><%= midia.nome %></span>
+                </div>
+              </td>
+              <td class="hidden sm:table-cell">
+                <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded uppercase font-medium">
+                  <%= midia.tipo&.split("/")&.last || "?" %>
+                </span>
+              </td>
+              <td class="hidden md:table-cell text-sm text-gray-500"><%= midia.tamanho_formatado %></td>
+              <td class="hidden md:table-cell text-sm text-gray-500"><%= l midia.created_at, format: :short %></td>
+              <td>
+                <div class="flex items-center justify-end gap-1">
+                  <button type="button" data-action="click->midias#openEdit"
+                          title="Editar"
+                          class="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <% if midia.arquivo.attached? %>
+                    <%= link_to url_for(midia.arquivo), target: "_blank",
+                        title: "Ver original",
+                        class: "p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" do %>
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                      </svg>
+                    <% end %>
+                  <% end %>
+                  <button type="button" data-action="click->midias#deleteOne"
+                          title="Excluir"
+                          class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+
+  <%# ── Pagination ── %>
+  <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+    <p class="text-sm text-gray-500">
+      <% if pagy.count > 0 %>
+        Mostrando <%= pagy.from %>–<%= pagy.to %> de <%= pagy.count %> arquivos
+      <% else %>
+        Nenhum arquivo
+      <% end %>
+    </p>
+    <%== pagy_nav(pagy) if pagy.pages > 1 %>
+  </div>
+
+  <%# ── Edit modal ── %>
+  <div data-midias-target="editModal"
+       class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background: rgba(0,0,0,0.55)"
+       data-action="click->midias#closeEditBackdrop">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl" onclick="event.stopPropagation()">
+
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+        <h3 class="text-base font-bold text-gray-900">Editar Arquivo</h3>
+        <button type="button" data-action="click->midias#closeEdit"
+                class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <img data-midias-target="editPreview"
+             class="hidden w-full aspect-video object-cover rounded-xl"
+             alt="Preview">
+        <input type="hidden" data-midias-target="editUrl">
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Nome do arquivo</label>
+          <input data-midias-target="editNome" type="text" class="input text-sm"
+                 placeholder="nome-do-arquivo.jpg">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Descrição / Texto alternativo</label>
+          <textarea data-midias-target="editDescricao" rows="2" class="input text-sm resize-none"
+                    placeholder="Descreva a imagem para acessibilidade e SEO…"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-1">
+          <button type="button" data-action="click->midias#saveEdit"
+                  class="flex-1 btn-primary text-sm">
+            Salvar alterações
+          </button>
+          <button type="button" data-action="click->midias#closeEdit"
+                  class="flex-1 btn-secondary text-sm">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

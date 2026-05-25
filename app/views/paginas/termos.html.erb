@@ -1,0 +1,106 @@
+<% content_for :title, "Termos de Serviço - Busca Mais" %>
+
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <div class="mb-10">
+    <p class="text-sm text-blue-600 font-semibold uppercase tracking-wider mb-2">Legal</p>
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Termos de Serviço</h1>
+    <p class="text-gray-500">Última atualização: <%= l Date.new(2024, 1, 1), format: :long %></p>
+  </div>
+
+  <div class="prose prose-gray max-w-none space-y-8 text-gray-700">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">1. Aceitação dos Termos</h2>
+      <p class="leading-relaxed">
+        Ao acessar ou utilizar a plataforma <strong>Busca Mais</strong> (<em>buscamais.org</em>), você concorda com estes Termos de Serviço. Se não concordar com qualquer parte destes termos, não utilize nossos serviços.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">2. Descrição do Serviço</h2>
+      <p class="leading-relaxed">
+        O Busca Mais é um portal de notícias que oferece conteúdo jornalístico gratuito ao público em geral. Funcionalidades adicionais, como comentários e salvamento de artigos, requerem cadastro. Reservamo-nos o direito de alterar, suspender ou descontinuar qualquer aspecto do serviço a qualquer momento.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">3. Cadastro e Conta</h2>
+      <p class="leading-relaxed mb-3">Ao criar uma conta, você se compromete a:</p>
+      <ul class="list-disc list-inside space-y-1.5 text-gray-600 ml-4">
+        <li>Fornecer informações verdadeiras, precisas e atualizadas;</li>
+        <li>Manter a confidencialidade da sua senha;</li>
+        <li>Notificar imediatamente sobre uso não autorizado da sua conta;</li>
+        <li>Ser responsável por todas as atividades realizadas com suas credenciais.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">4. Uso Aceitável</h2>
+      <p class="leading-relaxed mb-3">Você concorda em <strong>não</strong>:</p>
+      <ul class="list-disc list-inside space-y-1.5 text-gray-600 ml-4">
+        <li>Publicar conteúdo falso, difamatório, ofensivo ou ilegal;</li>
+        <li>Assediar, ameaçar ou intimidar outros usuários;</li>
+        <li>Tentar acessar sistemas ou dados além do permitido;</li>
+        <li>Usar bots, scrapers ou qualquer automação não autorizada;</li>
+        <li>Reproduzir ou redistribuir nosso conteúdo sem autorização expressa;</li>
+        <li>Praticar qualquer ato que viole a legislação brasileira vigente.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">5. Propriedade Intelectual</h2>
+      <p class="leading-relaxed">
+        Todo o conteúdo publicado no Busca Mais — incluindo textos, fotografias, gráficos, logotipos e identidade visual — é protegido por direitos autorais e pertence ao Busca Mais ou a seus licenciantes. É vedada a reprodução, distribuição ou uso comercial sem autorização prévia por escrito.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">6. Comentários e Conteúdo do Usuário</h2>
+      <p class="leading-relaxed">
+        Ao publicar comentários em nossa plataforma, você concede ao Busca Mais uma licença não exclusiva para exibir, reproduzir e distribuir esse conteúdo. Reservamo-nos o direito de moderar, editar ou remover qualquer comentário que viole estes termos ou as leis aplicáveis, sem aviso prévio.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">7. Limitação de Responsabilidade</h2>
+      <p class="leading-relaxed">
+        O Busca Mais se esforça para manter informações precisas e atualizadas, mas não garante a completude ou exatidão de todo o conteúdo publicado. Em nenhuma hipótese o Busca Mais será responsável por danos indiretos, incidentais ou consequentes decorrentes do uso ou incapacidade de uso dos nossos serviços.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">8. Links Externos</h2>
+      <p class="leading-relaxed">
+        Nosso site pode conter links para sites de terceiros. Esses links são fornecidos apenas para conveniência. O Busca Mais não tem controle sobre o conteúdo desses sites e não se responsabiliza por eles.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">9. Encerramento de Conta</h2>
+      <p class="leading-relaxed">
+        Você pode encerrar sua conta a qualquer momento pelo painel de configurações ou entrando em contato conosco. Reservamo-nos o direito de suspender ou encerrar contas que violem estes Termos de Serviço, com ou sem aviso prévio.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">10. Lei Aplicável</h2>
+      <p class="leading-relaxed">
+        Estes Termos de Serviço são regidos pelas leis da República Federativa do Brasil. Qualquer disputa decorrente destes termos será submetida ao foro da Comarca de São Paulo, com renúncia expressa a qualquer outro foro.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">11. Contato</h2>
+      <p class="leading-relaxed">
+        Para dúvidas sobre estes Termos de Serviço, entre em contato pelo e-mail <strong>juridico@buscamais.org</strong> ou pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>.
+      </p>
+    </section>
+
+  </div>
+
+  <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-3">
+    <%= link_to "← Voltar ao início", root_path, class: "text-sm text-gray-500 hover:text-blue-600" %>
+    <span class="text-gray-300">|</span>
+    <%= link_to "Política de Privacidade", privacidade_path, class: "text-sm text-blue-600 hover:underline" %>
+  </div>
+</div>

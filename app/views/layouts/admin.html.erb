@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Painel - Busca Mais" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="bg-gray-100">
+    <%= render "shared/flash" %>
+    <div class="flex min-h-screen">
+      <%= render "shared/sidebar_admin" %>
+      <div class="flex-1 flex flex-col">
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900"><%= content_for(:page_title) || "Painel" %></h1>
+            <p class="text-sm text-gray-500"><%= content_for(:page_subtitle) %></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-600"><%= current_user.nome %></span>
+            <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
+              <%= current_user.nome.first.upcase %>
+            </div>
+          </div>
+        </header>
+        <main class="flex-1 p-6">
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

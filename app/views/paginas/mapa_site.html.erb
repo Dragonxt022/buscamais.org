@@ -1,0 +1,84 @@
+<% content_for :title, "Mapa do Site - Busca Mais" %>
+
+<div class="max-w-5xl mx-auto px-4 py-16">
+  <div class="mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Mapa do Site</h1>
+    <p class="text-gray-500">Todas as páginas e artigos publicados no Busca Mais, organizados por seção.</p>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-8 mb-12">
+
+    <%# Páginas principais %>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Início</h2>
+      <ul class="space-y-2">
+        <li><%= link_to "Página Inicial", root_path, class: "text-sm text-gray-700 hover:text-blue-600 flex items-center gap-1.5" %></li>
+      </ul>
+    </div>
+
+    <%# Empresa %>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Empresa</h2>
+      <ul class="space-y-2">
+        <li><%= link_to "Sobre Nós", sobre_nos_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Carreiras", carreiras_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Contato", contato_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Boletim Informativo", boletim_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+      </ul>
+    </div>
+
+    <%# Legal %>
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Legal</h2>
+      <ul class="space-y-2">
+        <li><%= link_to "Política de Privacidade", privacidade_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Termos de Serviço", termos_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Sitemap XML (SEO)", sitemap_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <%# Categorias e artigos %>
+  <h2 class="text-xl font-bold text-gray-900 mb-6">Categorias & Artigos</h2>
+
+  <% @categorias.each do |categoria| %>
+    <% artigos_cat = @artigos.select { |a| a.category_id == categoria.id } %>
+    <div class="mb-8">
+      <div class="flex items-center gap-3 mb-3">
+        <span class="w-1 h-5 rounded" style="background-color: <%= categoria.cor %>"></span>
+        <%= link_to categoria.nome, categoria_path(categoria.slug),
+            class: "font-bold text-gray-900 hover:text-blue-600" %>
+        <span class="text-xs text-gray-400">(<%= artigos_cat.size %> artigos)</span>
+      </div>
+      <% if artigos_cat.any? %>
+        <div class="ml-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-1.5 border-l-2 border-gray-100 pl-4">
+          <% artigos_cat.first(12).each do |artigo| %>
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="w-1 h-1 bg-gray-300 rounded-full shrink-0"></span>
+              <%= link_to artigo.titulo, noticia_path(artigo.slug),
+                  class: "text-sm text-gray-600 hover:text-blue-600 truncate",
+                  title: artigo.titulo %>
+            </div>
+          <% end %>
+          <% if artigos_cat.size > 12 %>
+            <div class="sm:col-span-2 lg:col-span-3 mt-1">
+              <%= link_to "Ver todos os artigos de #{categoria.nome} →", categoria_path(categoria.slug),
+                  class: "text-xs text-blue-600 hover:underline ml-3" %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="ml-4 pl-4 border-l-2 border-gray-100 text-sm text-gray-400 italic">Nenhum artigo publicado ainda.</p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="mt-10 p-4 bg-gray-50 rounded-lg text-center">
+    <p class="text-xs text-gray-400">
+      Para mecanismos de busca, disponibilizamos também um
+      <%= link_to "Sitemap XML", sitemap_path, class: "text-blue-600 hover:underline" %>
+      atualizado automaticamente com todos os artigos publicados.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,87 @@
+<% content_for :page_title, "Categorias" %>
+<% content_for :page_subtitle, "Gerencie as categorias de conteúdo do portal." %>
+
+<div class="card"
+     data-controller="table-select"
+     data-table-select-confirm-message-value="Remover {count} categoria(s) selecionada(s)? Os artigos vinculados perderão a categoria.\nEsta ação não pode ser desfeita.">
+
+  <div class="card-header">
+    <%= link_to "Nova Categoria", new_admin_categoria_path, class: "btn-primary" %>
+  </div>
+
+  <%# Bulk actions bar %>
+  <div data-table-select-target="bulkBar"
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+    <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
+    <button type="button" data-action="click->table-select#deleteSelected"
+            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+      Excluir selecionadas
+    </button>
+    <button type="button" data-action="click->table-select#cancelSelection"
+            class="text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+  </div>
+  <form data-table-select-target="bulkForm" action="<%= bulk_destroy_admin_categorias_path %>" method="post" class="hidden">
+    <%= hidden_field_tag :_method, :delete %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+  </form>
+
+  <table class="table-admin">
+    <thead>
+      <tr>
+        <th class="w-10">
+          <input type="checkbox" data-select-all data-action="change->table-select#onSelectAll"
+                 class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+        </th>
+        <th>Nome</th>
+        <th>Cor</th>
+        <th>Artigos</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @categorias.each do |cat| %>
+        <tr>
+          <td>
+            <input type="checkbox"
+                   value="<%= cat.id %>"
+                   data-table-select-target="checkbox"
+                   data-action="change->table-select#onSelect"
+                   class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+          </td>
+          <td>
+            <div>
+              <p class="font-semibold text-gray-900"><%= cat.nome %></p>
+              <p class="text-xs text-gray-400 mt-0.5"><%= cat.descricao.to_s.truncate(60) %></p>
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 rounded-full border border-gray-200" style="background:<%= cat.cor || '#6b7280' %>"></div>
+              <span class="text-xs text-gray-500 font-mono"><%= cat.cor %></span>
+            </div>
+          </td>
+          <td><span class="text-gray-700 font-medium"><%= cat.articles.count %></span></td>
+          <td>
+            <% if cat.ativo? %>
+              <span class="text-xs bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full font-semibold">Ativa</span>
+            <% else %>
+              <span class="text-xs bg-gray-100 text-gray-500 px-2.5 py-0.5 rounded-full font-semibold">Inativa</span>
+            <% end %>
+          </td>
+          <td>
+            <div class="flex items-center gap-3">
+              <%= link_to "Editar", edit_admin_categoria_path(cat), class: "text-sm text-blue-600 hover:underline" %>
+              <%= button_to admin_categoria_path(cat), method: :delete,
+                  data: { turbo_confirm: "Remover categoria #{cat.nome}? Os artigos vinculados perderão a categoria." },
+                  class: "text-sm text-red-500 hover:text-red-700" do %>Remover<% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

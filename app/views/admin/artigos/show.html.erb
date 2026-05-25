@@ -1,0 +1,71 @@
+<% content_for :page_title, @artigo.titulo %>
+<% content_for :page_subtitle, "Visualização do artigo" %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-5">
+    <div class="card">
+      <div class="card-body">
+        <div class="flex items-center gap-3 mb-4">
+          <%= render "shared/status_badge", status: @artigo.status %>
+          <% if @artigo.destaque? %>
+            <span class="text-xs bg-yellow-100 text-yellow-700 px-2.5 py-0.5 rounded-full font-semibold">⭐ Destaque</span>
+          <% end %>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-3"><%= @artigo.titulo %></h2>
+        <p class="text-gray-600 text-sm mb-6 leading-relaxed border-l-4 border-blue-200 pl-4"><%= @artigo.resumo %></p>
+        <% if @artigo.imagem_capa_file.attached? %>
+          <div class="mb-4 rounded-lg overflow-hidden">
+            <%= image_tag url_for(@artigo.imagem_capa_file),
+                class: "w-full max-h-64 object-cover",
+                alt: "Imagem de capa" %>
+          </div>
+        <% end %>
+        <div class="prose max-w-none text-sm text-gray-700 leading-relaxed"><%= @artigo.conteudo %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-5">
+    <div class="card">
+      <div class="card-body space-y-3">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Publicação</p>
+        <div class="text-sm space-y-2">
+          <div class="flex justify-between"><span class="text-gray-500">Autor</span><span class="font-medium"><%= @artigo.author&.nome || "—" %></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Categoria</span><span class="font-medium"><%= @artigo.category&.nome || "—" %></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Criado</span><span><%= l @artigo.created_at, format: :short %></span></div>
+          <% if @artigo.publicado_em %>
+            <div class="flex justify-between"><span class="text-gray-500">Publicado</span><span><%= l @artigo.publicado_em, format: :short %></span></div>
+          <% end %>
+          <div class="flex justify-between"><span class="text-gray-500">Visualizações</span><span><%= @artigo.visualizacoes.to_i %></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Leitura</span><span><%= @artigo.tempo_leitura.to_i %> min</span></div>
+        </div>
+      </div>
+    </div>
+
+    <% if @artigo.tags.any? %>
+      <div class="card">
+        <div class="card-body">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Tags</p>
+          <div class="flex flex-wrap gap-2">
+            <% @artigo.tags.each do |tag| %>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full"><%= tag.nome %></span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="flex flex-col gap-2">
+      <%= link_to "Editar", edit_admin_artigo_path(@artigo), class: "btn-primary text-center" %>
+      <% if @artigo.rascunho? || @artigo.aguardando_revisao? %>
+        <%= button_to "Publicar", publicar_admin_artigo_path(@artigo), method: :patch,
+            class: "w-full py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 text-center" %>
+      <% end %>
+      <% if @artigo.publicado? %>
+        <%= button_to "Arquivar", arquivar_admin_artigo_path(@artigo), method: :patch,
+            class: "w-full py-2.5 bg-gray-500 text-white rounded-lg text-sm font-semibold hover:bg-gray-600 text-center" %>
+      <% end %>
+      <%= link_to "← Voltar", admin_artigos_path, class: "text-sm text-center text-gray-500 hover:text-gray-800 py-2" %>
+    </div>
+  </div>
+</div>

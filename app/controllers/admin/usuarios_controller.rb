@@ -1,0 +1,49 @@
+class Admin::UsuariosController < Admin::BaseController
+
+  before_action :carregar_usuario, only: [:show, :edit, :update, :destroy, :alterar_role]
+
+  def index
+    scope = User.order(created_at: :desc)
+    scope = scope.where(role: params[:role]) if params[:role].present?
+    scope = scope.where("nome LIKE ? OR email LIKE ?", "%#{params[:q]}%", "%#{params[:q]}%") if params[:q].present?
+    @pagy, @usuarios = pagy(scope)
+  end
+
+  def show; end
+
+  def edit; end
+
+  def update
+    if @usuario.update(usuario_params)
+      redirect_to admin_usuarios_path, notice: "Usuário atualizado."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @usuario.destroy
+    redirect_to admin_usuarios_path, notice: "Usuário removido."
+  end
+
+  def bulk_destroy
+    ids = Array(params[:ids]).map(&:to_i).reject { |id| id == current_user.id }
+    count = User.where(id: ids).destroy_all.size
+    redirect_to admin_usuarios_path, notice: "#{count} usuário(s) removido(s)."
+  end
+
+  def alterar_role
+    @usuario.update!(role: params[:role])
+    redirect_to admin_usuarios_path, notice: "Permissão alterada para #{User.roles.key(@usuario.role)}."
+  end
+
+  private
+
+  def carregar_usuario
+    @usuario = User.find(params[:id])
+  end
+
+  def usuario_params
+    params.require(:user).permit(:nome, :email, :bio, :role)
+  end
+end

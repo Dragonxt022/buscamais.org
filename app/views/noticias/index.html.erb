@@ -1,0 +1,85 @@
+<% content_for :title, "Busca Mais - Notícias" %>
+
+<%# Hero destaque %>
+<% if @artigo_destaque %>
+  <section class="relative bg-gray-900 text-white overflow-hidden" style="min-height: 480px;">
+    <% if @artigo_destaque.imagem_capa_file.attached? %>
+      <%= image_tag url_for(@artigo_destaque.imagem_capa_file),
+          class: "absolute inset-0 w-full h-full object-cover",
+          alt: @artigo_destaque.titulo %>
+    <% end %>
+    <div class="absolute inset-0 z-10" style="background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.65) 45%, rgba(0,0,0,0.25) 100%)"></div>
+    <div class="relative z-20 max-w-7xl mx-auto px-4 py-16 flex flex-col justify-end h-full" style="min-height: 480px;">
+      <% if @artigo_destaque.category %>
+        <span class="inline-block bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded mb-4 w-fit uppercase tracking-wide">
+          <%= @artigo_destaque.category.nome %>
+        </span>
+      <% end %>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 max-w-3xl leading-tight drop-shadow">
+        <%= @artigo_destaque.titulo %>
+      </h1>
+      <% if @artigo_destaque.resumo.present? %>
+        <p class="text-gray-200 max-w-2xl mb-6 text-lg"><%= @artigo_destaque.resumo %></p>
+      <% end %>
+      <div class="flex items-center gap-4 text-sm text-gray-300 mb-6">
+        <span><%= @artigo_destaque.author.nome %></span>
+        <span>·</span>
+        <span><%= l @artigo_destaque.publicado_em, format: :short if @artigo_destaque.publicado_em %></span>
+      </div>
+      <%= link_to "LER ARTIGO COMPLETO →", noticia_path(@artigo_destaque.slug),
+          class: "inline-flex items-center bg-blue-600 text-white px-5 py-2.5 rounded font-semibold text-sm hover:bg-blue-700 w-fit" %>
+    </div>
+  </section>
+<% end %>
+
+<%# Últimas notícias %>
+<div class="max-w-7xl mx-auto px-4 py-10">
+  <div class="flex items-center gap-3 mb-8">
+    <span class="w-1 h-6 rounded bg-blue-600"></span>
+    <h2 class="text-lg font-bold text-gray-900 uppercase tracking-wide">Últimas Notícias</h2>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <% @ultimas.each do |artigo| %>
+      <article class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+        <a href="<%= noticia_path(artigo.slug) %>" class="block aspect-video overflow-hidden bg-gradient-to-br from-blue-50 to-gray-200">
+          <% if artigo.imagem_capa_file.attached? %>
+            <%= image_tag url_for(artigo.imagem_capa_file),
+                class: "w-full h-full object-cover hover:scale-105 transition-transform duration-300",
+                alt: artigo.titulo %>
+          <% else %>
+            <div class="w-full h-full flex items-center justify-center">
+              <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          <% end %>
+        </a>
+        <div class="p-4 flex flex-col flex-1">
+          <% if artigo.category %>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 mb-2"><%= artigo.category.nome %></span>
+          <% end %>
+          <h3 class="font-bold text-gray-900 mb-2 leading-snug line-clamp-2 flex-1">
+            <%= link_to artigo.titulo, noticia_path(artigo.slug), class: "hover:text-blue-600" %>
+          </h3>
+          <div class="flex items-center justify-between text-xs text-gray-400 mt-auto pt-3 border-t border-gray-100">
+            <span><%= artigo.author.nome %></span>
+            <span><%= l artigo.publicado_em, format: :short if artigo.publicado_em %></span>
+          </div>
+        </div>
+      </article>
+    <% end %>
+  </div>
+
+  <% if @ultimas.empty? %>
+    <div class="py-20 text-center text-gray-400">
+      <p>Nenhuma notícia publicada ainda.</p>
+    </div>
+  <% end %>
+
+  <% if @pagy.pages > 1 %>
+    <div class="mt-10 flex justify-center">
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% end %>
+</div>

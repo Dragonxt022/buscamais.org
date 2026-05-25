@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <%# Páginas estáticas %>
+  <url>
+    <loc><%= root_url %></loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc><%= sobre_nos_url %></loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc><%= carreiras_url %></loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc><%= contato_url %></loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc><%= boletim_url %></loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc><%= privacidade_url %></loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc><%= termos_url %></loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc><%= mapa_site_url %></loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <%# Categorias %>
+  <% @categorias.each do |categoria| %>
+  <url>
+    <loc><%= categoria_url(categoria.slug) %></loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <% end %>
+
+  <%# Artigos publicados %>
+  <% @artigos.each do |artigo| %>
+  <url>
+    <loc><%= noticia_url(artigo.slug) %></loc>
+    <lastmod><%= artigo.publicado_em.iso8601 %></lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <% end %>
+
+</urlset>

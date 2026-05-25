@@ -1,0 +1,19 @@
+<%= form_with model: [:admin, tag], class: "space-y-5 max-w-sm" do |f| %>
+  <% if tag.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+        <% tag.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :nome, "Nome da Tag", class: "label" %>
+    <%= f.text_field :nome, class: "input", placeholder: "ex: Inteligência Artificial" %>
+  </div>
+
+  <div class="flex gap-3 pt-2">
+    <%= f.submit tag.new_record? ? "Criar Tag" : "Salvar Alterações", class: "btn-primary cursor-pointer" %>
+    <%= link_to "Cancelar", admin_tags_path, class: "btn-secondary" %>
+  </div>
+<% end %>

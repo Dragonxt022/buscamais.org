@@ -1,0 +1,31 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  titulo: MyString
+  slug: MyString
+  conteudo: MyText
+  resumo: MyText
+  status: 1
+  destaque: false
+  visualizacoes: 1
+  tempo_leitura: 1
+  imagem_capa: MyString
+  author: one
+  category: one
+  publicado_em: 2026-05-24 16:07:08
+  agendado_em: 2026-05-24 16:07:08
+
+two:
+  titulo: MyString
+  slug: MyString
+  conteudo: MyText
+  resumo: MyText
+  status: 1
+  destaque: false
+  visualizacoes: 1
+  tempo_leitura: 1
+  imagem_capa: MyString
+  author: two
+  category: two
+  publicado_em: 2026-05-24 16:07:08
+  agendado_em: 2026-05-24 16:07:08

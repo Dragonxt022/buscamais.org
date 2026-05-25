@@ -1,0 +1,104 @@
+<% content_for :title, "Política de Privacidade - Busca Mais" %>
+
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <div class="mb-10">
+    <p class="text-sm text-blue-600 font-semibold uppercase tracking-wider mb-2">Legal</p>
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Política de Privacidade</h1>
+    <p class="text-gray-500">Última atualização: <%= l Date.new(2024, 1, 1), format: :long %></p>
+  </div>
+
+  <div class="prose prose-gray max-w-none space-y-8 text-gray-700">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">1. Informações que coletamos</h2>
+      <p class="leading-relaxed mb-3">O <strong>Busca Mais</strong> coleta informações que você nos fornece diretamente, como:</p>
+      <ul class="list-disc list-inside space-y-1.5 text-gray-600 ml-4">
+        <li>Nome completo e endereço de e-mail ao criar uma conta;</li>
+        <li>Dados de uso, como artigos lidos, comentários publicados e conteúdo salvo;</li>
+        <li>Informações técnicas, como endereço IP, tipo de navegador e sistema operacional;</li>
+        <li>Dados de contato quando você nos envia uma mensagem pelo formulário.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">2. Como usamos suas informações</h2>
+      <p class="leading-relaxed mb-3">Utilizamos os dados coletados para:</p>
+      <ul class="list-disc list-inside space-y-1.5 text-gray-600 ml-4">
+        <li>Fornecer, operar e melhorar nossos serviços;</li>
+        <li>Personalizar a experiência de navegação e recomendar conteúdo relevante;</li>
+        <li>Enviar o boletim informativo, caso você tenha se inscrito;</li>
+        <li>Responder às suas mensagens e solicitações de suporte;</li>
+        <li>Cumprir obrigações legais e regulatórias.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">3. Base legal (LGPD)</h2>
+      <p class="leading-relaxed">
+        Em conformidade com a <strong>Lei Geral de Proteção de Dados (Lei nº 13.709/2018)</strong>, processamos seus dados pessoais com base nas seguintes hipóteses legais: execução de contrato (prestação dos serviços solicitados), cumprimento de obrigação legal, legítimo interesse e, quando aplicável, consentimento explícito.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">4. Compartilhamento de dados</h2>
+      <p class="leading-relaxed">
+        <strong>Não vendemos, alugamos ou compartilhamos</strong> suas informações pessoais com terceiros para fins comerciais. Podemos compartilhar dados apenas com prestadores de serviço que nos auxiliam na operação da plataforma (ex.: hospedagem de servidores), mediante contratos que garantam a proteção dos dados, e quando exigido por lei ou ordem judicial.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">5. Seus direitos</h2>
+      <p class="leading-relaxed mb-3">De acordo com a LGPD, você tem o direito de:</p>
+      <ul class="list-disc list-inside space-y-1.5 text-gray-600 ml-4">
+        <li><strong>Acesso:</strong> solicitar uma cópia dos dados que mantemos sobre você;</li>
+        <li><strong>Correção:</strong> corrigir dados incompletos, inexatos ou desatualizados;</li>
+        <li><strong>Exclusão:</strong> solicitar a exclusão dos seus dados pessoais;</li>
+        <li><strong>Portabilidade:</strong> receber seus dados em formato estruturado;</li>
+        <li><strong>Revogação:</strong> retirar o consentimento a qualquer momento.</li>
+      </ul>
+      <p class="mt-3">Para exercer seus direitos, entre em contato pelo e-mail <strong>privacidade@buscamais.org</strong>.</p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">6. Cookies</h2>
+      <p class="leading-relaxed">
+        Utilizamos cookies essenciais para o funcionamento da plataforma (como manter sua sessão ativa) e cookies analíticos para entender como nosso conteúdo é consumido. Você pode desativar cookies não essenciais nas configurações do seu navegador.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">7. Segurança</h2>
+      <p class="leading-relaxed">
+        Adotamos medidas técnicas e organizacionais adequadas para proteger seus dados contra acesso não autorizado, alteração, divulgação ou destruição. Todas as comunicações são criptografadas via HTTPS.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">8. Menores de idade</h2>
+      <p class="leading-relaxed">
+        Nossos serviços não são direcionados a menores de 18 anos. Não coletamos intencionalmente dados de menores. Se você acredita que dados de um menor foram coletados, entre em contato imediatamente.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">9. Alterações nesta política</h2>
+      <p class="leading-relaxed">
+        Reservamo-nos o direito de atualizar esta Política de Privacidade a qualquer momento. Notificaremos usuários registrados sobre mudanças significativas por e-mail. O uso continuado da plataforma após as alterações implica aceitação da nova política.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">10. Contato</h2>
+      <p class="leading-relaxed">
+        Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados pessoais, entre em contato com nosso Encarregado de Dados (DPO) pelo e-mail <strong>privacidade@buscamais.org</strong> ou pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>.
+      </p>
+    </section>
+
+  </div>
+
+  <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-3">
+    <%= link_to "← Voltar ao início", root_path, class: "text-sm text-gray-500 hover:text-blue-600" %>
+    <span class="text-gray-300">|</span>
+    <%= link_to "Termos de Serviço", termos_path, class: "text-sm text-blue-600 hover:underline" %>
+  </div>
+</div>

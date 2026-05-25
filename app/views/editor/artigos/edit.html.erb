@@ -1,0 +1,4 @@
+<% content_for :page_title, "Editar Artigo" %>
+<% content_for :page_subtitle, @artigo.titulo.truncate(60) %>
+
+<%= render "form", artigo: @artigo %>

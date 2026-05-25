@@ -1,0 +1,206 @@
+<%
+  is_admin  = current_user.administrador?
+  ns        = controller.class.name.start_with?("Admin::") ? :admin : :editor
+
+  root_path_ns       = ns == :admin ? admin_root_path       : editor_root_path
+  artigos_path_ns    = ns == :admin ? admin_artigos_path    : editor_artigos_path
+  new_artigo_path_ns = ns == :admin ? new_admin_artigo_path : new_editor_artigo_path
+  midias_path_ns     = ns == :admin ? admin_midias_path     : editor_midias_path
+
+  in_artigos    = controller_name == "artigos"
+  in_categorias = controller_name == "categorias" && ns == :admin
+  in_tags       = controller_name == "tags"       && ns == :admin
+  in_conteudo   = in_artigos || in_categorias || in_tags
+%>
+
+<aside class="w-60 bg-white border-r border-gray-200 flex flex-col min-h-screen shrink-0 overflow-hidden"
+       data-controller="sidebar"
+       style="width: 15rem">
+
+  <%# ── Brand / Toggle ── %>
+  <div class="sidebar-header flex items-center justify-between px-4 py-4 border-b border-gray-200 min-h-[64px]">
+    <div class="flex items-center gap-2 min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+        <span class="text-white font-black text-sm select-none">B</span>
+      </div>
+      <div class="min-w-0" data-sidebar-target="brandText">
+        <p class="text-sm font-bold text-gray-800 truncate leading-tight">Busca Mais</p>
+        <p class="text-[10px] text-gray-400 truncate"><%= is_admin ? "Administração" : "Editor" %></p>
+      </div>
+    </div>
+    <button type="button"
+            data-action="click->sidebar#toggle"
+            class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 shrink-0 transition-colors"
+            title="Recolher / expandir menu">
+      <svg data-sidebar-target="toggleIcon"
+           class="w-4 h-4 transition-transform duration-200"
+           fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+      </svg>
+    </button>
+  </div>
+
+  <%# ── Navegação ── %>
+  <nav class="flex-1 px-3 py-4 space-y-5 overflow-y-auto overflow-x-hidden">
+
+    <%# GERAL %>
+    <div>
+      <p class="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap select-none"
+         data-sidebar-target="groupLabel">Geral</p>
+      <div class="space-y-0.5">
+
+        <%= link_to root_path_ns, title: "Dashboard",
+            class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{current_page?(root_path_ns) ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          <span class="truncate whitespace-nowrap" data-sidebar-target="label">Dashboard</span>
+        <% end %>
+
+        <% if is_admin %>
+          <%= link_to admin_analise_path, title: "Análise",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{current_page?(admin_analise_path) ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Análise</span>
+          <% end %>
+        <% end %>
+
+      </div>
+    </div>
+
+    <%# CONTEÚDO %>
+    <div>
+      <p class="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap select-none"
+         data-sidebar-target="groupLabel">Conteúdo</p>
+      <div class="space-y-0.5">
+
+        <%# Artigos com submenu %>
+        <div>
+          <button type="button"
+                  data-action="click->sidebar#toggleSubmenu"
+                  data-submenu="artigos"
+                  title="Artigos"
+                  class="sidebar-link w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors
+                         <%= in_conteudo ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100' %>">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span class="flex-1 text-left truncate whitespace-nowrap" data-sidebar-target="label">Artigos</span>
+            <svg data-sidebar-target="submenuArrow"
+                 class="w-3.5 h-3.5 shrink-0 transition-transform duration-200 <%= in_conteudo ? 'rotate-180' : '' %>"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+
+          <div data-sidebar-target="submenu" data-id="artigos"
+               class="mt-0.5 ml-4 pl-3 border-l-2 border-gray-100 space-y-0.5 <%= in_conteudo ? '' : 'hidden' %>">
+
+            <%= link_to artigos_path_ns,
+                class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
+                        #{in_artigos && !in_categorias && !in_tags ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+              <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+              </svg>
+              Todos os Artigos
+            <% end %>
+
+            <% if is_admin %>
+              <%= link_to admin_categorias_path,
+                  class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
+                          #{in_categorias ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+                <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                </svg>
+                Categorias
+              <% end %>
+
+              <%= link_to admin_tags_path,
+                  class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
+                          #{in_tags ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
+                <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+                Tags
+              <% end %>
+            <% end %>
+
+            <div class="pt-1.5 border-t border-gray-100">
+              <%= link_to new_artigo_path_ns,
+                  class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors" do %>
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Novo Artigo
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <% if is_admin %>
+          <%= link_to admin_comentarios_path, title: "Comentários",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'comentarios' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Comentários</span>
+          <% end %>
+        <% end %>
+
+      </div>
+    </div>
+
+    <%# MÍDIA %>
+    <div>
+      <p class="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap select-none"
+         data-sidebar-target="groupLabel">Mídia</p>
+      <div class="space-y-0.5">
+
+        <%= link_to midias_path_ns, title: "Biblioteca de Mídia",
+            class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'midias' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          <span class="truncate whitespace-nowrap" data-sidebar-target="label">Biblioteca de Mídia</span>
+        <% end %>
+
+      </div>
+    </div>
+
+    <% if is_admin %>
+      <%# USUÁRIOS %>
+      <div>
+        <p class="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap select-none"
+           data-sidebar-target="groupLabel">Usuários</p>
+        <div class="space-y-0.5">
+
+          <%= link_to admin_usuarios_path, title: "Usuários",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'usuarios' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Usuários</span>
+          <% end %>
+
+        </div>
+      </div>
+    <% end %>
+
+  </nav>
+
+  <%# ── Rodapé ── %>
+  <div class="px-3 py-4 border-t border-gray-200">
+    <%= button_to destroy_user_session_path, method: :delete,
+        class: "sidebar-link w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors",
+        title: "Sair",
+        form: { style: "width:100%" } do %>
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+      </svg>
+      <span class="truncate whitespace-nowrap" data-sidebar-target="label">Sair da conta</span>
+    <% end %>
+  </div>
+
+</aside>

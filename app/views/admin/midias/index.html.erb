@@ -1,0 +1,6 @@
+<% content_for :page_title, "Biblioteca de Mídia" %>
+<% content_for :page_subtitle, "Gerencie seus ativos visuais e recursos de narrativa digital." %>
+
+<div class="card">
+  <%= render "shared/midias_galeria", midias: @midias, pagy: @pagy, ns: "admin" %>
+</div>

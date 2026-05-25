@@ -1,0 +1,64 @@
+<% content_for :page_title, @usuario.nome %>
+<% content_for :page_subtitle, "Detalhes do usuário" %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-5">
+    <div class="card">
+      <div class="card-body space-y-4">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
+            <%= @usuario.nome.first.upcase %>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-900"><%= @usuario.nome %></h2>
+            <p class="text-sm text-gray-500"><%= @usuario.email %></p>
+          </div>
+        </div>
+        <% if @usuario.bio.present? %>
+          <p class="text-sm text-gray-700 leading-relaxed"><%= @usuario.bio %></p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><p class="font-semibold text-gray-800 text-sm">Artigos publicados</p></div>
+      <table class="table-admin">
+        <thead><tr><th>Título</th><th>Status</th><th>Data</th></tr></thead>
+        <tbody>
+          <% @usuario.articles.includes(:category).order(created_at: :desc).limit(10).each do |a| %>
+            <tr>
+              <td><%= link_to a.titulo.truncate(60), admin_artigo_path(a), class: "text-blue-600 hover:underline" %></td>
+              <td><%= render "shared/status_badge", status: a.status %></td>
+              <td class="text-gray-500"><%= l a.created_at, format: :short %></td>
+            </tr>
+          <% end %>
+          <% if @usuario.articles.empty? %>
+            <tr><td colspan="3" class="text-center text-gray-400 py-6">Nenhum artigo.</td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="space-y-5">
+    <div class="card">
+      <div class="card-body space-y-3">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Informações</p>
+        <div class="text-sm space-y-2">
+          <div class="flex justify-between"><span class="text-gray-500">Papel</span>
+            <% badge = { "administrador" => "bg-purple-100 text-purple-700", "editor" => "bg-blue-100 text-blue-700", "usuario" => "bg-gray-100 text-gray-600" } %>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full <%= badge[@usuario.role] %>"><%= @usuario.role %></span>
+          </div>
+          <div class="flex justify-between"><span class="text-gray-500">Cadastro</span><span><%= l @usuario.created_at, format: :short %></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Artigos</span><span><%= @usuario.articles.count %></span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Comentários</span><span><%= @usuario.comments.count %></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <%= link_to "Editar", edit_admin_usuario_path(@usuario), class: "btn-primary text-center" %>
+      <%= link_to "← Voltar", admin_usuarios_path, class: "text-sm text-center text-gray-500 hover:text-gray-800 py-2" %>
+    </div>
+  </div>
+</div>

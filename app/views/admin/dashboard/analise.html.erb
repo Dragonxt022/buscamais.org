@@ -1,0 +1,64 @@
+<% content_for :page_title, "Análise" %>
+<% content_for :page_subtitle, "Métricas de leitura e engajamento do portal." %>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Artigos Mais Lidos</h3>
+    </div>
+    <table class="table-admin">
+      <thead>
+        <tr><th>#</th><th>Título</th><th>Visualizações</th></tr>
+      </thead>
+      <tbody>
+        <% @artigos_mais_lidos.each_with_index do |artigo, i| %>
+          <tr>
+            <td class="text-gray-400 font-mono text-xs w-8"><%= i + 1 %></td>
+            <td>
+              <%= link_to artigo.titulo.truncate(55), admin_artigo_path(artigo),
+                  class: "text-blue-600 hover:underline text-sm" %>
+            </td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="h-1.5 rounded-full bg-blue-200 flex-1 max-w-20">
+                  <% max = @artigos_mais_lidos.first.visualizacoes.to_i %>
+                  <div class="h-1.5 rounded-full bg-blue-500"
+                       style="width:<%= max > 0 ? (artigo.visualizacoes.to_i * 100 / max) : 0 %>%"></div>
+                </div>
+                <span class="text-sm font-medium text-gray-700"><%= artigo.visualizacoes.to_i %></span>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+        <% if @artigos_mais_lidos.empty? %>
+          <tr><td colspan="3" class="text-center text-gray-400 py-8">Nenhum dado ainda.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Leituras por Mês</h3>
+    </div>
+    <div class="card-body">
+      <% if @leituras_por_mes.any? %>
+        <% max_leituras = @leituras_por_mes.values.max.to_f %>
+        <div class="space-y-3">
+          <% @leituras_por_mes.sort.last(12).each do |mes, total| %>
+            <div class="flex items-center gap-3">
+              <span class="text-xs text-gray-500 w-16 flex-shrink-0"><%= mes %></span>
+              <div class="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-5 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all"
+                     style="width:<%= max_leituras > 0 ? (total * 100 / max_leituras).round : 0 %>%"></div>
+              </div>
+              <span class="text-xs font-medium text-gray-700 w-10 text-right"><%= total %></span>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-center text-gray-400 py-8 text-sm">Nenhuma leitura registrada ainda.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

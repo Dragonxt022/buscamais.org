@@ -1,0 +1,42 @@
+<% content_for :page_title, @artigo.titulo %>
+<% content_for :page_subtitle, "Pré-visualização do artigo" %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2">
+    <div class="card">
+      <div class="card-body">
+        <div class="flex items-center gap-3 mb-4">
+          <%= render "shared/status_badge", status: @artigo.status %>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-3"><%= @artigo.titulo %></h2>
+        <p class="text-gray-500 text-sm mb-6 border-l-4 border-blue-200 pl-4"><%= @artigo.resumo %></p>
+        <% if @artigo.imagem_capa_file.attached? %>
+          <div class="mb-4 rounded-lg overflow-hidden">
+            <%= image_tag url_for(@artigo.imagem_capa_file),
+                class: "w-full max-h-64 object-cover",
+                alt: "Imagem de capa" %>
+          </div>
+        <% end %>
+        <div class="prose max-w-none text-sm text-gray-700 leading-relaxed"><%= @artigo.conteudo %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="space-y-4">
+    <div class="card">
+      <div class="card-body space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Categoria</span><span><%= @artigo.category&.nome || "—" %></span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Criado</span><span><%= l @artigo.created_at, format: :short %></span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Leitura</span><span><%= @artigo.tempo_leitura.to_i %> min</span></div>
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      <%= link_to "Editar", edit_editor_artigo_path(@artigo), class: "btn-primary text-center" %>
+      <% if @artigo.rascunho? || @artigo.aguardando_revisao? %>
+        <%= button_to "Publicar", publicar_editor_artigo_path(@artigo), method: :patch,
+            class: "w-full py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 text-center" %>
+      <% end %>
+      <%= link_to "← Voltar", editor_artigos_path, class: "text-sm text-center text-gray-500 hover:text-gray-800 py-2" %>
+    </div>
+  </div>
+</div>

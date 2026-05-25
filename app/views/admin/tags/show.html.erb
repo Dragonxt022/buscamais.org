@@ -1,0 +1,21 @@
+<% content_for :page_title, @tag.nome %>
+<% content_for :page_subtitle, "Artigos com esta tag" %>
+
+<div class="card">
+  <div class="card-header">
+    <span class="text-sm text-gray-600"><%= @tag.articles.count %> artigos com esta tag</span>
+    <%= link_to "Editar Tag", edit_admin_tag_path(@tag), class: "btn-secondary text-sm" %>
+  </div>
+  <table class="table-admin">
+    <thead><tr><th>Título</th><th>Status</th><th>Publicado</th></tr></thead>
+    <tbody>
+      <% @tag.articles.includes(:category).order(created_at: :desc).limit(20).each do |a| %>
+        <tr>
+          <td><%= link_to a.titulo, admin_artigo_path(a), class: "text-blue-600 hover:underline" %></td>
+          <td><%= render "shared/status_badge", status: a.status %></td>
+          <td class="text-gray-500"><%= a.publicado_em ? l(a.publicado_em, format: :short) : "—" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

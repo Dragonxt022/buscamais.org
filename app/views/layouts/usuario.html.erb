@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <title><%= content_for(:title) || "Minha Conta - Busca Mais" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= yield :head %>
+    <link rel="icon" href="/icon.png" type="image/png">
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="bg-gray-50">
+    <%= render "shared/flash" %>
+    <div class="flex min-h-screen">
+      <%= render "shared/sidebar_usuario" %>
+      <div class="flex-1 flex flex-col">
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div class="flex-1 max-w-xl">
+            <input type="search" placeholder="Buscar notícias..."
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div class="flex items-center gap-3 ml-4">
+            <button class="relative p-2 text-gray-500 hover:text-gray-700">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+        <main class="flex-1 p-6">
+          <%= yield %>
+        </main>
+        <%= render "shared/footer_simples" %>
+      </div>
+    </div>
+  </body>
+</html>

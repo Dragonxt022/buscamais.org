@@ -1,0 +1,57 @@
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Minha Assinatura</h3>
+      <% badge_color = @assinatura.ativa? ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500" %>
+      <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full <%= badge_color %>">
+        <%= @assinatura.status.humanize %>
+      </span>
+    </div>
+    <div class="card-body">
+      <div class="text-sm space-y-3 mb-6">
+        <div class="flex justify-between"><span class="text-gray-500">Plano atual</span>
+          <span class="font-semibold text-gray-900 capitalize"><%= @assinatura.plano.humanize %></span>
+        </div>
+        <% if @assinatura.prox_cobranca %>
+          <div class="flex justify-between"><span class="text-gray-500">Próxima cobrança</span>
+            <span><%= l @assinatura.prox_cobranca, format: :long %></span>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border-2 <%= @assinatura.gratuito? ? 'border-blue-500 bg-blue-50' : 'border-gray-200' %> rounded-xl p-5">
+          <p class="font-bold text-gray-900 mb-1">Gratuito</p>
+          <p class="text-2xl font-bold text-gray-900 mb-3">R$0<span class="text-sm font-normal text-gray-500">/mês</span></p>
+          <ul class="text-sm text-gray-600 space-y-1.5 mb-4">
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Acesso a notícias básicas</li>
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Comentários</li>
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Salvar artigos</li>
+          </ul>
+          <% if @assinatura.gratuito? %>
+            <span class="w-full block text-center text-sm text-blue-600 font-semibold py-2">Plano atual</span>
+          <% end %>
+        </div>
+
+        <div class="border-2 <%= @assinatura.premium? ? 'border-blue-500 bg-blue-50' : 'border-gray-200' %> rounded-xl p-5">
+          <p class="font-bold text-gray-900 mb-1">Premium</p>
+          <p class="text-2xl font-bold text-gray-900 mb-3">R$19,90<span class="text-sm font-normal text-gray-500">/mês</span></p>
+          <ul class="text-sm text-gray-600 space-y-1.5 mb-4">
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Tudo do plano gratuito</li>
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Artigos exclusivos</li>
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Newsletter diária</li>
+            <li class="flex gap-2"><span class="text-green-500">✓</span> Sem anúncios</li>
+          </ul>
+          <% unless @assinatura.premium? %>
+            <%= form_with model: @assinatura, url: usuario_assinatura_path, method: :patch do |f| %>
+              <%= f.hidden_field :plano, value: "premium" %>
+              <%= f.submit "Assinar Premium", class: "w-full btn-primary cursor-pointer" %>
+            <% end %>
+          <% else %>
+            <span class="w-full block text-center text-sm text-blue-600 font-semibold py-2">Plano atual</span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

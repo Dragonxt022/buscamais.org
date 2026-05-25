@@ -1,0 +1,44 @@
+<% content_for :page_title, "Comentário ##{@comentario.id}" %>
+<% content_for :page_subtitle, "Detalhes do comentário" %>
+
+<div class="max-w-2xl space-y-5">
+  <div class="card">
+    <div class="card-body space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-gray-600">
+            <%= @comentario.user.nome.first.upcase %>
+          </div>
+          <div>
+            <p class="font-semibold text-sm text-gray-900"><%= @comentario.user.nome %></p>
+            <p class="text-xs text-gray-400"><%= l @comentario.created_at, format: :short %></p>
+          </div>
+        </div>
+        <%= render "shared/status_badge", status: @comentario.status %>
+      </div>
+
+      <blockquote class="text-gray-700 text-sm leading-relaxed bg-gray-50 rounded-lg p-4 border-l-4 border-gray-200">
+        <%= @comentario.conteudo %>
+      </blockquote>
+
+      <div class="text-sm">
+        <span class="text-gray-500">Artigo: </span>
+        <%= link_to @comentario.article.titulo, noticia_path(@comentario.article.slug),
+            class: "text-blue-600 hover:underline", target: "_blank" %>
+      </div>
+
+      <div class="flex items-center gap-3 pt-2">
+        <% if @comentario.pendente? %>
+          <%= button_to "✓ Aprovar", aprovar_admin_comentario_path(@comentario), method: :patch,
+              class: "text-sm bg-green-100 text-green-700 px-4 py-2 rounded-lg font-semibold hover:bg-green-200" %>
+          <%= button_to "✗ Rejeitar", rejeitar_admin_comentario_path(@comentario), method: :patch,
+              class: "text-sm bg-red-100 text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-200" %>
+        <% end %>
+        <%= button_to "Remover", admin_comentario_path(@comentario), method: :delete,
+            data: { turbo_confirm: "Remover este comentário permanentemente?" },
+            class: "text-sm text-gray-400 hover:text-red-600 px-4 py-2" %>
+        <%= link_to "← Voltar", admin_comentarios_path, class: "text-sm text-gray-500 hover:text-gray-800 ml-auto" %>
+      </div>
+    </div>
+  </div>
+</div>

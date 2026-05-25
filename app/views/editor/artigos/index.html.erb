@@ -1,0 +1,110 @@
+<% content_for :page_title, "Meus Artigos" %>
+<% content_for :page_subtitle, "Gerencie os artigos que você criou." %>
+
+<div class="card"
+     data-controller="table-select"
+     data-table-select-confirm-message-value="Remover {count} artigo(s) selecionado(s)?\nEsta ação não pode ser desfeita.">
+
+  <div class="card-header">
+    <div class="flex gap-3 flex-wrap flex-1">
+      <%= form_with url: editor_artigos_path, method: :get, class: "flex gap-3 flex-wrap" do |f| %>
+        <%= f.select :status, Article.statuses.keys.map { |s| [s.humanize, s] },
+            { include_blank: "Todos os Status" },
+            class: "px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+        <%= f.submit "Filtrar", class: "btn-primary" %>
+        <%= link_to "Limpar", editor_artigos_path, class: "text-sm text-blue-600 hover:underline self-center" %>
+      <% end %>
+    </div>
+    <%= link_to "Novo Artigo", new_editor_artigo_path, class: "btn-primary" %>
+  </div>
+
+  <%# Bulk actions bar %>
+  <div data-table-select-target="bulkBar"
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+    <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
+    <button type="button" data-action="click->table-select#deleteSelected"
+            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+      Excluir selecionados
+    </button>
+    <button type="button" data-action="click->table-select#cancelSelection"
+            class="text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+  </div>
+  <form data-table-select-target="bulkForm" action="<%= bulk_destroy_editor_artigos_path %>" method="post" class="hidden">
+    <%= hidden_field_tag :_method, :delete %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+  </form>
+
+  <table class="table-admin">
+    <thead>
+      <tr>
+        <th class="w-10">
+          <input type="checkbox" data-select-all data-action="change->table-select#onSelectAll"
+                 class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+        </th>
+        <th class="w-14"></th>
+        <th>Título</th>
+        <th>Categoria</th>
+        <th>Status</th>
+        <th>Criado</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @artigos.each do |artigo| %>
+        <tr>
+          <td>
+            <input type="checkbox"
+                   value="<%= artigo.id %>"
+                   data-table-select-target="checkbox"
+                   data-action="change->table-select#onSelect"
+                   class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+          </td>
+          <td>
+            <div class="w-12 h-9 rounded-lg overflow-hidden bg-gray-100">
+              <% if artigo.imagem_capa_file.attached? %>
+                <%= image_tag url_for(artigo.imagem_capa_file), class: "w-full h-full object-cover", alt: "" %>
+              <% else %>
+                <div class="w-full h-full flex items-center justify-center">
+                  <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                </div>
+              <% end %>
+            </div>
+          </td>
+          <td>
+            <p class="font-medium text-gray-900"><%= artigo.titulo.truncate(65) %></p>
+          </td>
+          <td class="text-gray-500"><%= artigo.category&.nome || "—" %></td>
+          <td><%= render "shared/status_badge", status: artigo.status %></td>
+          <td class="text-gray-500"><%= l artigo.created_at, format: :short %></td>
+          <td>
+            <div class="flex items-center gap-3">
+              <%= link_to "Editar", edit_editor_artigo_path(artigo), class: "text-sm text-blue-600 hover:underline" %>
+              <% if artigo.rascunho? || artigo.aguardando_revisao? %>
+                <%= button_to "Publicar", publicar_editor_artigo_path(artigo), method: :patch,
+                    class: "text-xs bg-green-100 text-green-700 px-2.5 py-1 rounded-lg font-semibold hover:bg-green-200" %>
+              <% end %>
+              <%= button_to editor_artigo_path(artigo), method: :delete,
+                  data: { turbo_confirm: "Remover este artigo?" },
+                  class: "text-sm text-red-400 hover:text-red-600" do %>Remover<% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      <% if @artigos.empty? %>
+        <tr><td colspan="7" class="text-center text-gray-400 py-10">Nenhum artigo encontrado.</td></tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+    <p class="text-sm text-gray-500">
+      Mostrando <%= @pagy.from %> a <%= @pagy.to %> de <%= @pagy.count %> artigos
+    </p>
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  </div>
+</div>

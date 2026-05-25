@@ -1,0 +1,71 @@
+<%# locals: (gallery_url:) %>
+<%# Renderizado pelo media_gallery_controller.js (Stimulus) %>
+
+<div data-media-gallery-target="modal"
+     class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+     style="background: rgba(0,0,0,0.6)"
+     data-action="click->media-gallery#closeOnBackdrop">
+
+  <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-2xl" onclick="event.stopPropagation()">
+
+    <%# Header %>
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <h3 class="text-base font-bold text-gray-900">Galeria de Mídia</h3>
+      <button type="button"
+              data-action="click->media-gallery#close"
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <%# Toolbar: upload + busca %>
+    <div class="px-5 py-3 border-b border-gray-100 bg-gray-50 flex flex-wrap items-center gap-3">
+      <label data-media-gallery-target="uploadLabel"
+             class="relative flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors select-none">
+        <svg data-media-gallery-target="uploadIcon"
+             class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        <svg data-media-gallery-target="uploadSpinner"
+             class="hidden animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+        </svg>
+        <span data-media-gallery-target="uploadText">Fazer Upload</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="sr-only"
+               data-action="change->media-gallery#upload">
+      </label>
+      <span data-media-gallery-target="uploadStatus"
+            class="hidden text-xs font-medium"></span>
+
+      <div class="flex-1 min-w-[180px]">
+        <input type="search" placeholder="Buscar na galeria..."
+               data-media-gallery-target="searchInput"
+               data-action="input->media-gallery#search"
+               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+
+    <%# Grid de imagens %>
+    <div class="flex-1 overflow-y-auto p-5">
+      <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3"
+           data-media-gallery-target="grid">
+        <p class="col-span-full text-center text-gray-400 text-sm py-10">
+          Clique em "Fazer Upload" ou aguarde o carregamento...
+        </p>
+      </div>
+    </div>
+
+    <%# Footer %>
+    <div class="px-5 py-3 border-t border-gray-100 text-right">
+      <button type="button"
+              data-action="click->media-gallery#close"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+        Cancelar
+      </button>
+    </div>
+
+  </div>
+</div>

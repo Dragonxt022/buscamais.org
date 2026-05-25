@@ -1,0 +1,99 @@
+<% content_for :page_title, "Comentários" %>
+<% content_for :page_subtitle, "Modere os comentários enviados pelos usuários." %>
+
+<div class="card"
+     data-controller="table-select"
+     data-table-select-confirm-message-value="Remover {count} comentário(s) selecionado(s)?\nEsta ação não pode ser desfeita.">
+
+  <div class="card-header">
+    <%= form_with url: admin_comentarios_path, method: :get, class: "flex gap-3" do |f| %>
+      <%= f.select :status, Comment.statuses.keys.map { |s| [s.humanize, s] },
+          { include_blank: "Todos os Status" },
+          class: "px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+      <%= f.submit "Filtrar", class: "btn-primary" %>
+      <%= link_to "Resetar", admin_comentarios_path, class: "text-sm text-blue-600 hover:underline self-center" %>
+    <% end %>
+  </div>
+
+  <%# Bulk actions bar %>
+  <div data-table-select-target="bulkBar"
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+    <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
+    <button type="button" data-action="click->table-select#deleteSelected"
+            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+      </svg>
+      Excluir selecionados
+    </button>
+    <button type="button" data-action="click->table-select#cancelSelection"
+            class="text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+  </div>
+  <form data-table-select-target="bulkForm" action="<%= bulk_destroy_admin_comentarios_path %>" method="post" class="hidden">
+    <%= hidden_field_tag :_method, :delete %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+  </form>
+
+  <div class="divide-y divide-gray-100">
+    <% @comentarios.each do |comentario| %>
+      <div class="p-5 flex gap-3">
+        <%# Checkbox %>
+        <div class="pt-1 shrink-0">
+          <input type="checkbox"
+                 value="<%= comentario.id %>"
+                 data-table-select-target="checkbox"
+                 data-action="change->table-select#onSelect"
+                 class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+        </div>
+        <div class="w-9 h-9 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-gray-600 text-sm font-bold">
+          <%= comentario.user&.nome&.first&.upcase || "?" %>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-start justify-between gap-4 mb-2">
+            <div>
+              <span class="font-semibold text-sm text-gray-900"><%= comentario.user&.nome || "Usuário removido" %></span>
+              <span class="text-gray-400 text-sm mx-2">em</span>
+              <%= link_to comentario.article.titulo, noticia_path(comentario.article.slug),
+                  class: "text-sm text-blue-600 hover:underline line-clamp-1 max-w-xs inline-block align-middle" %>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <%= render "shared/status_badge", status: comentario.status %>
+              <span class="text-xs text-gray-400"><%= l comentario.created_at, format: :short %></span>
+            </div>
+          </div>
+          <p class="text-sm text-gray-700 mb-3 leading-relaxed"><%= comentario.conteudo %></p>
+          <div class="flex items-center gap-3">
+            <% if comentario.pendente? %>
+              <%= button_to aprovar_admin_comentario_path(comentario), method: :patch,
+                  class: "text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-green-200 transition-colors" do %>
+                ✓ Aprovar
+              <% end %>
+              <%= button_to rejeitar_admin_comentario_path(comentario), method: :patch,
+                  class: "text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-200 transition-colors" do %>
+                ✗ Rejeitar
+              <% end %>
+            <% end %>
+            <%= button_to admin_comentario_path(comentario), method: :delete,
+                data: { turbo_confirm: "Remover este comentário?" },
+                class: "text-xs text-gray-400 hover:text-red-600 px-2 py-1.5" do %>
+              Remover
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @comentarios.empty? %>
+      <div class="p-12 text-center text-gray-400">
+        Nenhum comentário encontrado.
+      </div>
+    <% end %>
+  </div>
+
+  <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+    <p class="text-sm text-gray-500">
+      Mostrando <%= @pagy.from %> a <%= @pagy.to %> de <%= @pagy.count %> comentários
+    </p>
+    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+  </div>
+</div>
