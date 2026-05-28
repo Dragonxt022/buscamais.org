@@ -5,12 +5,9 @@ class Usuario::ConfiguracoesController < Usuario::BaseController
   end
 
   def update
-    if params[:category_ids].present?
-      current_user.user_topics.destroy_all
-      params[:category_ids].each do |cat_id|
-        current_user.user_topics.create(category_id: cat_id)
-      end
-    end
-    redirect_to usuario_configuracoes_path, notice: "Configurações salvas."
+    ids = Array(params[:category_ids]).map(&:to_i).select(&:positive?)
+    current_user.user_topics.destroy_all
+    ids.each { |cat_id| current_user.user_topics.create(category_id: cat_id) }
+    redirect_to usuario_configuracoes_path, notice: "Preferências salvas."
   end
 end

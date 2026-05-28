@@ -20,28 +20,45 @@ class Admin::MidiasController < Admin::BaseController
   end
 
   def create
-    @midia = MediaFile.new(user: current_user)
+    uploads = Array(params[:media_file]&.dig(:arquivo)).flatten.select(&:present?)
 
-    if params[:media_file]&.dig(:arquivo).present?
-      upload    = params[:media_file][:arquivo]
+    if uploads.empty?
+      respond_to do |format|
+        format.html { redirect_to admin_midias_path, alert: "Nenhum arquivo selecionado." }
+        format.json { render json: { errors: ["Nenhum arquivo selecionado."] }, status: :unprocessable_entity }
+      end
+      return
+    end
+
+    salvos  = []
+    erros   = []
+
+    uploads.each do |upload|
+      midia     = MediaFile.new(user: current_user)
       processado = processar_upload(upload)
-      @midia.nome    = processado[:nome]
-      @midia.tipo    = processado[:tipo]
-      @midia.tamanho = processado[:tamanho]
-      @midia.arquivo.attach(
+      midia.nome    = processado[:nome]
+      midia.tipo    = processado[:tipo]
+      midia.tamanho = processado[:tamanho]
+      midia.arquivo.attach(
         io:           processado[:tempfile],
         filename:     processado[:nome],
         content_type: processado[:tipo]
       )
+      if midia.save
+        salvos << midia
+      else
+        erros << "#{processado[:nome]}: #{midia.errors.full_messages.join(', ')}"
+      end
     end
 
     respond_to do |format|
-      if @midia.save
-        format.html { redirect_to admin_midias_path, notice: "Arquivo enviado com sucesso." }
-        format.json { render json: serializar_midia(@midia), status: :created }
+      if erros.empty?
+        msg = salvos.size == 1 ? "Arquivo enviado com sucesso." : "#{salvos.size} arquivos enviados."
+        format.html { redirect_to admin_midias_path, notice: msg }
+        format.json { render json: salvos.map { |m| serializar_midia(m) }, status: :created }
       else
-        format.html { redirect_to admin_midias_path, alert: @midia.errors.full_messages.join(", ") }
-        format.json { render json: { errors: @midia.errors.full_messages }, status: :unprocessable_entity }
+        format.html { redirect_to admin_midias_path, alert: erros.join(" | ") }
+        format.json { render json: { errors: erros }, status: :unprocessable_entity }
       end
     end
   end

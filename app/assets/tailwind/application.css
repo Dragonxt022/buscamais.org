@@ -48,6 +48,21 @@
   .article-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
   .article-card-img { aspect-ratio: 16/9; background: linear-gradient(135deg, #e5e7eb, #d1d5db); overflow: hidden; }
 
+  /* Scrollbar fino e discreto — sidebar e áreas de overflow internas */
+  .sidebar-scroll,
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar,
+  .scroll-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-track,
+  .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scroll::-webkit-scrollbar-thumb,
+  .scroll-thin::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover,
+  .scroll-thin::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
+
   /* Sidebar recolhido — centraliza todos os links/botões de navegação */
   .sidebar-collapsed .sidebar-link {
     justify-content: center !important;
@@ -134,29 +149,4 @@
     animation: shimmer-sweep 1.4s ease-in-out infinite;
   }
 
-  /* Estado de carregamento da tabela — mostra skeleton sobre os dados */
-  .table-loading { position: relative; pointer-events: none; }
-  .table-loading::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.7);
-    z-index: 20;
-    border-radius: inherit;
-  }
-  .table-loading::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.5) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer-sweep 1.4s ease-in-out infinite;
-    z-index: 21;
-    border-radius: inherit;
-  }
 }

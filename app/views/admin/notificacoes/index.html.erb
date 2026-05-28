@@ -1,0 +1,102 @@
+<% content_for :page_title, "Notificações" %>
+<% content_for :page_subtitle, "Atualizações do sistema e atividade dos usuários." %>
+
+<div class="max-w-2xl space-y-4">
+
+  <%# Ações em massa %>
+  <% if @notificacoes.any? %>
+    <div class="flex items-center justify-between">
+      <p class="text-sm text-gray-500">
+        <%= @pagy.count %> notificação<%= @pagy.count == 1 ? "" : "ões" %> no total
+      </p>
+      <div class="flex items-center gap-3">
+        <%= button_to marcar_todas_lidas_admin_notificacoes_path, method: :patch,
+            class: "text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline" do %>
+          Marcar todas como lidas
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="card overflow-hidden">
+    <% if @notificacoes.empty? %>
+      <div class="py-20 text-center text-gray-400">
+        <svg class="w-14 h-14 mx-auto mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <p class="text-sm font-medium text-gray-500">Nenhuma notificação ainda.</p>
+      </div>
+    <% else %>
+      <div class="divide-y divide-gray-50">
+        <% @notificacoes.each do |n| %>
+          <div class="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors
+                      <%= n.lida? ? 'bg-white' : 'bg-blue-50/40' %>">
+
+            <%# Ícone %>
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 mt-0.5
+                        <%= n.tipo == 'novo_comentario' ? 'bg-blue-100' :
+                            n.tipo == 'curtida'         ? 'bg-red-50'   :
+                            n.tipo == 'resposta'        ? 'bg-purple-50': 'bg-green-50' %>">
+              <% if n.tipo == "novo_comentario" %>
+                <svg class="w-4.5 h-4.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+              <% elsif n.tipo == "curtida" %>
+                <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              <% elsif n.tipo == "resposta" %>
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                </svg>
+              <% else %>
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              <% end %>
+            </div>
+
+            <%# Conteúdo %>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-800 <%= n.lida? ? '' : 'font-semibold' %>"><%= n.mensagem %></p>
+              <p class="text-xs text-gray-400 mt-0.5"><%= time_ago_in_words(n.created_at) %> atrás</p>
+            </div>
+
+            <%# Ações %>
+            <div class="flex items-center gap-1 shrink-0 mt-0.5">
+              <% unless n.lida? %>
+                <span class="w-2 h-2 rounded-full bg-blue-500 mr-1"></span>
+              <% end %>
+              <% if n.link && n.link != "#" %>
+                <%= link_to n.link, target: "_blank",
+                    class: "p-1.5 text-gray-300 hover:text-blue-600 rounded transition-colors",
+                    title: "Ver artigo" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                <% end %>
+              <% end %>
+              <%= button_to admin_notificacao_path(n), method: :delete,
+                  data: { turbo_confirm: "Remover esta notificação?" },
+                  class: "p-1.5 text-gray-300 hover:text-red-500 rounded transition-colors",
+                  title: "Remover" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              <% end %>
+            </div>
+
+          </div>
+        <% end %>
+      </div>
+
+      <% if @pagy.pages > 1 %>
+        <div class="flex justify-center py-4 border-t border-gray-100">
+          <%== pagy_nav(@pagy) %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+</div>

@@ -14,28 +14,45 @@
   </head>
   <body class="bg-gray-50">
     <%= render "shared/flash" %>
+    <%# Mobile sidebar backdrop %>
+    <div id="sidebar-backdrop"
+         class="fixed inset-0 z-30 bg-black/40 hidden md:hidden"
+         onclick="document.getElementById('sidebar-usuario').classList.add('-translate-x-full'); this.classList.add('hidden')">
+    </div>
     <div class="flex min-h-screen">
       <%= render "shared/sidebar_usuario" %>
-      <div class="flex-1 flex flex-col">
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+      <div class="flex-1 flex flex-col min-w-0">
+        <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+          <%# Hamburger — mobile only %>
+          <button class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100"
+                  onclick="document.getElementById('sidebar-usuario').classList.toggle('-translate-x-full'); document.getElementById('sidebar-backdrop').classList.toggle('hidden')"
+                  aria-label="Menu">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
           <div class="flex-1 max-w-xl">
             <input type="search" placeholder="Buscar notícias..."
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
-          <div class="flex items-center gap-3 ml-4">
-            <button class="relative p-2 text-gray-500 hover:text-gray-700">
+          <div class="flex items-center gap-2">
+            <%= link_to usuario_notificacoes_path, class: "relative p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100" do %>
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
               </svg>
-            </button>
+              <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <% end %>
+            <% end %>
           </div>
         </header>
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-4 sm:p-6">
           <%= yield %>
         </main>
         <%= render "shared/footer_simples" %>
       </div>
     </div>
+    <%= render "shared/upsell_plano" %>
   </body>
 </html>

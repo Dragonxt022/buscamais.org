@@ -1,24 +1,61 @@
 <% content_for :title, "#{@artigo.titulo} - Busca Mais" %>
 <% content_for :meta_description, @artigo.resumo %>
+<% content_for :canonical, noticia_url(@artigo.slug) %>
 
 <% content_for :head do %>
   <meta property="og:type"        content="article">
   <meta property="og:site_name"   content="Busca Mais">
   <meta property="og:title"       content="<%= @artigo.titulo %>">
   <meta property="og:description" content="<%= strip_tags(@artigo.resumo.to_s) %>">
-  <meta property="og:url"         content="<%= request.url %>">
-  <% if @artigo.imagem_capa_file.attached? %>
-    <% og_image_url = request.base_url + rails_blob_path(@artigo.imagem_capa_file.blob) %>
-    <meta property="og:image"        content="<%= og_image_url %>">
+  <meta property="og:url"         content="<%= noticia_url(@artigo.slug) %>">
+  <% _img_url = @artigo.imagem_capa_file.attached? ? request.base_url + rails_blob_path(@artigo.imagem_capa_file.blob) : nil %>
+  <% if _img_url %>
+    <meta property="og:image"        content="<%= _img_url %>">
     <meta property="og:image:width"  content="1200">
     <meta property="og:image:height" content="630">
-    <meta name="twitter:image"       content="<%= og_image_url %>">
+    <meta name="twitter:image"       content="<%= _img_url %>">
   <% end %>
   <meta property="article:published_time" content="<%= @artigo.publicado_em&.iso8601 %>">
   <meta property="article:author"         content="<%= @artigo.author.nome %>">
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="<%= @artigo.titulo %>">
   <meta name="twitter:description" content="<%= strip_tags(@artigo.resumo.to_s) %>">
+
+  <%# JSON-LD NewsArticle %>
+  <% _site_nome = SiteSetting["site_titulo"].presence || "Busca Mais" %>
+  <% _logo_url  = SiteBranding.instance.logo.attached? ? request.base_url + rails_blob_path(SiteBranding.instance.logo.blob) : nil %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": <%= @artigo.titulo.to_json %>,
+    "description": <%= strip_tags(@artigo.resumo.to_s).to_json %>,
+    "url": <%= noticia_url(@artigo.slug).to_json %>,
+    "datePublished": <%= @artigo.publicado_em&.iso8601.to_json %>,
+    "dateModified": <%= @artigo.updated_at.iso8601.to_json %>,
+    <% if _img_url %>
+    "image": {
+      "@type": "ImageObject",
+      "url": <%= _img_url.to_json %>
+    },
+    <% end %>
+    "author": {
+      "@type": "Person",
+      "name": <%= @artigo.author.nome.to_json %>,
+      "url": <%= autor_url(@artigo.author.slug).to_json %>
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": <%= _site_nome.to_json %>
+      <% if _logo_url %>
+      ,"logo": {
+        "@type": "ImageObject",
+        "url": <%= _logo_url.to_json %>
+      }
+      <% end %>
+    }
+  }
+  </script>
 <% end %>
 
 <div class="max-w-4xl mx-auto px-4 py-10">
@@ -28,6 +65,14 @@
         <%= link_to @artigo.category.nome, categoria_path(@artigo.category.slug),
             class: "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded text-white",
             style: "background-color: #{@artigo.category.cor}" %>
+      <% end %>
+      <% if @artigo.premium? %>
+        <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded bg-amber-500 text-white flex items-center gap-1">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+          </svg>
+          Premium
+        </span>
       <% end %>
       <span class="text-xs text-gray-400">
         <%= @artigo.tempo_leitura %> min de leitura
@@ -91,10 +136,29 @@
     </div>
   <% end %>
 
-  <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8">
-    <%= @artigo.conteudo %>
-  </div>
+  <% if @acesso_completo %>
+    <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8">
+      <%= @artigo.conteudo %>
+    </div>
+  <% else %>
+    <%# Conteúdo truncado com fade-out %>
+    <div class="relative mb-2" style="max-height: 320px; overflow: hidden;">
+      <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed">
+        <%= @artigo.conteudo %>
+      </div>
+      <%# Gradiente de fade %>
+      <div class="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none"></div>
+    </div>
 
+    <%# Paywall gate %>
+    <%= render "shared/paywall_gate",
+               artigos_premium_restantes: @artigos_premium_restantes.to_i,
+               plano_com_promo: @plano_com_promo,
+               plano_pago: @plano_pago %>
+  <% end %>
+
+  <% unless @acesso_completo %><%# Não mostra sharing/comments sem acesso %><% end %>
+  <% if @acesso_completo %>
   <%# Social sharing %>
   <div class="border-t border-b border-gray-100 py-5 mb-10">
     <p class="text-sm font-semibold text-gray-500 mb-3">Compartilhar:</p>
@@ -175,51 +239,71 @@
 
   <%# Comments section %>
   <section id="secao-comentarios" class="border-t border-gray-100 pt-10">
-    <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-      </svg>
-      Comentários (<%= @comentarios.sum { |c| 1 + c.replies.size + c.replies.sum { |r| r.replies.size } } %>)
-    </h3>
+    <% total_comentarios = @comentarios.sum { |c| 1 + c.replies.size + c.replies.sum { |r| r.replies.size } } %>
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <%= total_comentarios %> comentário<%= total_comentarios == 1 ? "" : "s" %>
+      </h3>
+      <%# Sort top/novo %>
+      <div class="flex items-center gap-1 bg-gray-100 rounded-full p-0.5 text-xs font-bold">
+        <%= link_to noticia_path(@artigo.slug, anchor: "secao-comentarios", sort: "top"),
+            class: "px-3 py-1 rounded-full transition-colors #{@sort_comentarios == 'top' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}" do %>
+          ↑ Top
+        <% end %>
+        <%= link_to noticia_path(@artigo.slug, anchor: "secao-comentarios", sort: "novo"),
+            class: "px-3 py-1 rounded-full transition-colors #{@sort_comentarios == 'novo' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}" do %>
+          🕐 Novo
+        <% end %>
+      </div>
+    </div>
 
-    <%# New comment form %>
+    <%# Formulário de novo comentário — estilo Reddit %>
     <% if user_signed_in? %>
-      <div class="bg-white rounded-xl border border-gray-200 p-4 mb-8">
-        <div class="flex gap-3">
-          <div class="w-9 h-9 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white text-sm font-bold">
+      <div class="mb-6">
+        <div class="flex gap-3 items-start">
+          <div class="w-8 h-8 rounded-full bg-blue-600 shrink-0 flex items-center justify-center text-white text-xs font-bold mt-1">
             <%= current_user.nome.first.upcase %>
           </div>
           <%= form_with url: comentarios_publicos_path, method: :post, class: "flex-1" do |f| %>
             <%= hidden_field_tag :article_id, @artigo.slug %>
-            <textarea name="comment[conteudo]" rows="3" placeholder="Escreva um comentário..."
-                class="input resize-none mb-3 text-sm"></textarea>
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-gray-400">Seu comentário será publicado após aprovação.</p>
-              <button type="submit"
-                  class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                </svg>
-                Comentar
-              </button>
+            <div class="border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-300 focus-within:border-blue-400 transition-all bg-white shadow-sm">
+              <textarea name="comment[conteudo]" rows="4" placeholder="O que você acha? Compartilhe sua opinião…"
+                  class="w-full px-4 pt-4 pb-2 text-sm text-gray-800 placeholder-gray-400 resize-none outline-none bg-transparent leading-relaxed"
+                  style="min-height: 100px"></textarea>
+              <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 border-t border-gray-100">
+                <p class="text-xs text-gray-400">Será publicado após aprovação.</p>
+                <button type="submit"
+                    class="bg-blue-600 text-white px-5 py-1.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                  </svg>
+                  Comentar
+                </button>
+              </div>
             </div>
           <% end %>
         </div>
       </div>
-    <% else %>
-      <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 text-center">
+    <% end %>
+
+    <%# Visitantes não logados %>
+    <% unless user_signed_in? %>
+      <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 text-center">
         <p class="text-sm text-blue-700">
           <%= link_to "Entre", new_user_session_path, class: "font-semibold underline hover:no-underline" %>
           ou
           <%= link_to "cadastre-se", new_user_registration_path, class: "font-semibold underline hover:no-underline" %>
-          para deixar um comentário.
+          para participar da conversa.
         </p>
       </div>
     <% end %>
 
-    <%# Mensagem inline após envio — sem toast %>
+    <%# Mensagem de comentário pendente %>
     <% if flash[:comentario_pendente] %>
-      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6">
+      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5">
         <svg class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
@@ -227,11 +311,15 @@
       </div>
     <% end %>
 
-    <%# Thread of comments %>
-    <div class="space-y-4" id="comentarios">
+    <%# Threads de comentários estilo Reddit %>
+    <div class="space-y-3" id="comentarios">
       <% @comentarios.each do |comentario| %>
         <%= render "noticias/comentario", comentario: comentario, artigo: @artigo, nivel: 0 %>
       <% end %>
+      <% if @comentarios.empty? %>
+        <p class="text-gray-400 text-sm py-8 text-center">Seja o primeiro a comentar.</p>
+      <% end %>
     </div>
   </section>
+  <% end %><%# /if @acesso_completo %>
 </div>

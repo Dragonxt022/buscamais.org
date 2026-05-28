@@ -21,32 +21,38 @@ class Notification < ApplicationRecord
   end
 
   def self.notificar_aprovacao(comment)
-    create!(
+    n = create!(
       user:        comment.user,
       notificable: comment,
       tipo:        "comentario_aprovado",
       dados:       { artigo: comment.article.titulo, slug: comment.article.slug }.to_json
     )
+    NotificationMailer.comentario_aprovado(n).deliver_later rescue nil
+    n
   end
 
   def self.notificar_resposta(reply)
     return unless reply.parent && reply.parent.user != reply.user
-    create!(
+    n = create!(
       user:        reply.parent.user,
       notificable: reply,
       tipo:        "resposta",
       dados:       { autor: reply.user.nome, artigo: reply.article.titulo, slug: reply.article.slug }.to_json
     )
+    NotificationMailer.nova_resposta(n).deliver_later rescue nil
+    n
   end
 
   def self.notificar_curtida(like)
     return if like.comment.user == like.user
-    create!(
+    n = create!(
       user:        like.comment.user,
       notificable: like.comment,
       tipo:        "curtida",
       dados:       { autor: like.user.nome, artigo: like.comment.article.titulo, slug: like.comment.article.slug }.to_json
     )
+    NotificationMailer.nova_curtida(n).deliver_later rescue nil
+    n
   end
 
   def dados_hash

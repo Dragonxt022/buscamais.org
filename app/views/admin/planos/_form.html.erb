@@ -1,0 +1,229 @@
+<%= form_with model: plano,
+              url: plano.new_record? ? admin_planos_path : admin_plano_path(plano),
+              class: "space-y-6" do |f| %>
+  <% if plano.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+      <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+        <% plano.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%# ── Informações básicas ── %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Informações do Plano</h3>
+    </div>
+    <div class="p-6 space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :nome, "Nome do Plano", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :nome, placeholder: "Ex: Plano Plus",
+              class: "input text-sm" %>
+        </div>
+        <div>
+          <%= f.label :slug, "Slug (identificador único)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :slug, placeholder: "ex: plus (gerado automaticamente)",
+              class: "input text-sm font-mono" %>
+          <p class="text-xs text-gray-400 mt-1">Apenas letras minúsculas, números e hífens.</p>
+        </div>
+      </div>
+
+      <div>
+        <%= f.label :descricao, "Descrição curta", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.text_area :descricao, rows: 2, placeholder: "Ex: Usuário ativo e recorrente.",
+            class: "input text-sm resize-none" %>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+          <%= f.label :preco, "Preço mensal (R$)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+            <%= f.number_field :preco, step: "0.01", min: 0, placeholder: "0,00",
+                class: "input text-sm pl-9" %>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Use 0 para plano gratuito.</p>
+        </div>
+        <div>
+          <%= f.label :posicao, "Ordem de exibição", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.number_field :posicao, min: 0,
+              class: "input text-sm" %>
+        </div>
+        <div>
+          <%= f.label :cor, "Cor do plano", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :cor,
+              [["Cinza (Gratuito)", "gray"], ["Azul (Plus)", "blue"], ["Roxo (Max)", "purple"], ["Dourado (Premium)", "amber"]],
+              {},
+              class: "input text-sm" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <%= f.check_box :ativo, class: "w-4 h-4 rounded border-gray-300 text-blue-600" %>
+          <span class="text-sm font-medium text-gray-700">Plano ativo (visível aos usuários)</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <%= f.check_box :destaque, class: "w-4 h-4 rounded border-gray-300 text-blue-600" %>
+          <span class="text-sm font-medium text-gray-700">Destacar como "Mais Popular"</span>
+        </label>
+      </div>
+
+    </div>
+  </div>
+
+  <%# ── Preço Promocional de Entrada ── %>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+          <span class="text-orange-500">🏷</span> Promoção de Entrada
+        </h3>
+        <p class="text-xs text-gray-400 mt-0.5">Ofereça um preço especial pelos primeiros meses. Após o período, cobra automaticamente o valor normal via Stripe.</p>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer shrink-0">
+        <%= f.check_box :promocao_ativa, class: "w-4 h-4 rounded border-gray-300 text-orange-500" %>
+        <span class="text-sm font-semibold text-gray-700">Ativar promoção</span>
+      </label>
+    </div>
+    <div class="p-6 space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div>
+          <%= f.label :preco_promocional, "Preço promocional (R$)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">R$</span>
+            <%= f.number_field :preco_promocional, step: "0.01", min: 0, placeholder: "1,90",
+                class: "input text-sm pl-9" %>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Valor cobrado durante os primeiros meses.</p>
+        </div>
+        <div>
+          <%= f.label :meses_promocionais, "Duração (meses)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.number_field :meses_promocionais, min: 1, max: 24, placeholder: "6",
+              class: "input text-sm" %>
+          <p class="text-xs text-gray-400 mt-1">Após esse período cobra o preço normal.</p>
+        </div>
+        <div>
+          <%= f.label :stripe_promo_price_id, "Stripe Price ID (promo)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :stripe_promo_price_id, placeholder: "price_xxx (do Stripe Dashboard)",
+              class: "input text-sm font-mono" %>
+          <p class="text-xs text-gray-400 mt-1">Crie um Price com o valor promocional no Stripe.</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <%= f.check_box :apenas_novos_usuarios, class: "w-4 h-4 rounded border-gray-300 text-orange-500" %>
+          <span class="text-sm font-medium text-gray-700">Apenas para novos assinantes</span>
+        </label>
+        <p class="text-xs text-gray-400 ml-2">(usuários que nunca tiveram assinatura paga)</p>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+        <strong>Como funciona no Stripe:</strong> O checkout usa <code>SubscriptionSchedule</code> com duas fases —
+        Fase 1: Price promocional por <%= plano.meses_promocionais.presence || "N" %> meses →
+        Fase 2: Price normal automaticamente. Crie os dois Prices no Stripe Dashboard e cole os IDs aqui e no campo "Stripe Price ID" acima.
+      </div>
+
+    </div>
+  </div>
+
+  <%# ── Benefícios ── %>
+  <div class="card" data-controller="beneficios-lista">
+    <div class="card-header flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Benefícios</h3>
+        <p class="text-xs text-gray-400 mt-0.5">Liste os benefícios exibidos no card do plano</p>
+      </div>
+      <button type="button"
+              data-action="click->beneficios-lista#adicionar"
+              class="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adicionar
+      </button>
+    </div>
+
+    <div class="p-6">
+      <div data-beneficios-lista-target="lista" class="space-y-2">
+        <% (plano.beneficios.presence || [""]).each do |b| %>
+          <div class="flex items-center gap-2 beneficio-item">
+            <svg class="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <input type="text" name="plano[beneficios][]" value="<%= b %>"
+                   placeholder="Ex: Salvar matérias ilimitadas"
+                   class="input text-sm flex-1">
+            <button type="button"
+                    data-action="click->beneficios-lista#remover"
+                    class="p-1.5 text-gray-300 hover:text-red-500 rounded transition-colors shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        <% end %>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">Itens em branco são ignorados ao salvar.</p>
+    </div>
+  </div>
+
+  <%# ── Permissões técnicas ── %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Permissões e Limites</h3>
+      <p class="text-xs text-gray-400 mt-0.5">Controles técnicos que o sistema usará para aplicar as regras do plano</p>
+    </div>
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <% SubscriptionPlan::PERMISSOES_DEFINICOES.each do |chave, defn| %>
+          <% val = plano.permissao(chave) %>
+          <div class="<%= defn[:tipo] == :boolean ? 'flex items-center gap-2' : '' %>">
+            <% if defn[:tipo] == :boolean %>
+              <input type="checkbox"
+                     name="plano[permissoes][<%= chave %>]"
+                     value="1"
+                     id="perm_<%= chave %>"
+                     <%= val ? "checked" : "" %>
+                     class="w-4 h-4 rounded border-gray-300 text-blue-600">
+              <label for="perm_<%= chave %>" class="text-sm text-gray-700 cursor-pointer">
+                <%= defn[:label] %>
+              </label>
+            <% elsif defn[:tipo] == :numero %>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                <%= defn[:label] %>
+              </label>
+              <input type="number"
+                     name="plano[permissoes][<%= chave %>]"
+                     value="<%= val.to_i %>"
+                     min="0"
+                     class="input text-sm">
+            <% else %>
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                <%= defn[:label] %>
+              </label>
+              <input type="text"
+                     name="plano[permissoes][<%= chave %>]"
+                     value="<%= val.to_s %>"
+                     placeholder="vazio = nenhum"
+                     class="input text-sm">
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Ações ── %>
+  <div class="flex items-center justify-end gap-3">
+    <%= link_to "Cancelar", admin_planos_path, class: "text-sm text-gray-500 hover:text-gray-700 px-4 py-2" %>
+    <%= f.submit plano.new_record? ? "Criar Plano" : "Salvar Alterações",
+        class: "btn-primary" %>
+  </div>
+<% end %>

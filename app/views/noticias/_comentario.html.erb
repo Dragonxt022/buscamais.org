@@ -1,228 +1,271 @@
 <%# locals: (comentario:, artigo:, nivel:) %>
-<% curtido = user_signed_in? && comentario.curtido_por?(current_user) %>
+<% curtido  = user_signed_in? && comentario.curtido_por?(current_user) %>
+<% salvo    = user_signed_in? && current_user.saved_comments.exists?(comment: comentario) %>
+<% destaque = comentario.user.destaque_comentarios? %>
+<% replies  = comentario.replies.aprovados.order(Arel.sql("(SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id) DESC, created_at DESC")) %>
 
-<% if nivel == 0 %>
-  <%# ═══════════════════════════════════════════════════════════════════
-      COMENTÁRIO PRINCIPAL — card branco com sombra suave
-      ══════════════════════════════════════════════════════════════════ %>
-  <div id="comentario-<%= comentario.id %>" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+<%# URL permanente deste comentário %>
+<% comentario_url = noticia_url(artigo.slug, anchor: "comentario-#{comentario.id}") %>
 
-    <div class="flex gap-3">
-      <%# Avatar %>
-      <div class="w-9 h-9 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white text-sm font-bold">
+<%# Cores por nível %>
+<% avatar_cor = destaque ? "bg-purple-600" : nivel == 0 ? "bg-blue-600" : nivel == 1 ? "bg-indigo-500" : "bg-slate-500" %>
+<% linha_cor  = nivel == 0 ? "#93c5fd" : nivel == 1 ? "#a5b4fc" : "#c4b5fd" %>
+
+<div id="comentario-<%= comentario.id %>"
+     class="group"
+     data-controller="comment-collapse">
+
+  <div class="flex gap-3">
+
+    <%# ── Coluna esquerda: avatar + linha ── %>
+    <div class="flex flex-col items-center shrink-0" style="width:2rem">
+      <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 select-none <%= avatar_cor %>">
         <%= comentario.user.nome.first.upcase %>
       </div>
+      <%# Linha só aparece quando há respostas — conecta ao avatar dos filhos %>
+      <% if replies.any? %>
+        <div class="w-0.5 flex-1 mt-1.5 rounded-full cursor-pointer transition-colors duration-150"
+             style="background-color: <%= linha_cor %>; min-height: 1.5rem"
+             data-action="click->comment-collapse#toggle"
+             data-comment-collapse-target="linha"
+             title="Recolher thread"></div>
+      <% end %>
+    </div>
 
-      <div class="flex-1 min-w-0">
-        <%# Header %>
-        <div class="flex items-center justify-between gap-2 mb-1.5">
-          <p class="text-sm font-semibold text-gray-900"><%= comentario.user.nome %></p>
-          <p class="text-xs text-gray-400 shrink-0"><%= l comentario.created_at, format: :short %></p>
-        </div>
+    <%# ── Corpo ── %>
+    <div class="flex-1 min-w-0 pb-4" data-comment-collapse-target="corpo">
 
-        <%# Conteúdo %>
-        <p class="text-sm text-gray-700 leading-relaxed"><%= comentario.conteudo %></p>
-
-        <%# Ações %>
-        <div class="flex items-center gap-4 mt-2.5">
-          <%# Like %>
-          <% if user_signed_in? %>
-            <button type="button"
-                    class="flex items-center gap-1 text-xs font-medium transition-colors <%= curtido ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500' %>"
-                    data-controller="like"
-                    data-like-url-value="<%= curtir_comentario_path(comentario) %>"
-                    data-like-liked-value="<%= curtido %>"
-                    data-action="click->like#toggle">
-              <svg class="w-3.5 h-3.5 transition-all" fill="<%= curtido ? 'currentColor' : 'none' %>" stroke="currentColor" viewBox="0 0 24 24" data-like-target="icon">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              </svg>
-              <span data-like-target="count"><%= comentario.likes_count %></span>
-            </button>
-          <% else %>
-            <span class="flex items-center gap-1 text-xs text-gray-400">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-              </svg>
-              <%= comentario.likes_count %>
-            </span>
-          <% end %>
-        </div>
-
-        <%# Botão Responder + Formulário %>
-        <% if user_signed_in? %>
-          <div data-controller="comment-reply">
-            <button type="button"
-                    class="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 font-medium transition-colors mt-2"
-                    data-action="click->comment-reply#toggle">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-              </svg>
-              Responder
-            </button>
-
-            <div data-comment-reply-target="form" class="hidden mt-3">
-              <%= form_with url: comentarios_publicos_path, method: :post, class: "flex gap-2" do |f| %>
-                <%= hidden_field_tag :article_id, artigo.slug %>
-                <%= f.hidden_field :parent_id, value: comentario.id %>
-                <div class="w-7 h-7 rounded-full bg-blue-600 flex-shrink-0 flex items-center justify-center text-white text-xs font-bold mt-0.5">
-                  <%= current_user.nome.first.upcase %>
-                </div>
-                <div class="flex-1">
-                  <textarea name="comment[conteudo]" rows="2"
-                      placeholder="Responder a <%= comentario.user.nome %>..."
-                      class="input resize-none text-sm mb-2"></textarea>
-                  <div class="flex gap-2">
-                    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors">
-                      Enviar
-                    </button>
-                    <button type="button" data-action="click->comment-reply#toggle"
-                        class="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors">
-                      Cancelar
-                    </button>
-                  </div>
-                </div>
-              <% end %>
-            </div>
-          </div><%# /comment-reply %>
+      <%# Header %>
+      <div class="flex flex-wrap items-center gap-1.5 mb-1 mt-0.5">
+        <span class="text-sm font-bold text-gray-900 leading-tight"><%= comentario.user.nome %></span>
+        <%= render "shared/badge_plano", user: comentario.user %>
+        <% if comentario.user.administrador? %>
+          <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full uppercase tracking-wide">Admin</span>
         <% end %>
+        <span class="text-gray-300 text-xs">·</span>
+        <span class="text-xs text-gray-400 hover:text-gray-600 cursor-default" title="<%= l comentario.created_at, format: :long %>">
+          <%= time_ago_in_words(comentario.created_at) %> atrás
+        </span>
       </div>
-    </div>
 
-    <%# ── Respostas colapsadas ──────────────────────────────────────────── %>
-    <% replies = comentario.replies.aprovados.recentes %>
-    <% if replies.any? %>
-      <div class="mt-3 pl-12"
-           data-controller="comment-thread"
-           data-comment-thread-count-value="<%= replies.count %>">
-
-        <%# Botão toggle %>
-        <button type="button"
-                class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors mb-3"
-                data-action="click->comment-thread#toggle">
-          <svg class="w-3.5 h-3.5 transition-transform duration-200" data-comment-thread-target="icon"
-               fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-          </svg>
-          <span data-comment-thread-target="label">
-            Ver <%= replies.count %> <%= replies.count == 1 ? "resposta" : "respostas" %>
-          </span>
-        </button>
-
-        <%# Lista de respostas (colapsada por padrão) %>
-        <div data-comment-thread-target="replies" class="hidden space-y-2">
-          <% replies.each do |reply| %>
-            <%= render "noticias/comentario", comentario: reply, artigo: artigo, nivel: 1 %>
-          <% end %>
-        </div>
-      </div>
-    <% end %>
-
-  </div><%# /card comentário principal %>
-
-<% else %>
-  <%# ═══════════════════════════════════════════════════════════════════
-      RESPOSTA — visual diferenciado: fundo azul claro + borda lateral
-      ══════════════════════════════════════════════════════════════════ %>
-  <div id="comentario-<%= comentario.id %>" class="flex gap-2.5">
-
-    <%# Linha conectora + avatar pequeno %>
-    <div class="flex flex-col items-center shrink-0">
-      <div class="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-xs font-bold">
-        <%= comentario.user.nome.first.upcase %>
-      </div>
-    </div>
-
-    <%# Balão de resposta %>
-    <div class="flex-1 min-w-0 bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-2.5">
-      <%# "Em resposta a" badge %>
-      <% if comentario.parent %>
-        <p class="text-[10px] font-semibold text-blue-400 uppercase tracking-wide mb-1 flex items-center gap-1">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
-          </svg>
-          Em resposta a <span class="text-blue-600"><%= comentario.parent.user.nome %></span>
+      <%# Em resposta a %>
+      <% if nivel > 0 && comentario.parent %>
+        <p class="text-[11px] text-gray-400 mb-1">
+          ↳ respondendo <span class="font-semibold text-gray-500"><%= comentario.parent.user.nome %></span>
         </p>
       <% end %>
 
-      <%# Header %>
-      <div class="flex items-center justify-between gap-2 mb-1">
-        <p class="text-xs font-semibold text-gray-800"><%= comentario.user.nome %></p>
-        <p class="text-[10px] text-gray-400 shrink-0"><%= l comentario.created_at, format: :short %></p>
-      </div>
-
       <%# Conteúdo %>
-      <p class="text-sm text-gray-700 leading-relaxed"><%= comentario.conteudo %></p>
+      <p class="text-sm text-gray-800 leading-relaxed mb-2.5"><%= h(comentario.conteudo) %></p>
 
-      <%# Ações %>
-      <div class="flex items-center gap-3 mt-2">
-        <%# Like %>
+      <%# ── Barra de ações estilo Reddit ── %>
+      <div class="flex items-center gap-0.5 -ml-2 mb-2 flex-wrap">
+
+        <%# ❤️ Like %>
         <% if user_signed_in? %>
           <button type="button"
-                  class="flex items-center gap-1 text-xs font-medium transition-colors <%= curtido ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500' %>"
+                  class="flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-bold transition-colors
+                         <%= curtido ? 'text-red-500 bg-red-50' : 'text-gray-400 hover:text-red-500 hover:bg-red-50' %>"
                   data-controller="like"
                   data-like-url-value="<%= curtir_comentario_path(comentario) %>"
                   data-like-liked-value="<%= curtido %>"
                   data-action="click->like#toggle">
-            <svg class="w-3.5 h-3.5 transition-all" fill="<%= curtido ? 'currentColor' : 'none' %>" stroke="currentColor" viewBox="0 0 24 24" data-like-target="icon">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            <svg class="w-4 h-4" viewBox="0 0 24 24"
+                 fill="<%= curtido ? 'currentColor' : 'none' %>" stroke="currentColor" stroke-width="2"
+                 data-like-target="icon">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
             <span data-like-target="count"><%= comentario.likes_count %></span>
           </button>
         <% else %>
-          <span class="flex items-center gap-1 text-xs text-gray-400">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+          <span class="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-400 font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
             </svg>
             <%= comentario.likes_count %>
           </span>
         <% end %>
 
-        <%# Responder (nível 1 pode ter resposta de nível 2) %>
+        <%# 💬 Responder %>
         <% if user_signed_in? && nivel < 2 %>
           <div data-controller="comment-reply">
             <button type="button"
-                    class="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-600 font-medium transition-colors"
+                    class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                     data-action="click->comment-reply#toggle">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
               </svg>
               Responder
             </button>
-
-            <div data-comment-reply-target="form" class="hidden mt-2">
-              <%= form_with url: comentarios_publicos_path, method: :post, class: "flex gap-2" do |f| %>
-                <%= hidden_field_tag :article_id, artigo.slug %>
-                <%= f.hidden_field :parent_id, value: comentario.id %>
-                <div class="flex-1">
-                  <textarea name="comment[conteudo]" rows="2"
-                      placeholder="Responder a <%= comentario.user.nome %>..."
-                      class="input resize-none text-xs mb-1.5"></textarea>
-                  <div class="flex gap-2">
-                    <button type="submit" class="bg-blue-600 text-white px-2.5 py-1 rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors">
-                      Enviar
-                    </button>
-                    <button type="button" data-action="click->comment-reply#toggle"
-                        class="text-xs text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors">
-                      Cancelar
-                    </button>
+            <div data-comment-reply-target="form" class="hidden mt-2 mb-3">
+              <%= form_with url: comentarios_publicos_path, method: :post do %>
+                <%= hidden_field_tag :article_id,           artigo.slug %>
+                <%= hidden_field_tag "comment[parent_id]", comentario.id %>
+                <div class="flex gap-2 items-start">
+                  <div class="w-7 h-7 rounded-full <%= avatar_cor %> shrink-0 flex items-center justify-center text-white text-[11px] font-bold mt-0.5">
+                    <%= current_user.nome.first.upcase %>
+                  </div>
+                  <div class="flex-1">
+                    <div class="border border-gray-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-blue-300 bg-white">
+                      <textarea name="comment[conteudo]" rows="3"
+                          placeholder="Respondendo a <%= comentario.user.nome %>…"
+                          class="w-full px-3 pt-2.5 pb-1 text-sm text-gray-800 placeholder-gray-400 resize-none outline-none bg-transparent"></textarea>
+                      <div class="flex items-center justify-end gap-2 px-3 py-1.5 bg-gray-50 border-t border-gray-100">
+                        <button type="button" data-action="click->comment-reply#toggle"
+                            class="text-xs text-gray-400 hover:text-gray-700 px-3 py-1 rounded-full hover:bg-gray-200 font-bold transition-colors">
+                          Cancelar
+                        </button>
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold hover:bg-blue-700 transition-colors">
+                          Responder
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               <% end %>
             </div>
-          </div><%# /comment-reply %>
+          </div>
         <% end %>
-      </div>
 
-      <%# Sub-respostas do nivel 1 (nivel 2 — exibidas direto, sem colapso) %>
-      <% sub_replies = comentario.replies.aprovados.recentes %>
-      <% if sub_replies.any? %>
-        <div class="mt-3 space-y-2 border-t border-blue-100 pt-3">
-          <% sub_replies.each do |sub| %>
-            <%= render "noticias/comentario", comentario: sub, artigo: artigo, nivel: 2 %>
+        <%# 🔗 Share dropdown %>
+        <div class="relative" data-controller="comment-share"
+             data-comment-share-url-value="<%= comentario_url %>">
+          <button type="button"
+                  class="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  data-action="click->comment-share#toggle">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+            Compartilhar
+          </button>
+          <div data-comment-share-target="menu"
+               class="hidden absolute left-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 min-w-[160px]">
+            <button type="button"
+                    data-action="click->comment-share#copiar"
+                    class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+              <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+              </svg>
+              Copiar link
+            </button>
+          </div>
+        </div>
+
+        <%# ··· Menu mais opções %>
+        <% if user_signed_in? %>
+          <div class="relative" data-controller="comment-menu">
+            <button type="button"
+                    class="flex items-center px-2 py-1 rounded-full text-xs font-bold text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                    data-action="click->comment-menu#toggle"
+                    title="Mais opções">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>
+              </svg>
+            </button>
+
+            <div data-comment-menu-target="menu"
+                 class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-20 min-w-[180px]">
+
+              <%# Salvar / Dessalvar %>
+              <% if salvo %>
+                <%= button_to dessalvar_comentario_path(comentario),
+                    method: :delete,
+                    class: "flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors" do %>
+                  <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                  </svg>
+                  Salvo ✓
+                <% end %>
+              <% else %>
+                <%= button_to salvar_comentario_path(comentario),
+                    method: :post,
+                    class: "flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors" do %>
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                  </svg>
+                  Salvar comentário
+                <% end %>
+              <% end %>
+
+              <%# Denunciar (só para comentários de outros) %>
+              <% if comentario.user != current_user %>
+                <div class="border-t border-gray-50 mt-1 pt-1">
+                  <button type="button"
+                          class="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                          data-controller="report-modal"
+                          data-report-url="<%= denunciar_comentario_path(comentario) %>"
+                          data-action="click->report-modal#abrir">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H12l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                    </svg>
+                    Denunciar
+                  </button>
+                </div>
+              <% end %>
+
+            </div>
+          </div>
+        <% end %>
+
+      </div><%# /ações %>
+
+      <%# Respostas ordenadas por curtidas %>
+      <% if replies.any? %>
+        <div class="mt-1 space-y-0" data-comment-collapse-target="respostas">
+          <% replies.each do |reply| %>
+            <%= render "noticias/comentario", comentario: reply, artigo: artigo, nivel: nivel + 1 %>
           <% end %>
         </div>
       <% end %>
-    </div>
 
-  </div><%# /resposta %>
+    </div><%# /corpo %>
+  </div>
+
+  <%# Estado colapsado — clique na linha recolhe %>
+  <div class="hidden items-center gap-2 ml-11 py-0.5" data-comment-collapse-target="colapsado">
+    <button type="button"
+            class="text-xs text-gray-400 hover:text-blue-600 font-semibold transition-colors"
+            data-action="click->comment-collapse#toggle">
+      [+] <%= comentario.user.nome %>
+      <% if replies.any? %> · <%= replies.count %> resposta<%= replies.count == 1 ? "" : "s" %><% end %>
+    </button>
+  </div>
+
+</div>
+
+<%# ── Modal de denúncia (renderizado inline, 1 por comentário) ── %>
+<% if user_signed_in? && comentario.user != current_user %>
+  <div id="report-modal-<%= comentario.id %>"
+       class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden"
+       data-report-id="<%= comentario.id %>">
+    <div class="absolute inset-0 bg-black/50" onclick="document.getElementById('report-modal-<%= comentario.id %>').classList.add('hidden')"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+      <h3 class="text-base font-bold text-gray-900 mb-1">Denunciar comentário</h3>
+      <p class="text-sm text-gray-500 mb-4">Qual é o problema com este comentário?</p>
+
+      <%= form_with url: denunciar_comentario_path(comentario), method: :post do |f| %>
+        <div class="space-y-2 mb-4">
+          <% CommentReport::RAZOES.each do |valor, label| %>
+            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-red-300 has-[:checked]:bg-red-50">
+              <%= f.radio_button :reason, valor, class: "w-4 h-4 text-red-500" %>
+              <span class="text-sm text-gray-700"><%= label %></span>
+            </label>
+          <% end %>
+        </div>
+        <%= f.text_area :descricao, rows: 2, placeholder: "Detalhes adicionais (opcional)…",
+            class: "input text-sm resize-none mb-4" %>
+        <div class="flex gap-3 justify-end">
+          <button type="button"
+                  onclick="document.getElementById('report-modal-<%= comentario.id %>').classList.add('hidden')"
+                  class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 font-medium rounded-lg hover:bg-gray-100">
+            Cancelar
+          </button>
+          <%= f.submit "Denunciar",
+              class: "px-5 py-2 bg-red-600 text-white text-sm font-bold rounded-lg hover:bg-red-700 transition-colors cursor-pointer" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
 <% end %>

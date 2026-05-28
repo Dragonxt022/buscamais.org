@@ -86,7 +86,7 @@ class Editor::ArtigosController < Editor::BaseController
 
   def artigo_params
     params.require(:article).permit(:titulo, :resumo, :status,
-                                    :category_id, :agendado_em,
+                                    :premium, :category_id, :agendado_em,
                                     :conteudo, tag_ids: [])
   end
 

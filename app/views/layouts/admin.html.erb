@@ -14,18 +14,134 @@
   </head>
   <body class="bg-gray-100">
     <%= render "shared/flash" %>
+    <%# Mobile sidebar backdrop %>
+    <div id="admin-sidebar-backdrop"
+         class="fixed inset-0 z-30 bg-black/40 hidden md:hidden"
+         onclick="document.getElementById('admin-sidebar').classList.add('-translate-x-full'); this.classList.add('hidden')">
+    </div>
     <div class="flex min-h-screen">
-      <%= render "shared/sidebar_admin" %>
-      <div class="flex-1 flex flex-col">
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900"><%= content_for(:page_title) || "Painel" %></h1>
-            <p class="text-sm text-gray-500"><%= content_for(:page_subtitle) %></p>
+      <div id="admin-sidebar"
+           class="fixed inset-y-0 left-0 z-40 -translate-x-full md:translate-x-0 md:static md:z-auto transition-transform duration-200 ease-in-out shrink-0">
+        <%= render "shared/sidebar_admin" %>
+      </div>
+      <div class="flex-1 flex flex-col min-w-0">
+        <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <%# Hamburger — mobile only %>
+            <button class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 shrink-0"
+                    onclick="document.getElementById('admin-sidebar').classList.toggle('-translate-x-full'); document.getElementById('admin-sidebar-backdrop').classList.toggle('hidden')"
+                    aria-label="Menu">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+            <div class="min-w-0">
+              <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate"><%= content_for(:page_title) || "Painel" %></h1>
+              <p class="text-sm text-gray-500 truncate hidden sm:block"><%= content_for(:page_subtitle) %></p>
+            </div>
           </div>
           <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-600"><%= current_user.nome %></span>
-            <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold">
-              <%= current_user.nome.first.upcase %>
+            <%# Sino com dropdown de notificações %>
+            <div class="relative" data-controller="notificacoes-dropdown">
+              <button data-action="click->notificacoes-dropdown#toggle"
+                      class="relative p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                      title="Notificações" aria-label="Notificações">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                  <span class="absolute top-1 right-1 min-w-[1.1rem] h-[1.1rem] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none px-0.5">
+                    <%= @notificacoes_nao_lidas_count > 9 ? "9+" : @notificacoes_nao_lidas_count %>
+                  </span>
+                <% end %>
+              </button>
+
+              <%# Painel dropdown %>
+              <div data-notificacoes-dropdown-target="painel"
+                   class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-bold text-gray-900">Notificações</span>
+                    <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                      <span class="text-xs font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                        <%= @notificacoes_nao_lidas_count %>
+                      </span>
+                    <% end %>
+                  </div>
+                  <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                    <%= button_to marcar_todas_lidas_admin_notificacoes_path, method: :patch,
+                        class: "text-xs text-blue-600 hover:underline font-medium" do %>
+                      Marcar lidas
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <div class="max-h-80 overflow-y-auto divide-y divide-gray-50 sidebar-scroll">
+                  <% if @notificacoes_dropdown.empty? %>
+                    <div class="py-10 text-center text-gray-400">
+                      <svg class="w-8 h-8 mx-auto mb-2 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                      </svg>
+                      <p class="text-xs">Nenhuma notificação</p>
+                    </div>
+                  <% else %>
+                    <% @notificacoes_dropdown.each do |n| %>
+                      <div class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors <%= n.lida? ? '' : 'bg-blue-50/40' %>">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5
+                                    <%= n.tipo == 'novo_comentario' ? 'bg-blue-100' : n.tipo == 'curtida' ? 'bg-red-50' : n.tipo == 'resposta' ? 'bg-purple-50' : 'bg-green-50' %>">
+                          <% if n.tipo == "novo_comentario" %>
+                            <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                          <% elsif n.tipo == "curtida" %>
+                            <svg class="w-3.5 h-3.5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                          <% elsif n.tipo == "resposta" %>
+                            <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                            </svg>
+                          <% else %>
+                            <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                          <% end %>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-xs text-gray-800 leading-snug <%= n.lida? ? '' : 'font-semibold' %>">
+                            <%= n.mensagem %>
+                          </p>
+                          <p class="text-[10px] text-gray-400 mt-0.5"><%= time_ago_in_words(n.created_at) %> atrás</p>
+                        </div>
+                        <% unless n.lida? %>
+                          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5"></span>
+                        <% end %>
+                      </div>
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <div class="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+                  <%= link_to admin_notificacoes_path,
+                      class: "block text-center text-xs font-semibold text-blue-600 hover:text-blue-700",
+                      data: { action: "click->notificacoes-dropdown#fechar" } do %>
+                    Ver todas as notificações →
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <%# Avatar %>
+            <div class="flex items-center gap-2.5 pl-2 border-l border-gray-200">
+              <div class="text-right hidden sm:block">
+                <p class="text-sm font-medium text-gray-800 leading-tight"><%= current_user.nome %></p>
+                <p class="text-xs text-gray-400"><%= current_user.administrador? ? "Administrador" : "Editor" %></p>
+              </div>
+              <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                <%= current_user.nome.first.upcase %>
+              </div>
             </div>
           </div>
         </header>

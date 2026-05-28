@@ -3,8 +3,10 @@ class Comment < ApplicationRecord
   belongs_to :article
   belongs_to :parent, class_name: "Comment", optional: true
   has_many   :replies, class_name: "Comment", foreign_key: :parent_id, dependent: :destroy
-  has_many   :comment_likes, dependent: :destroy
-  has_many   :likers, through: :comment_likes, source: :user
+  has_many   :comment_likes,   dependent: :destroy
+  has_many   :likers,          through: :comment_likes, source: :user
+  has_many   :saved_comments,  dependent: :destroy
+  has_many   :comment_reports, dependent: :destroy
 
   enum :status, { pendente: 0, aprovado: 1, rejeitado: 2 }, default: :pendente
 

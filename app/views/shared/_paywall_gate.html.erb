@@ -1,0 +1,110 @@
+<%# locals: (artigos_premium_restantes:, plano_com_promo:, plano_pago:) %>
+
+<div class="relative -mt-32 pt-32">
+  <%# Fade-out gradient (se sobrepõe ao conteúdo truncado acima) %>
+  <div class="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-transparent via-white/80 to-white pointer-events-none"></div>
+
+  <%# Gate card %>
+  <div class="relative bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden mt-2">
+
+    <%# Barra superior decorativa %>
+    <% if plano_com_promo %>
+      <div class="h-1.5 bg-gradient-to-r from-orange-400 to-amber-400"></div>
+    <% else %>
+      <div class="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+    <% end %>
+
+    <div class="px-6 py-8 sm:px-10 text-center">
+      <%# Ícone cadeado %>
+      <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+
+      <%# Título %>
+      <h3 class="text-xl font-black text-gray-900 mb-2">
+        <% if user_signed_in? && artigos_premium_restantes == 0 %>
+          Você atingiu seu limite mensal
+        <% elsif user_signed_in? %>
+          Continue lendo com uma assinatura
+        <% else %>
+          Este é um artigo Premium
+        <% end %>
+      </h3>
+
+      <%# Subtítulo contextual %>
+      <p class="text-gray-500 text-sm mb-6 max-w-md mx-auto">
+        <% if user_signed_in? && artigos_premium_restantes == 0 %>
+          Você leu todos os <%= User::LIMITE_PREMIUM_GRATUITO %> artigos premium gratuitos deste mês.
+          Assine para leitura ilimitada — o limite renova todo dia 1º.
+        <% elsif user_signed_in? %>
+          Assine para ter acesso ilimitado a todos os artigos premium, sem limite mensal.
+        <% else %>
+          Cadastre-se gratuitamente e leia até <%= User::LIMITE_PREMIUM_GRATUITO %> artigos premium por mês.
+          Ou assine para acesso ilimitado.
+        <% end %>
+      </p>
+
+      <%# Oferta promocional %>
+      <% if plano_com_promo %>
+        <div class="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl px-5 py-4 mb-6 inline-block">
+          <p class="text-xs font-bold text-orange-600 uppercase tracking-wide mb-1">🏷 Oferta especial</p>
+          <p class="text-2xl font-black text-orange-500">
+            <%= plano_com_promo.preco_promo_formatado %>
+          </p>
+          <p class="text-xs text-orange-600 mt-0.5">
+            pelos primeiros <%= plano_com_promo.meses_promocionais %> meses ·
+            depois <%= plano_com_promo.preco_formatado %>
+          </p>
+        </div>
+      <% end %>
+
+      <%# CTAs %>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <% if user_signed_in? %>
+          <%# Já logado: só mostrar opção de assinar %>
+          <% if plano_com_promo %>
+            <%= button_to checkout_usuario_assinatura_path(plan_id: plano_com_promo.id),
+                method: :post,
+                class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 transition-opacity shadow-md" do %>
+              🏷 Aproveitar por <%= plano_com_promo.preco_promo_formatado %>
+            <% end %>
+          <% elsif plano_pago %>
+            <%= button_to checkout_usuario_assinatura_path(plan_id: plano_pago.id),
+                method: :post,
+                class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-blue-600 hover:bg-blue-700 transition-colors shadow-md" do %>
+              Assinar por <%= plano_pago.preco_formatado %>
+            <% end %>
+          <% else %>
+            <%= link_to "Ver planos", planos_publicos_path,
+                class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-blue-600 hover:bg-blue-700 transition-colors shadow-md" %>
+          <% end %>
+          <%= link_to "Ver todos os planos", planos_publicos_path,
+              class: "text-sm text-gray-500 hover:text-blue-600 font-medium underline underline-offset-2" %>
+        <% else %>
+          <%# Visitante: cadastro grátis + assinar %>
+          <%= link_to new_user_registration_path,
+              class: "px-7 py-3 rounded-full border-2 border-blue-600 text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors" do %>
+            Cadastrar grátis
+            <span class="text-xs font-normal ml-1">(<%= User::LIMITE_PREMIUM_GRATUITO %> artigos/mês)</span>
+          <% end %>
+          <% cta_plano = plano_com_promo || plano_pago %>
+          <% if cta_plano %>
+            <%= link_to new_user_session_path,
+                class: "px-7 py-3 rounded-full text-white font-bold text-sm shadow-md transition-opacity hover:opacity-90
+                        #{plano_com_promo ? 'bg-gradient-to-r from-orange-500 to-amber-500' : 'bg-blue-600'}" do %>
+              <%= plano_com_promo ? "🏷 Assinar por #{plano_com_promo.preco_promo_formatado}" : "Assinar por #{cta_plano.preco_formatado}" %>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Rodapé tranquilizador %>
+      <p class="text-xs text-gray-400 mt-5">
+        Cancelamento a qualquer momento · Sem fidelidade · Pagamento seguro via Stripe
+      </p>
+    </div>
+  </div>
+</div>

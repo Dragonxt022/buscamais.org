@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_28_171816) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -66,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.datetime "created_at", null: false
     t.boolean "destaque", default: false, null: false
     t.string "imagem_capa"
+    t.boolean "premium", default: false, null: false
     t.datetime "publicado_em"
     t.text "resumo"
     t.string "slug", null: false
@@ -102,6 +103,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.index ["comment_id"], name: "index_comment_likes_on_comment_id"
     t.index ["user_id", "comment_id"], name: "index_comment_likes_on_user_id_and_comment_id", unique: true
     t.index ["user_id"], name: "index_comment_likes_on_user_id"
+  end
+
+  create_table "comment_reports", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "comment_id", null: false
+    t.datetime "created_at", null: false
+    t.text "descricao"
+    t.string "reason", default: "spam", null: false
+    t.boolean "resolvido", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["comment_id"], name: "index_comment_reports_on_comment_id"
+    t.index ["user_id", "comment_id"], name: "index_comment_reports_on_user_id_and_comment_id", unique: true
+    t.index ["user_id"], name: "index_comment_reports_on_user_id"
   end
 
   create_table "comments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -180,6 +194,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.index ["user_id"], name: "index_saved_articles_on_user_id"
   end
 
+  create_table "saved_comments", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "comment_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["comment_id"], name: "index_saved_comments_on_comment_id"
+    t.index ["user_id", "comment_id"], name: "index_saved_comments_on_user_id_and_comment_id", unique: true
+    t.index ["user_id"], name: "index_saved_comments_on_user_id"
+  end
+
   create_table "site_brandings", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -193,14 +217,42 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.index ["chave"], name: "index_site_settings_on_chave", unique: true
   end
 
+  create_table "subscription_plans", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.boolean "apenas_novos_usuarios", default: true, null: false
+    t.boolean "ativo", default: true, null: false
+    t.json "beneficios"
+    t.string "cor", default: "blue"
+    t.datetime "created_at", null: false
+    t.text "descricao"
+    t.boolean "destaque", default: false, null: false
+    t.integer "meses_promocionais", default: 3
+    t.string "nome", null: false
+    t.json "permissoes"
+    t.integer "posicao", default: 0
+    t.decimal "preco", precision: 8, scale: 2, default: "0.0"
+    t.decimal "preco_promocional", precision: 8, scale: 2
+    t.boolean "promocao_ativa", default: false, null: false
+    t.string "slug", null: false
+    t.string "stripe_price_id"
+    t.string "stripe_promo_price_id"
+    t.datetime "updated_at", null: false
+    t.index ["posicao"], name: "index_subscription_plans_on_posicao"
+    t.index ["slug"], name: "index_subscription_plans_on_slug", unique: true
+  end
+
   create_table "subscriptions", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "plano", default: 0, null: false
     t.date "prox_cobranca"
     t.integer "status", default: 0, null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_subscription_id"
+    t.bigint "subscription_plan_id"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.decimal "valor", precision: 8, scale: 2
+    t.index ["stripe_customer_id"], name: "index_subscriptions_on_stripe_customer_id"
+    t.index ["subscription_plan_id"], name: "index_subscriptions_on_subscription_plan_id"
     t.index ["user_id"], name: "index_subscriptions_on_user_id", unique: true
   end
 
@@ -211,6 +263,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.datetime "updated_at", null: false
     t.index ["nome"], name: "index_tags_on_nome", unique: true
     t.index ["slug"], name: "index_tags_on_slug", unique: true
+  end
+
+  create_table "user_follows", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "followable_id", null: false
+    t.string "followable_type", null: false
+    t.bigint "follower_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["followable_type", "followable_id"], name: "index_user_follows_on_followable_type_and_followable_id"
+    t.index ["follower_id", "followable_type", "followable_id"], name: "idx_user_follows_unique", unique: true
+    t.index ["follower_id"], name: "index_user_follows_on_follower_id"
   end
 
   create_table "user_topics", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -236,12 +299,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "role"
+    t.string "slug"
     t.string "uid"
     t.datetime "updated_at", null: false
     t.index ["ativo"], name: "index_users_on_ativo"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["slug"], name: "index_users_on_slug", unique: true
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -252,6 +317,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
   add_foreign_key "articles", "users", column: "author_id"
   add_foreign_key "comment_likes", "comments"
   add_foreign_key "comment_likes", "users"
+  add_foreign_key "comment_reports", "comments"
+  add_foreign_key "comment_reports", "users"
   add_foreign_key "comments", "articles"
   add_foreign_key "comments", "users"
   add_foreign_key "media_files", "users"
@@ -260,6 +327,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200731) do
   add_foreign_key "reading_histories", "users"
   add_foreign_key "saved_articles", "articles"
   add_foreign_key "saved_articles", "users"
+  add_foreign_key "saved_comments", "comments"
+  add_foreign_key "saved_comments", "users"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "user_topics", "categories"
   add_foreign_key "user_topics", "users"

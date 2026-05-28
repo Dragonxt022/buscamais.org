@@ -41,7 +41,7 @@
   </div>
 
   <%# ── Navegação ── %>
-  <nav class="flex-1 px-3 py-4 space-y-5 overflow-y-auto overflow-x-hidden">
+  <nav class="flex-1 px-3 py-4 space-y-5 overflow-y-auto overflow-x-hidden sidebar-scroll">
 
     <%# GERAL %>
     <div>
@@ -184,6 +184,22 @@
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Usuários</span>
           <% end %>
 
+          <%= link_to admin_planos_path, title: "Planos de Assinatura",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'planos' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Planos</span>
+          <% end %>
+
+          <%= link_to admin_assinaturas_path, title: "Assinaturas",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'assinaturas' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+            </svg>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Assinaturas</span>
+          <% end %>
+
         </div>
       </div>
 
@@ -192,6 +208,24 @@
         <p class="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 whitespace-nowrap select-none"
            data-sidebar-target="groupLabel">Sistema</p>
         <div class="space-y-0.5">
+
+          <%= link_to admin_notificacoes_path, title: "Notificações",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'notificacoes' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <div class="relative shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+                <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              <% end %>
+            </div>
+            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Notificações</span>
+            <% if @notificacoes_nao_lidas_count.to_i > 0 %>
+              <span class="text-xs font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
+                <%= @notificacoes_nao_lidas_count %>
+              </span>
+            <% end %>
+          <% end %>
 
           <%= link_to admin_configuracoes_path, title: "Configurações",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'configuracoes' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>

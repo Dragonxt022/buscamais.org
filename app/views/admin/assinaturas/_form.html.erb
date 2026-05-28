@@ -1,0 +1,87 @@
+<%= form_with model: assinatura,
+              url: assinatura.new_record? ? admin_assinaturas_path : admin_assinatura_path(assinatura),
+              class: "space-y-5" do |f| %>
+
+  <% if assinatura.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+      <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+        <% assinatura.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Dados da Assinatura</h3>
+    </div>
+    <div class="p-6 space-y-5">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :user_id, "Usuário", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :user_id,
+              @usuarios.map { |u| ["#{u.nome} — #{u.email}", u.id] },
+              { prompt: "Selecionar usuário…", selected: assinatura.user_id },
+              class: "input text-sm" %>
+        </div>
+        <div>
+          <%= f.label :subscription_plan_id, "Plano", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :subscription_plan_id,
+              @planos.map { |p| ["#{p.nome} — #{p.preco_formatado}", p.id] },
+              { prompt: "Selecionar plano…", selected: assinatura.subscription_plan_id },
+              class: "input text-sm" %>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :status,
+              [["Ativa", "ativa"], ["Cancelada", "cancelada"], ["Expirada", "expirada"]],
+              { selected: assinatura.status || "ativa" },
+              class: "input text-sm" %>
+        </div>
+        <div>
+          <%= f.label :prox_cobranca, "Próxima cobrança", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.date_field :prox_cobranca,
+              value: assinatura.prox_cobranca,
+              class: "input text-sm" %>
+          <p class="text-xs text-gray-400 mt-1">Deixe em branco para planos gratuitos.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Stripe (opcional)</h3>
+      <p class="text-xs text-gray-400 mt-0.5">Preencha apenas se a assinatura foi criada via Stripe.</p>
+    </div>
+    <div class="p-6 space-y-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :stripe_customer_id, "Customer ID", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :stripe_customer_id,
+              placeholder: "cus_…",
+              class: "input text-sm font-mono" %>
+        </div>
+        <div>
+          <%= f.label :stripe_subscription_id, "Subscription ID", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :stripe_subscription_id,
+              placeholder: "sub_…",
+              class: "input text-sm font-mono" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-end gap-3">
+    <%= link_to "Cancelar", admin_assinaturas_path, class: "text-sm text-gray-500 hover:text-gray-700 px-4 py-2" %>
+    <%= f.submit assinatura.new_record? ? "Criar Assinatura" : "Salvar Alterações",
+        class: "btn-primary" %>
+  </div>
+
+<% end %>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: -apple-system, sans-serif; background: #f9fafb; margin: 0; padding: 20px;">
+  <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb;">
+    <div style="background: #2563eb; padding: 24px; text-align: center;">
+      <p style="color: white; font-size: 20px; font-weight: 900; margin: 0;"><%= @site_titulo %></p>
+    </div>
+    <div style="padding: 28px;">
+      <h2 style="font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 12px;">Você recebeu uma resposta ↩️</h2>
+      <p style="color: #6b7280; font-size: 14px; margin: 0 0 20px;">
+        <strong><%= @dados['autor'] %></strong> respondeu ao seu comentário no artigo
+        <strong>"<%= @dados['artigo'] %>"</strong>.
+      </p>
+      <a href="<%= @site_url %><%= @notification.link %>"
+         style="display: inline-block; background: #2563eb; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600;">
+        Ver resposta →
+      </a>
+    </div>
+    <div style="padding: 16px 28px; border-top: 1px solid #f3f4f6; background: #f9fafb;">
+      <p style="font-size: 12px; color: #9ca3af; margin: 0;"><%= SiteSetting["email_rodape"] || @site_titulo %></p>
+    </div>
+  </div>
+</body>
+</html>

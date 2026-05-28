@@ -1,0 +1,98 @@
+<%# Renderize este partial no layout do usuário.
+    Ativa automaticamente quando flash[:upgrade_prompt] estiver presente,
+    ou via JS: document.getElementById('upsell-modal').classList.remove('hidden') %>
+
+<% planos_upsell = SubscriptionPlan.ativos.ordenados rescue [] %>
+<% return if planos_upsell.empty? %>
+
+<div id="upsell-modal"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 <%= flash[:upgrade_prompt] ? '' : 'hidden' %>"
+     data-controller="upsell"
+     aria-modal="true" role="dialog">
+
+  <%# Backdrop %>
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+       data-action="click->upsell#fechar"></div>
+
+  <%# Card %>
+  <div class="relative z-10 bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+
+    <%# Header %>
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-2xl px-6 py-5 text-white">
+      <button data-action="click->upsell#fechar"
+              class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+      <% if flash[:upgrade_prompt] %>
+        <p class="text-sm font-semibold text-blue-200 mb-1">Limite atingido</p>
+        <h2 class="text-xl font-black"><%= flash[:upgrade_prompt] %></h2>
+      <% else %>
+        <p class="text-sm font-semibold text-blue-200 mb-1">Desbloqueie mais recursos</p>
+        <h2 class="text-xl font-black">Escolha seu plano</h2>
+      <% end %>
+      <p class="text-sm text-blue-100 mt-1">Faça upgrade e aproveite todo o potencial do portal.</p>
+    </div>
+
+    <%# Planos %>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-6">
+      <% planos_upsell.each do |plano| %>
+        <% cores = plano.cor_classes %>
+        <% is_atual = user_signed_in? && current_user.plano_atual&.slug == plano.slug %>
+        <div class="rounded-xl border flex flex-col
+                    <%= plano.destaque? ? "ring-2 #{cores[:ring] || 'ring-blue-300'} border-transparent" : 'border-gray-200' %>
+                    <%= is_atual ? 'opacity-60' : '' %>">
+          <% if plano.destaque? %>
+            <div class="text-center py-1 text-xs font-bold text-white rounded-t-xl
+                        <%= cores[:badge] || 'bg-blue-600' %>">
+              ⭐ Mais Popular
+            </div>
+          <% end %>
+          <div class="p-4 flex flex-col flex-1">
+            <p class="font-bold text-gray-900 text-base mb-0.5"><%= plano.nome %></p>
+            <p class="text-2xl font-black <%= cores[:text] || 'text-gray-700' %> mb-3">
+              <%= plano.preco_formatado %>
+            </p>
+            <% if plano.beneficios.present? %>
+              <ul class="space-y-1.5 mb-4 flex-1">
+                <% plano.beneficios.first(5).each do |b| %>
+                  <li class="flex items-start gap-1.5 text-xs text-gray-600">
+                    <svg class="w-3.5 h-3.5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <%= b %>
+                  </li>
+                <% end %>
+                <% if plano.beneficios.size > 5 %>
+                  <li class="text-xs text-gray-400 pl-5">+ <%= plano.beneficios.size - 5 %> benefícios</li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if is_atual %>
+              <span class="block text-center text-xs text-gray-400 bg-gray-50 rounded-lg py-2 font-medium">Plano atual</span>
+            <% elsif plano.gratuito? %>
+              <span class="block text-center text-xs text-gray-400 bg-gray-50 rounded-lg py-2 font-medium">Disponível grátis</span>
+            <% elsif user_signed_in? && plano.stripe_price_id.present? %>
+              <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id), method: :post,
+                  class: "w-full text-sm font-bold text-white py-2 rounded-lg transition-opacity hover:opacity-90 #{cores[:badge] || 'bg-gray-700'}" do %>
+                Assinar agora →
+              <% end %>
+            <% else %>
+              <%= link_to planos_publicos_path,
+                  class: "block text-center text-sm font-bold text-white py-2 rounded-lg transition-opacity hover:opacity-90 #{cores[:badge] || 'bg-gray-700'}" do %>
+                Ver detalhes →
+              <% end %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="px-6 pb-5 text-center">
+      <%= link_to "Ver comparação completa →", planos_publicos_path,
+          class: "text-sm text-blue-600 hover:underline",
+          data: { action: "click->upsell#fechar" } %>
+    </div>
+  </div>
+</div>

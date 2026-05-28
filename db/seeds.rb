@@ -286,11 +286,127 @@ artigos.each_with_index do |dados, i|
   a.tags = tags.sample(rand(2..3)) if a.article_tags.empty?
 end
 
+puts "Criando planos de assinatura..."
+
+SubscriptionPlan.find_or_create_by!(slug: "gratuito") do |p|
+  p.nome     = "Gratuito"
+  p.descricao = "Ideal para gerar tráfego e engajamento básico."
+  p.preco    = 0
+  p.posicao  = 1
+  p.cor      = "gray"
+  p.ativo    = true
+  p.destaque = false
+  p.beneficios = [
+    "Leitura ilimitada de matérias",
+    "Comentar em artigos",
+    "Curtir comentários",
+    "Escolher categorias de interesse",
+    "Salvar até 20 matérias",
+    "Responder comentários",
+    "Editar comentário por até 5 minutos"
+  ]
+  p.permissoes = {
+    "salvar_materias_limite"              => 20,
+    "editar_comentario_minutos"           => 5,
+    "moderacao_automatica"                => true,
+    "delay_entre_comentarios"             => true,
+    "aprovacao_automatica_apos_reputacao" => false,
+    "badge"                               => nil,
+    "notificacoes_avancadas"              => false,
+    "historico_comentarios"               => false,
+    "pode_denunciar"                      => false,
+    "pode_seguir"                         => false,
+    "destaque_visual_comentarios"         => false,
+    "pode_fixar_comentario"               => false,
+    "acesso_antecipado"                   => false,
+    "pode_criar_enquetes"                 => false,
+    "sem_anuncios"                        => false
+  }
+end
+
+SubscriptionPlan.find_or_create_by!(slug: "plus") do |p|
+  p.nome     = "Plus"
+  p.descricao = "Usuário ativo e recorrente. Mais recursos para participar."
+  p.preco    = 19.90
+  p.posicao  = 2
+  p.cor      = "blue"
+  p.ativo    = true
+  p.destaque = true
+  p.beneficios = [
+    "Aprovação automática após reputação mínima",
+    "Editar comentário por até 30 minutos",
+    "Salvar matérias ilimitadas",
+    "Badge Plus exclusivo",
+    "Notificações avançadas",
+    "Histórico completo de comentários",
+    "Comentário sobe mais rápido",
+    "Pode denunciar comentários",
+    "Pode seguir autores e categorias",
+    "Experiência sem anúncios"
+  ]
+  p.permissoes = {
+    "salvar_materias_limite"              => 0,
+    "editar_comentario_minutos"           => 30,
+    "moderacao_automatica"                => false,
+    "delay_entre_comentarios"             => false,
+    "aprovacao_automatica_apos_reputacao" => true,
+    "badge"                               => "plus",
+    "notificacoes_avancadas"              => true,
+    "historico_comentarios"               => true,
+    "pode_denunciar"                      => true,
+    "pode_seguir"                         => true,
+    "destaque_visual_comentarios"         => false,
+    "pode_fixar_comentario"               => false,
+    "acesso_antecipado"                   => false,
+    "pode_criar_enquetes"                 => false,
+    "sem_anuncios"                        => true
+  }
+end
+
+SubscriptionPlan.find_or_create_by!(slug: "max") do |p|
+  p.nome     = "MAX"
+  p.descricao = "Comunidade forte. O máximo da experiência Busca Mais."
+  p.preco    = 39.90
+  p.posicao  = 3
+  p.cor      = "purple"
+  p.ativo    = true
+  p.destaque = false
+  p.beneficios = [
+    "Tudo do plano Plus",
+    "Destaque visual nos comentários",
+    "Fixar comentário próprio por tempo limitado",
+    "Nome com badge MAX especial",
+    "Acesso antecipado a matérias",
+    "Sem limite de salvamento",
+    "Pode criar enquetes em comentários",
+    "Moderação comunitária avançada",
+    "Suporte prioritário"
+  ]
+  p.permissoes = {
+    "salvar_materias_limite"              => 0,
+    "editar_comentario_minutos"           => 60,
+    "moderacao_automatica"                => false,
+    "delay_entre_comentarios"             => false,
+    "aprovacao_automatica_apos_reputacao" => true,
+    "badge"                               => "max",
+    "notificacoes_avancadas"              => true,
+    "historico_comentarios"               => true,
+    "pode_denunciar"                      => true,
+    "pode_seguir"                         => true,
+    "destaque_visual_comentarios"         => true,
+    "pode_fixar_comentario"               => true,
+    "acesso_antecipado"                   => true,
+    "pode_criar_enquetes"                 => true,
+    "sem_anuncios"                        => true
+  }
+end
+
 puts ""
 puts "✓ Seeds criados com sucesso!"
 puts ""
 puts "  #{Category.count} categorias | #{Article.count} artigos | #{Tag.count} tags"
 puts "  #{Article.destaques.count} artigos em destaque | #{Article.publicados.count} publicados"
+puts "  #{SubscriptionPlan.count} planos de assinatura"
 puts ""
 puts "Usuários:"
 puts "  admin@buscamais.org    | Admin@123456    | administrador"

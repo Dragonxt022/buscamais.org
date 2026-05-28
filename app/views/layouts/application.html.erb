@@ -4,6 +4,11 @@
     <title><%= content_for(:title) || "Busca Mais - A Verdade, Esclarecida" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="description" content="<%= content_for(:meta_description) || 'Portal de notícias com integridade jornalística e profundidade analítica.' %>">
+    <% if content_for?(:canonical) %>
+      <link rel="canonical" href="<%= yield :canonical %>">
+    <% else %>
+      <link rel="canonical" href="<%= request.url.split('?').first %>">
+    <% end %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= yield :head %>
@@ -40,5 +45,6 @@
     </main>
     <%= render "shared/footer" %>
     <%= render "shared/cookie_consent" %>
+    <% if user_signed_in? %><%= render "shared/upsell_plano" %><% end %>
   </body>
 </html>

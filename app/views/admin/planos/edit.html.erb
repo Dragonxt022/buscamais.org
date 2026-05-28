@@ -1,0 +1,6 @@
+<% content_for :page_title, "Editar Plano" %>
+<% content_for :page_subtitle, "\"#{@plano.nome}\" — #{@plano.preco_formatado}" %>
+
+<div class="max-w-3xl">
+  <%= render "form", plano: @plano %>
+</div>

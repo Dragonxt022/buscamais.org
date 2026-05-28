@@ -1,0 +1,72 @@
+<% content_for :title, @query.present? ? "Busca: \"#{@query}\" — Busca Mais" : "Buscar Artigos — Busca Mais" %>
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+  <%# Formulário de busca %>
+  <div class="mb-8">
+    <%= form_with url: busca_path, method: :get, class: "flex gap-3" do |f| %>
+      <div class="relative flex-1">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <%= f.search_field :q, value: @query, placeholder: "Buscar artigos, categorias...",
+            class: "input pl-11 text-base",
+            autofocus: @query.blank? %>
+      </div>
+      <%= f.submit "Buscar", class: "btn-primary px-6" %>
+    <% end %>
+  </div>
+
+  <% if @query.present? %>
+    <% if @resultados.any? %>
+      <div class="mb-4 flex items-center justify-between">
+        <p class="text-sm text-gray-500">
+          <%= @pagy.count %> resultado<%= @pagy.count == 1 ? "" : "s" %> para
+          <strong>"<%= @query %>"</strong>
+        </p>
+      </div>
+
+      <div class="space-y-4">
+        <% @resultados.each do |artigo| %>
+          <article class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex gap-4 hover:shadow-md transition-shadow">
+            <% if artigo.imagem_capa_file.attached? %>
+              <div class="w-24 h-24 rounded-lg overflow-hidden shrink-0 shimmer" data-controller="shimmer">
+                <%= image_tag rails_blob_path(artigo.imagem_capa_file.blob, only_path: true),
+                    alt: artigo.titulo,
+                    class: "w-full h-full object-cover",
+                    loading: "lazy" %>
+              </div>
+            <% end %>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <% if artigo.category %>
+                  <span class="text-xs font-bold text-blue-600 uppercase"><%= artigo.category.nome %></span>
+                <% end %>
+                <span class="text-xs text-gray-400"><%= l artigo.publicado_em, format: :short if artigo.publicado_em %></span>
+              </div>
+              <h2 class="font-bold text-gray-900 mb-1 line-clamp-2">
+                <%= link_to artigo.titulo, noticia_path(artigo.slug), class: "hover:text-blue-600" %>
+              </h2>
+              <p class="text-sm text-gray-500 line-clamp-2"><%= artigo.resumo %></p>
+              <p class="text-xs text-gray-400 mt-2">Por <%= artigo.author&.nome %></p>
+            </div>
+          </article>
+        <% end %>
+      </div>
+
+      <div class="mt-6"><%== pagy_nav(@pagy) if @pagy.pages > 1 %></div>
+    <% elsif @query.length >= 2 %>
+      <div class="text-center py-16 text-gray-400">
+        <svg class="w-16 h-16 mx-auto mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <p class="text-lg font-medium text-gray-500">Nenhum resultado para "<%= @query %>"</p>
+        <p class="text-sm mt-1">Tente palavras-chave diferentes ou explore nossas categorias.</p>
+        <%= link_to "← Ver todas as notícias", noticias_path, class: "mt-4 inline-block text-sm text-blue-600 hover:underline" %>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="text-center py-12 text-gray-400">
+      <p class="text-sm">Digite ao menos 2 caracteres para buscar.</p>
+    </div>
+  <% end %>
+</div>

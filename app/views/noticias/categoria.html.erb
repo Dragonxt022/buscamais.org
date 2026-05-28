@@ -1,14 +1,37 @@
 <% content_for :title, "#{@categoria.nome} - Busca Mais" %>
+<% content_for :meta_description, @categoria.descricao.presence || "Notícias de #{@categoria.nome} no portal Busca Mais." %>
+<% content_for :canonical, categoria_url(@categoria.slug) %>
 
 <div class="max-w-7xl mx-auto px-4 py-10">
-  <div class="flex items-center gap-3 mb-8">
-    <span class="w-1.5 h-8 rounded" style="background-color: <%= @categoria.cor %>"></span>
-    <div>
-      <h1 class="text-2xl font-bold text-gray-900"><%= @categoria.nome %></h1>
-      <% if @categoria.descricao.present? %>
-        <p class="text-sm text-gray-500 mt-0.5"><%= @categoria.descricao %></p>
-      <% end %>
+  <div class="flex items-center justify-between gap-4 mb-8">
+    <div class="flex items-center gap-3">
+      <span class="w-1.5 h-8 rounded shrink-0" style="background-color: <%= @categoria.cor %>"></span>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900"><%= @categoria.nome %></h1>
+        <% if @categoria.descricao.present? %>
+          <p class="text-sm text-gray-500 mt-0.5"><%= @categoria.descricao %></p>
+        <% end %>
+        <p class="text-xs text-gray-400 mt-1"><%= @total_seguidores %> seguidor<%= @total_seguidores == 1 ? "" : "es" %></p>
+      </div>
     </div>
+
+    <%# Botão seguir categoria %>
+    <% if user_signed_in? %>
+      <% if current_user.pode_seguir? %>
+        <%= button_to usuario_follows_path(followable_type: "Category", followable_id: @categoria.id),
+            method: @seguindo ? :delete : :post,
+            params: @seguindo ? { followable_type: "Category", followable_id: @categoria.id } : {},
+            class: "shrink-0 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors #{@seguindo ? 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'}" do %>
+          <%= @seguindo ? "Seguindo ✓" : "+ Seguir" %>
+        <% end %>
+      <% else %>
+        <%= link_to planos_publicos_path,
+            class: "shrink-0 px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50",
+            title: "Disponível no plano Plus ou MAX" do %>
+          Seguir (Plus+)
+        <% end %>
+      <% end %>
+    <% end %>
   </div>
 
   <% if @artigos.any? %>

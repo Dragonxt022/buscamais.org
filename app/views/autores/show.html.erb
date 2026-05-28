@@ -1,0 +1,86 @@
+<% content_for :title, "#{@autor.nome} — Busca Mais" %>
+<% content_for :meta_description, "Artigos publicados por #{@autor.nome} no portal Busca Mais." %>
+<% content_for :canonical, autor_url(@autor.slug) %>
+
+<% content_for :head do %>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": <%= @autor.nome.to_json %>,
+    "url": <%= autor_url(@autor.slug).to_json %>,
+    "jobTitle": <%= @autor.role.humanize.to_json %>
+  }
+  </script>
+<% end %>
+
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <%# Perfil do autor %>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
+    <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-black shrink-0">
+      <%= @autor.nome.first.upcase %>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-2 mb-1">
+        <h1 class="text-2xl font-black text-gray-900"><%= @autor.nome %></h1>
+        <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full capitalize">
+          <%= @autor.role.humanize %>
+        </span>
+        <%= render "shared/badge_plano", user: @autor %>
+      </div>
+      <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2">
+        <span><strong class="text-gray-900"><%= @total_artigos %></strong> artigos</span>
+        <span><strong class="text-gray-900"><%= @total_leituras.to_i %></strong> leituras</span>
+        <span><strong class="text-gray-900"><%= @total_seguidores %></strong> seguidores</span>
+      </div>
+    </div>
+
+    <%# Botão seguir %>
+    <% if user_signed_in? && current_user != @autor %>
+      <% if current_user.pode_seguir? %>
+        <%= button_to usuario_follows_path(followable_type: "User", followable_id: @autor.id),
+            method: @seguindo ? :delete : :post,
+            params: @seguindo ? { followable_type: "User", followable_id: @autor.id } : {},
+            class: "shrink-0 px-5 py-2 rounded-xl text-sm font-semibold border transition-colors #{@seguindo ? 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200' : 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'}" do %>
+          <%= @seguindo ? "Seguindo ✓" : "+ Seguir" %>
+        <% end %>
+      <% else %>
+        <%= link_to planos_publicos_path, class: "shrink-0 px-5 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50" do %>
+          Seguir (Plus+)
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Artigos %>
+  <h2 class="text-xl font-bold text-gray-900 mb-4">Artigos de <%= @autor.nome %></h2>
+
+  <% if @artigos.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% @artigos.each do |artigo| %>
+        <article class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+          <% if artigo.imagem_capa_file.attached? %>
+            <div class="aspect-video overflow-hidden shimmer" data-controller="shimmer">
+              <%= image_tag rails_blob_path(artigo.imagem_capa_file.blob, only_path: true),
+                  alt: artigo.titulo, class: "w-full h-full object-cover", loading: "lazy" %>
+            </div>
+          <% else %>
+            <div class="aspect-video bg-gradient-to-br from-blue-50 to-gray-100"></div>
+          <% end %>
+          <div class="p-4">
+            <% if artigo.category %>
+              <span class="text-xs font-bold text-blue-600 uppercase mb-2 block"><%= artigo.category.nome %></span>
+            <% end %>
+            <h3 class="font-bold text-gray-900 text-sm leading-snug mb-1 line-clamp-2">
+              <%= link_to artigo.titulo, noticia_path(artigo.slug), class: "hover:text-blue-600" %>
+            </h3>
+            <p class="text-xs text-gray-400"><%= l artigo.publicado_em, format: :short if artigo.publicado_em %> · <%= artigo.visualizacoes %> leituras</p>
+          </div>
+        </article>
+      <% end %>
+    </div>
+    <div class="mt-6"><%== pagy_nav(@pagy) if @pagy.pages > 1 %></div>
+  <% else %>
+    <p class="text-gray-400 text-sm py-8 text-center">Nenhum artigo publicado ainda.</p>
+  <% end %>
+</div>

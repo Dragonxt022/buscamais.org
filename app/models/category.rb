@@ -2,8 +2,9 @@ class Category < ApplicationRecord
   extend FriendlyId
   friendly_id :nome, use: [:slugged, :finders]
 
-  has_many :articles, dependent: :nullify
-  has_many :user_topics, dependent: :destroy
+  has_many :articles,     dependent: :nullify
+  has_many :user_topics,  dependent: :destroy
+  has_many :user_follows, as: :followable, dependent: :destroy
 
   validates :nome, presence: true, uniqueness: true
 

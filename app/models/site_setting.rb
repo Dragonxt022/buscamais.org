@@ -3,6 +3,7 @@ class SiteSetting < ApplicationRecord
     site_titulo site_descricao site_url
     email_remetente email_nome email_rodape
     google_client_id google_client_secret
+    stripe_publishable_key stripe_secret_key stripe_webhook_secret
   ].freeze
 
   validates :chave, presence: true, inclusion: { in: CHAVES }, uniqueness: true

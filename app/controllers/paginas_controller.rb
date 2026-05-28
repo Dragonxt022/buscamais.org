@@ -29,6 +29,7 @@ class PaginasController < ApplicationController
   def sitemap
     @artigos    = Article.publicados.order(publicado_em: :desc)
     @categorias = Category.ativas.order(:nome)
+    @autores    = User.pode_publicar.where.not(slug: nil)
     respond_to do |format|
       format.xml { render layout: false }
     end

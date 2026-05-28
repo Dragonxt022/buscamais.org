@@ -16,9 +16,20 @@ Rails.application.routes.draw do
   get  "noticias/:slug",                  to: "noticias#show",      as: :noticia
   get  "categoria/:slug",                 to: "noticias#categoria", as: :categoria
   post "comentarios",                     to: "comments#create",    as: :comentarios_publicos
-  post "comentarios/:id/curtir",          to: "comment_likes#toggle", as: :curtir_comentario
+  post   "comentarios/:id/curtir",    to: "comment_likes#toggle",    as: :curtir_comentario
+  post   "comentarios/:id/salvar",    to: "comment_saves#create",    as: :salvar_comentario
+  delete "comentarios/:id/salvar",    to: "comment_saves#destroy",   as: :dessalvar_comentario
+  post   "comentarios/:id/denunciar", to: "comment_reports#create",  as: :denunciar_comentario
 
   post "cookie_consent", to: "cookie_consents#create", as: :cookie_consent
+
+  # Planos e assinatura
+  get  "planos",          to: "planos#index",  as: :planos_publicos
+  get  "autores/:slug",   to: "autores#show",  as: :autor
+  get  "busca",           to: "busca#index",   as: :busca
+
+  # Stripe webhook
+  post "stripe/webhook",  to: "stripe_webhooks#create", as: :stripe_webhook
 
   # Páginas institucionais
   get  "sobre-nos",   to: "paginas#sobre",          as: :sobre_nos
@@ -37,7 +48,16 @@ Rails.application.routes.draw do
     root "dashboard#index"
     resource  :perfil,      only: [:show, :edit, :update]
     resources :salvos,      only: [:index, :create, :destroy]
-    resource  :assinatura,  only: [:show, :update]
+    resource  :assinatura,  only: [:show, :update] do
+      member do
+        post :checkout
+        get  :sucesso
+        get  :cancelado
+      end
+    end
+    resources :follows, only: [:create] do
+      collection { delete :destroy }
+    end
     resources :comentarios, only: [:index]
     resources :notificacoes, only: [:index, :destroy] do
       collection do
@@ -101,5 +121,10 @@ Rails.application.routes.draw do
     end
     get "analise", to: "dashboard#analise"
     resource :configuracoes, only: [:show, :update]
+    resources :notificacoes, only: [:index, :destroy] do
+      collection { patch :marcar_todas_lidas }
+    end
+    resources :planos, only: [:index, :new, :create, :edit, :update, :destroy]
+    resources :assinaturas, only: [:index, :new, :create, :edit, :update, :destroy]
   end
 end

@@ -17,22 +17,43 @@ class NoticiasController < ApplicationController
   def show
     @artigo = Article.publicados.friendly.find(params[:slug])
     @artigo.increment!(:visualizacoes)
-    @comentarios = @artigo.comments.aprovados.raiz
-                          .includes(:user, comment_likes: :user,
-                                    replies: [:user, :comment_likes,
-                                             { replies: [:user, :comment_likes] }])
-                          .recentes
-    @artigos_relacionados = Article.publicados
-                                   .with_attached_imagem_capa_file
-                                   .where(category: @artigo.category)
-                                   .where.not(id: @artigo.id)
-                                   .order(publicado_em: :desc)
-                                   .limit(3)
 
-    if user_signed_in?
-      ReadingHistory.find_or_create_by(user: current_user, article: @artigo) do |h|
-        h.lido_em = Time.current
+    # ── Verificação de acesso premium ──────────────────────────────────────
+    @acesso_completo = verificar_acesso(@artigo)
+
+    # Só carrega comentários e relacionados se tiver acesso completo
+    if @acesso_completo
+      @sort_comentarios = params[:sort].in?(%w[top novo]) ? params[:sort] : "top"
+      ordem = @sort_comentarios == "top" ?
+        Arel.sql("(SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id) DESC, comments.created_at DESC") :
+        Arel.sql("comments.created_at DESC")
+
+      @comentarios = @artigo.comments.aprovados.raiz
+                            .includes(:user, comment_likes: :user,
+                                      replies: [:user, :comment_likes,
+                                               { replies: [:user, :comment_likes] }])
+                            .order(ordem)
+      @artigos_relacionados = Article.publicados
+                                     .with_attached_imagem_capa_file
+                                     .where(category: @artigo.category)
+                                     .where.not(id: @artigo.id)
+                                     .order(publicado_em: :desc)
+                                     .limit(3)
+
+      # Registra leitura apenas quando teve acesso completo
+      if user_signed_in?
+        ReadingHistory.find_or_create_by(user: current_user, article: @artigo) do |h|
+          h.lido_em = Time.current
+        end
       end
+    else
+      # Para usuários logados, carrega o número de artigos restantes
+      @artigos_premium_restantes = user_signed_in? ? current_user.artigos_premium_restantes_mes : 0
+      @plano_com_promo = SubscriptionPlan.ativos.ordenados
+                                         .select { |p| p.promocao_disponivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) }
+                                         .first
+      @plano_pago = SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? && p.destaque? } ||
+                    SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? }
     end
   end
 
@@ -45,5 +66,24 @@ class NoticiasController < ApplicationController
                          .order(publicado_em: :desc),
       limit: 12
     )
+    @seguindo         = user_signed_in? && current_user.seguindo?(@categoria)
+    @total_seguidores = UserFollow.where(followable: @categoria).count
+  end
+
+  private
+
+  def verificar_acesso(artigo)
+    return true unless artigo.premium?
+
+    # Admins e editores têm acesso total
+    return true if user_signed_in? && current_user.pode_publicar?
+
+    # Assinante ativo tem acesso total
+    return true if user_signed_in? && current_user.assinante_ativo?
+
+    # Usuário logado com cota mensal disponível
+    return true if user_signed_in? && current_user.pode_ler_premium?(artigo)
+
+    false
   end
 end

@@ -62,4 +62,20 @@
   </url>
   <% end %>
 
+  <%# Perfis de autores %>
+  <% @autores.each do |autor| %>
+  <url>
+    <loc><%= autor_url(autor.slug) %></loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <% end %>
+
+  <%# Página de planos %>
+  <url>
+    <loc><%= planos_publicos_url %></loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
 </urlset>

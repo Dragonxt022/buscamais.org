@@ -4,7 +4,9 @@ class Usuario::DashboardController < Usuario::BaseController
     @total_lidos    = current_user.reading_histories.count
     @topicos        = current_user.user_topics.includes(:category).map(&:category)
     @recomendados   = artigos_recomendados
-    @salvos_recentes = current_user.saved_articles.includes(article: [:category, :author])
+    @salvos_recentes = current_user.saved_articles
+                                   .includes(article: [:category, :author,
+                                             { imagem_capa_file_attachment: :blob }])
                                    .order(created_at: :desc).limit(3)
   end
 
@@ -17,11 +19,16 @@ class Usuario::DashboardController < Usuario::BaseController
       Article.publicados
              .where(category_id: category_ids)
              .where.not(id: lidos_ids)
+             .with_attached_imagem_capa_file
              .includes(:category, :author)
              .order(publicado_em: :desc)
              .limit(6)
     else
-      Article.publicados.includes(:category, :author).order(publicado_em: :desc).limit(6)
+      Article.publicados
+             .with_attached_imagem_capa_file
+             .includes(:category, :author)
+             .order(publicado_em: :desc)
+             .limit(6)
     end
   end
 end

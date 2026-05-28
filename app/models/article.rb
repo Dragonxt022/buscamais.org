@@ -19,10 +19,12 @@ class Article < ApplicationRecord
   validates :titulo, presence: true, length: { minimum: 5, maximum: 200 }
   validates :resumo, length: { maximum: 500 }, allow_blank: true
 
-  scope :publicados, -> { where(status: :publicado).where("publicado_em <= ?", Time.current) }
-  scope :destaques, -> { where(destaque: true) }
-  scope :recentes, -> { order(publicado_em: :desc) }
-  scope :por_categoria, ->(categoria) { where(category: categoria) }
+  scope :publicados,     -> { where(status: :publicado).where("publicado_em <= ?", Time.current) }
+  scope :destaques,      -> { where(destaque: true) }
+  scope :recentes,       -> { order(publicado_em: :desc) }
+  scope :por_categoria,  ->(categoria) { where(category: categoria) }
+  scope :premium_only,   -> { where(premium: true) }
+  scope :gratuitos_only, -> { where(premium: false) }
 
   before_save :calcular_tempo_leitura
   before_save :definir_publicado_em

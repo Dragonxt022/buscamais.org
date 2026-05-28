@@ -60,6 +60,7 @@ class Admin::UsuariosController < Admin::BaseController
   end
 
   def usuario_params
-    params.require(:user).permit(:nome, :email, :bio, :role)
+    # :role é gerenciado exclusivamente via alterar_role — não via update em massa
+    params.require(:user).permit(:nome, :email, :bio)
   end
 end

@@ -1,0 +1,135 @@
+<% content_for :title, "Planos e Preços — #{SiteSetting['site_titulo'] || 'Busca Mais'}" %>
+<% content_for :meta_description, "Escolha o plano ideal para você e tenha acesso a todos os recursos do portal." %>
+
+<div class="max-w-5xl mx-auto px-4 py-12">
+  <%# Header %>
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-black text-gray-900 mb-3">Escolha seu Plano</h1>
+    <p class="text-lg text-gray-500">Acesse o jornalismo de qualidade no nível certo para você.</p>
+  </div>
+
+  <%# Banner promocional global — aparece se algum plano tem promo ativa %>
+  <% plano_com_promo = @planos.find { |p| p.promocao_disponivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) } %>
+  <% if plano_com_promo %>
+    <div class="mb-8 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div class="text-2xl shrink-0">🏷</div>
+      <div class="flex-1">
+        <p class="font-black text-base">Oferta especial de lançamento!</p>
+        <p class="text-sm text-orange-100">
+          Assine o <strong><%= plano_com_promo.nome %></strong> por apenas
+          <strong><%= plano_com_promo.preco_promo_formatado %></strong>
+          pelos primeiros <strong><%= plano_com_promo.meses_promocionais %> meses</strong>.
+          Após esse período, <%= plano_com_promo.preco_formatado %> automaticamente.
+          <% if plano_com_promo.apenas_novos_usuarios? %>
+            <span class="text-orange-200">· Apenas para novos assinantes.</span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Cards %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+    <% @planos.each do |plano| %>
+      <% cores    = plano.cor_classes %>
+      <% is_atual = @plano_atual&.slug == plano.slug %>
+      <% tem_promo = plano.promocao_disponivel? && (!user_signed_in? || plano.elegivel_para_promocao?(current_user)) %>
+
+      <div class="relative bg-white rounded-2xl border shadow-sm flex flex-col overflow-hidden
+                  <%= plano.destaque? ? "ring-2 #{cores[:ring] || 'ring-blue-300'} shadow-lg scale-105" : 'border-gray-200' %>">
+
+        <% if plano.destaque? && !tem_promo %>
+          <div class="<%= cores[:badge] || 'bg-blue-600' %> text-white text-xs font-bold text-center py-2 uppercase tracking-widest">
+            ★ Mais Popular
+          </div>
+        <% end %>
+
+        <% if tem_promo %>
+          <div class="bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-bold text-center py-2 uppercase tracking-widest">
+            🏷 Oferta Especial
+          </div>
+        <% end %>
+
+        <div class="p-7 flex-1 flex flex-col">
+          <%# Nome e preço %>
+          <div class="mb-6">
+            <h2 class="text-xl font-black text-gray-900 mb-1"><%= plano.nome %></h2>
+            <p class="text-sm text-gray-500 mb-4"><%= plano.descricao %></p>
+
+            <% if tem_promo %>
+              <%# Preço promocional com preço normal tachado %>
+              <div class="flex items-end gap-2 mb-1">
+                <span class="text-4xl font-black text-orange-500">
+                  R$ <%= format('%.2f', plano.preco_promocional).gsub('.', ',') %>
+                </span>
+                <span class="text-sm text-gray-400 mb-1.5">/mês</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-400 line-through">
+                  <%= plano.preco_formatado %>
+                </span>
+                <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                  pelos primeiros <%= plano.meses_promocionais %> meses
+                </span>
+              </div>
+              <p class="text-xs text-gray-400 mt-1">
+                Depois: <%= plano.preco_formatado %> (renovação automática)
+              </p>
+            <% else %>
+              <div class="flex items-end gap-1">
+                <span class="text-4xl font-black <%= cores[:text] || 'text-blue-700' %>">
+                  <%= plano.gratuito? ? "Grátis" : "R$ #{format('%.2f', plano.preco).gsub('.', ',')}" %>
+                </span>
+                <% unless plano.gratuito? %>
+                  <span class="text-sm text-gray-400 mb-1.5">/mês</span>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+
+          <%# Benefícios %>
+          <ul class="space-y-2 flex-1 mb-7">
+            <% plano.beneficios.each do |b| %>
+              <li class="flex items-start gap-2.5 text-sm text-gray-700">
+                <svg class="w-4 h-4 <%= tem_promo ? 'text-orange-500' : (cores[:text] || 'text-blue-500') %> mt-0.5 shrink-0"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                <%= b %>
+              </li>
+            <% end %>
+          </ul>
+
+          <%# CTA %>
+          <% if is_atual %>
+            <div class="w-full text-center py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-semibold">
+              Plano atual
+            </div>
+          <% elsif user_signed_in? %>
+            <% if plano.gratuito? %>
+              <div class="w-full text-center py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-semibold">
+                Disponível gratuitamente
+              </div>
+            <% else %>
+              <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id),
+                  method: :post,
+                  class: "w-full py-3 rounded-xl text-white text-sm font-bold transition-colors #{tem_promo ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 shadow-sm' : plano.destaque? ? (cores[:badge] || 'bg-blue-600') + ' hover:opacity-90' : 'bg-gray-800 hover:bg-gray-700'}" do %>
+                <%= tem_promo ? "Aproveitar oferta →" : "Assinar #{plano.nome}" %>
+              <% end %>
+            <% end %>
+          <% else %>
+            <%= link_to plano.gratuito? ? new_user_registration_path : new_user_session_path,
+                class: "block w-full text-center py-3 rounded-xl text-white text-sm font-bold transition-colors #{tem_promo ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90' : plano.destaque? ? (cores[:badge] || 'bg-blue-600') + ' hover:opacity-90' : 'bg-gray-800 hover:bg-gray-700'}" do %>
+              <%= plano.gratuito? ? "Criar conta grátis" : (tem_promo ? "Aproveitar oferta →" : "Começar agora") %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-12 text-center text-sm text-gray-400">
+    Cancelamento a qualquer momento, sem multa. ·
+    <%= link_to "Dúvidas? Fale conosco", contato_path, class: "text-blue-600 hover:underline" %>
+  </div>
+</div>

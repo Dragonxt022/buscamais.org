@@ -13,5 +13,21 @@ class Admin::DashboardController < Admin::BaseController
     @leituras_por_mes   = Article.publicados
                                  .group("DATE_FORMAT(publicado_em, '%Y-%m')")
                                  .sum(:visualizacoes)
+    @usuarios_por_plano = SubscriptionPlan.ativos.ordenados.map do |plano|
+      count = Subscription.ativas.where(subscription_plan_id: plano.id).count
+      count += User.ativos.left_joins(:subscription)
+                   .where(subscriptions: { id: nil })
+                   .count if plano.gratuito?
+      { plano: plano, count: count }
+    end
+    @novos_usuarios_30d  = User.where("created_at > ?", 30.days.ago).count
+    @comentarios_por_mes = Comment.group("DATE_FORMAT(created_at, '%Y-%m')").count
+    @top_autores = User.pode_publicar
+                       .joins(:articles)
+                       .where(articles: { status: :publicado })
+                       .group("users.id")
+                       .order("COUNT(articles.id) DESC")
+                       .limit(5)
+                       .select("users.*, COUNT(articles.id) AS total_artigos, SUM(articles.visualizacoes) AS total_views")
   end
 end
