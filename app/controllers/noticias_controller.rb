@@ -50,7 +50,7 @@ class NoticiasController < ApplicationController
       # Para usuários logados, carrega o número de artigos restantes
       @artigos_premium_restantes = user_signed_in? ? current_user.artigos_premium_restantes_mes : 0
       @plano_com_promo = SubscriptionPlan.ativos.ordenados
-                                         .select { |p| p.promocao_disponivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) }
+                                         .select { |p| p.promocao_visivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) }
                                          .first
       @plano_pago = SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? && p.destaque? } ||
                     SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? }

@@ -11,8 +11,9 @@ class CommentReport < ApplicationRecord
     "outro"      => "Outro motivo"
   }.freeze
 
-  validates :user_id, uniqueness: { scope: :comment_id, message: "Você já denunciou este comentário." }
-  validates :reason,  inclusion: { in: RAZOES.keys }
+  validates :user_id,   uniqueness: { scope: :comment_id, message: "Você já denunciou este comentário." }
+  validates :reason,    inclusion: { in: RAZOES.keys }
+  validates :descricao, length: { maximum: 500 }, allow_blank: true
 
   scope :pendentes,  -> { where(resolvido: false) }
   scope :resolvidos, -> { where(resolvido: true) }

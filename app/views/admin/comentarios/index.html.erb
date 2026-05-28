@@ -1,27 +1,70 @@
 <% content_for :page_title, "Comentários" %>
-<% content_for :page_subtitle, "Modere os comentários enviados pelos usuários." %>
+<% content_for :page_subtitle, "Modere e gerencie os comentários do portal." %>
+
+<%# KPIs %>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  <%= link_to admin_comentarios_path,
+      class: "bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow" do %>
+    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total</p>
+    <p class="text-2xl font-black text-gray-900"><%= @pagy.count %></p>
+  <% end %>
+  <%= link_to admin_comentarios_path(status: "pendente"),
+      class: "bg-white rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow #{@total_pendentes > 0 ? 'border-amber-200' : 'border-gray-100'}" do %>
+    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Pendentes</p>
+    <p class="text-2xl font-black <%= @total_pendentes > 0 ? 'text-amber-500' : 'text-gray-900' %>"><%= @total_pendentes %></p>
+  <% end %>
+  <%= link_to admin_comentarios_path(status: "aprovado"),
+      class: "bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow" do %>
+    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Aprovados</p>
+    <p class="text-2xl font-black text-green-600"><%= Comment.aprovados.count %></p>
+  <% end %>
+  <%= link_to admin_comentarios_path(denunciados: "1"),
+      class: "bg-white rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow #{@total_denunciados > 0 ? 'border-red-200' : 'border-gray-100'}" do %>
+    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Denunciados</p>
+    <p class="text-2xl font-black <%= @total_denunciados > 0 ? 'text-red-500' : 'text-gray-900' %>"><%= @total_denunciados %></p>
+  <% end %>
+</div>
 
 <div class="card"
      data-controller="table-select"
-     data-table-select-confirm-message-value="Remover {count} comentário(s) selecionado(s)?\nEsta ação não pode ser desfeita.">
+     data-table-select-confirm-message-value="Remover {count} comentário(s) selecionado(s)?">
 
-  <div class="card-header">
-    <%= form_with url: admin_comentarios_path, method: :get, class: "flex gap-3" do |f| %>
-      <%= f.select :status, Comment.statuses.keys.map { |s| [s.humanize, s] },
-          { include_blank: "Todos os Status" },
-          class: "px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
-      <%= f.submit "Filtrar", class: "btn-primary" %>
-      <%= link_to "Resetar", admin_comentarios_path, class: "text-sm text-blue-600 hover:underline self-center" %>
+  <%# Filtros %>
+  <div class="card-header flex-wrap gap-3">
+    <%= form_with url: admin_comentarios_path, method: :get,
+        class: "flex flex-wrap items-center gap-2 flex-1" do |f| %>
+      <div class="relative">
+        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <%= f.text_field :q, value: params[:q], placeholder: "Buscar comentário ou autor…",
+            class: "pl-9 input text-sm w-52" %>
+      </div>
+      <%= f.select :status,
+          [["Todos os status", ""], ["Pendente", "pendente"], ["Aprovado", "aprovado"], ["Rejeitado", "rejeitado"]],
+          { selected: params[:status] }, class: "input text-sm w-auto" %>
+      <label class="flex items-center gap-2 text-sm font-medium text-gray-600 cursor-pointer select-none">
+        <%= f.check_box :denunciados, checked: params[:denunciados].present?,
+            class: "w-4 h-4 rounded border-gray-300 text-red-500" %>
+        <svg class="w-3.5 h-3.5 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H12l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+        </svg>
+        Denunciados
+      </label>
+      <%= f.submit "Filtrar", class: "btn-primary text-sm" %>
+      <% if params[:q].present? || params[:status].present? || params[:denunciados].present? %>
+        <%= link_to "Limpar", admin_comentarios_path, class: "text-sm text-gray-400 hover:text-gray-700" %>
+      <% end %>
     <% end %>
   </div>
 
-  <%# Bulk actions bar %>
+  <%# Bulk bar %>
   <div data-table-select-target="bulkBar"
-       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2 flex items-center gap-4">
     <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
     <button type="button" data-action="click->table-select#deleteSelected"
-            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="flex items-center gap-1.5 text-xs font-bold text-red-600 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
       </svg>
       Excluir selecionados
@@ -34,66 +77,157 @@
     <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
   </form>
 
-  <div class="divide-y divide-gray-100">
-    <% @comentarios.each do |comentario| %>
-      <div class="p-5 flex gap-3">
-        <%# Checkbox %>
-        <div class="pt-1 shrink-0">
-          <input type="checkbox"
-                 value="<%= comentario.id %>"
-                 data-table-select-target="checkbox"
-                 data-action="change->table-select#onSelect"
+  <%# Tabela compacta %>
+  <table class="table-admin">
+    <thead>
+      <tr>
+        <th class="w-10">
+          <input type="checkbox" data-select-all data-action="change->table-select#onSelectAll"
                  class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
-        </div>
-        <div class="w-9 h-9 rounded-full bg-gray-300 flex-shrink-0 flex items-center justify-center text-gray-600 text-sm font-bold">
-          <%= comentario.user&.nome&.first&.upcase || "?" %>
-        </div>
-        <div class="flex-1">
-          <div class="flex items-start justify-between gap-4 mb-2">
-            <div>
-              <span class="font-semibold text-sm text-gray-900"><%= comentario.user&.nome || "Usuário removido" %></span>
-              <span class="text-gray-400 text-sm mx-2">em</span>
-              <%= link_to comentario.article.titulo, noticia_path(comentario.article.slug),
-                  class: "text-sm text-blue-600 hover:underline line-clamp-1 max-w-xs inline-block align-middle" %>
-            </div>
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <%= render "shared/status_badge", status: comentario.status %>
-              <span class="text-xs text-gray-400"><%= l comentario.created_at, format: :short %></span>
-            </div>
-          </div>
-          <p class="text-sm text-gray-700 mb-3 leading-relaxed"><%= comentario.conteudo %></p>
-          <div class="flex items-center gap-3">
-            <% if comentario.pendente? %>
-              <%= button_to aprovar_admin_comentario_path(comentario), method: :patch,
-                  class: "text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-green-200 transition-colors" do %>
-                ✓ Aprovar
-              <% end %>
-              <%= button_to rejeitar_admin_comentario_path(comentario), method: :patch,
-                  class: "text-xs bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-red-200 transition-colors" do %>
-                ✗ Rejeitar
-              <% end %>
-            <% end %>
-            <%= button_to admin_comentario_path(comentario), method: :delete,
-                data: { turbo_confirm: "Remover este comentário?" },
-                class: "text-xs text-gray-400 hover:text-red-600 px-2 py-1.5" do %>
-              Remover
-            <% end %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+        </th>
+        <th>Autor</th>
+        <th>Comentário</th>
+        <th>Artigo</th>
+        <th>Status</th>
+        <th>Data</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @comentarios.each do |comentario| %>
+        <% denuncias = comentario.comment_reports %>
+        <% tem_denuncia = denuncias.any? %>
+        <tr class="<%= comentario.pendente? ? 'bg-amber-50/40' : '' %> <%= tem_denuncia && !comentario.rejeitado? ? 'bg-red-50/20' : '' %>">
 
-    <% if @comentarios.empty? %>
-      <div class="p-12 text-center text-gray-400">
-        Nenhum comentário encontrado.
-      </div>
-    <% end %>
-  </div>
+          <%# Checkbox %>
+          <td class="w-10">
+            <input type="checkbox" value="<%= comentario.id %>"
+                   data-table-select-target="checkbox"
+                   data-action="change->table-select#onSelect"
+                   class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+          </td>
 
-  <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-    <p class="text-sm text-gray-500">
-      Mostrando <%= @pagy.from %> a <%= @pagy.to %> de <%= @pagy.count %> comentários
-    </p>
-    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
-  </div>
+          <%# Autor %>
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full bg-blue-600 shrink-0 flex items-center justify-center text-white text-[11px] font-bold">
+                <%= comentario.user&.nome&.first&.upcase || "?" %>
+              </div>
+              <span class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                <%= comentario.user&.nome&.truncate(16) || "Removido" %>
+              </span>
+            </div>
+          </td>
+
+          <%# Conteúdo %>
+          <td class="max-w-xs">
+            <p class="text-sm text-gray-700 line-clamp-2"><%= comentario.conteudo %></p>
+            <% if tem_denuncia %>
+              <div class="flex gap-1 mt-1 flex-wrap">
+                <% denuncias.first(2).each do |d| %>
+                  <span class="inline-flex items-center gap-0.5 text-[10px] font-semibold bg-red-50 text-red-600 border border-red-100 px-1.5 py-0.5 rounded-full">
+                    ⚑ <%= CommentReport::RAZOES[d.reason]&.truncate(20) || d.reason %>
+                  </span>
+                <% end %>
+                <% if denuncias.size > 2 %>
+                  <span class="text-[10px] text-red-400 font-medium">+<%= denuncias.size - 2 %></span>
+                <% end %>
+              </div>
+            <% end %>
+            <% if comentario.parent_id? %>
+              <span class="text-[10px] text-gray-400 mt-0.5 block">↳ resposta</span>
+            <% end %>
+          </td>
+
+          <%# Artigo %>
+          <td>
+            <%= link_to comentario.article.titulo.truncate(40),
+                noticia_path(comentario.article.slug),
+                target: "_blank",
+                class: "text-xs text-blue-600 hover:underline line-clamp-2" %>
+          </td>
+
+          <%# Status %>
+          <td>
+            <% status_classes = {
+              "pendente"  => "bg-amber-100 text-amber-700",
+              "aprovado"  => "bg-green-100 text-green-700",
+              "rejeitado" => "bg-gray-100 text-gray-500"
+            } %>
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                         <%= status_classes[comentario.status] || 'bg-gray-100 text-gray-500' %>">
+              <%= comentario.status.humanize %>
+            </span>
+          </td>
+
+          <%# Data %>
+          <td class="whitespace-nowrap text-xs text-gray-400">
+            <%= l comentario.created_at, format: :short %>
+          </td>
+
+          <%# Ações %>
+          <td>
+            <div class="flex items-center gap-1">
+              <% if comentario.pendente? %>
+                <%= button_to aprovar_admin_comentario_path(comentario), method: :patch,
+                    class: "p-1.5 rounded text-green-600 hover:bg-green-50 transition-colors", title: "Aprovar" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                <% end %>
+                <%= button_to rejeitar_admin_comentario_path(comentario), method: :patch,
+                    class: "p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors", title: "Rejeitar" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                <% end %>
+              <% elsif comentario.aprovado? && tem_denuncia %>
+                <%= button_to rejeitar_admin_comentario_path(comentario), method: :patch,
+                    class: "p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors", title: "Remover (denúncia)" do %>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                  </svg>
+                <% end %>
+              <% end %>
+              <%= link_to noticia_path(comentario.article.slug, anchor: "comentario-#{comentario.id}"),
+                  target: "_blank",
+                  class: "p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors",
+                  title: "Ver no artigo" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              <% end %>
+              <%= button_to admin_comentario_path(comentario), method: :delete,
+                  data: { turbo_confirm: "Excluir permanentemente?" },
+                  class: "p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors",
+                  title: "Excluir" do %>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      <% if @comentarios.empty? %>
+        <tr>
+          <td colspan="7" class="text-center py-14 text-gray-400">
+            <svg class="w-10 h-10 mx-auto mb-2 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Nenhum comentário encontrado.
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% if @pagy.pages > 1 %>
+    <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+      <p class="text-xs text-gray-400">
+        <%= @pagy.from %>–<%= @pagy.to %> de <strong><%= @pagy.count %></strong>
+      </p>
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% end %>
 </div>

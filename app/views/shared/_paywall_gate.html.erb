@@ -66,10 +66,18 @@
         <% if user_signed_in? %>
           <%# Já logado: só mostrar opção de assinar %>
           <% if plano_com_promo %>
-            <%= button_to checkout_usuario_assinatura_path(plan_id: plano_com_promo.id),
-                method: :post,
-                class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 transition-opacity shadow-md" do %>
-              🏷 Aproveitar por <%= plano_com_promo.preco_promo_formatado %>
+            <%# Se Stripe está configurado, vai direto pro checkout; caso contrário, vai para a página de planos %>
+            <% if plano_com_promo.promocao_disponivel? %>
+              <%= button_to checkout_usuario_assinatura_path(plan_id: plano_com_promo.id),
+                  method: :post,
+                  class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 transition-opacity shadow-md" do %>
+                🏷 Aproveitar por <%= plano_com_promo.preco_promo_formatado %>
+              <% end %>
+            <% else %>
+              <%= link_to planos_publicos_path,
+                  class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 shadow-md" do %>
+                🏷 Ver oferta — <%= plano_com_promo.preco_promo_formatado %>
+              <% end %>
             <% end %>
           <% elsif plano_pago %>
             <%= button_to checkout_usuario_assinatura_path(plan_id: plano_pago.id),

@@ -49,14 +49,19 @@ class SubscriptionPlan < ApplicationRecord
     "R$ #{format('%.2f', preco_promocional).gsub('.', ',')}/mês"
   end
 
-  # Retorna true se a promoção está ativa e há um Price ID configurado
+  # Promoção visível na UI — só precisa do preço estar configurado
+  def promocao_visivel?
+    promocao_ativa? && preco_promocional.present?
+  end
+
+  # Promoção disponível para checkout Stripe — exige Price ID
   def promocao_disponivel?
-    promocao_ativa? && preco_promocional.present? && stripe_promo_price_id.present?
+    promocao_visivel? && stripe_promo_price_id.present?
   end
 
   # Verifica se este usuário é elegível para a promoção
   def elegivel_para_promocao?(user)
-    return false unless promocao_disponivel?
+    return false unless promocao_visivel?
     return true unless apenas_novos_usuarios?
     # Novo usuário = nunca teve assinatura paga ativa neste plano
     !user.subscriptions.joins(:plan)

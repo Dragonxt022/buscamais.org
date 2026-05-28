@@ -9,7 +9,7 @@
   </div>
 
   <%# Banner promocional global — aparece se algum plano tem promo ativa %>
-  <% plano_com_promo = @planos.find { |p| p.promocao_disponivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) } %>
+  <% plano_com_promo = @planos.find { |p| p.promocao_visivel? && (!user_signed_in? || p.elegivel_para_promocao?(current_user)) } %>
   <% if plano_com_promo %>
     <div class="mb-8 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-2xl px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <div class="text-2xl shrink-0">🏷</div>
@@ -33,7 +33,7 @@
     <% @planos.each do |plano| %>
       <% cores    = plano.cor_classes %>
       <% is_atual = @plano_atual&.slug == plano.slug %>
-      <% tem_promo = plano.promocao_disponivel? && (!user_signed_in? || plano.elegivel_para_promocao?(current_user)) %>
+      <% tem_promo = plano.promocao_visivel? && (!user_signed_in? || plano.elegivel_para_promocao?(current_user)) %>
 
       <div class="relative bg-white rounded-2xl border shadow-sm flex flex-col overflow-hidden
                   <%= plano.destaque? ? "ring-2 #{cores[:ring] || 'ring-blue-300'} shadow-lg scale-105" : 'border-gray-200' %>">

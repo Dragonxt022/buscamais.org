@@ -2,7 +2,7 @@ class CommentReportsController < ApplicationController
   before_action :authenticate_user!
 
   def create
-    comment = Comment.aprovados.find(params[:comment_id])
+    comment = Comment.aprovados.find(params[:id])
 
     if comment.user == current_user
       respond_to do |f|
@@ -26,9 +26,22 @@ class CommentReportsController < ApplicationController
     report.descricao = params[:descricao].presence
 
     if report.save
-      # Notifica admins se o comentário já tem múltiplas denúncias
-      if comment.comment_reports.count >= 3
-        Notification.notificar_admins_novo_comentario(comment) rescue nil
+      # Notifica admins na primeira denúncia e a cada 5
+      count = comment.comment_reports.count
+      if count == 1 || count % 5 == 0
+        User.where(role: :administrador).find_each do |admin|
+          Notification.create!(
+            user:        admin,
+            notificable: comment,
+            tipo:        "novo_comentario",
+            dados:       {
+              autor:   comment.user.nome,
+              artigo:  comment.article.titulo,
+              slug:    comment.article.slug,
+              extra:   "⚑ #{count} denúncia(s)"
+            }.to_json
+          ) rescue nil
+        end
       end
       respond_to do |f|
         f.json { render json: { reported: true }, status: :created }
