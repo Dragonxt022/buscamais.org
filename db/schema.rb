@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_29_125324) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -230,6 +230,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_125324) do
     t.index ["chave"], name: "index_site_settings_on_chave", unique: true
   end
 
+  create_table "subscription_histories", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "event_type"
+    t.string "status"
+    t.string "stripe_subscription_id"
+    t.bigint "subscription_plan_id"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.decimal "valor", precision: 10
+    t.datetime "vigente_ate"
+    t.datetime "vigente_de"
+    t.index ["subscription_plan_id"], name: "index_subscription_histories_on_subscription_plan_id"
+    t.index ["user_id"], name: "index_subscription_histories_on_user_id"
+  end
+
   create_table "subscription_plans", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.boolean "apenas_novos_usuarios", default: true, null: false
     t.boolean "ativo", default: true, null: false
@@ -342,6 +357,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_125324) do
   add_foreign_key "saved_articles", "users"
   add_foreign_key "saved_comments", "comments"
   add_foreign_key "saved_comments", "users"
+  add_foreign_key "subscription_histories", "subscription_plans"
+  add_foreign_key "subscription_histories", "users"
   add_foreign_key "subscriptions", "users"
   add_foreign_key "user_topics", "categories"
   add_foreign_key "user_topics", "users"

@@ -1,85 +1,313 @@
 <% content_for :title, "Minha Assinatura" %>
 
-<div class="max-w-2xl space-y-6">
-  <%# Status atual %>
-  <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-    <h2 class="text-lg font-bold text-gray-900 mb-5">Plano Atual</h2>
+<div class="max-w-4xl space-y-6">
 
-    <% if @plano_atual %>
-      <% cores = @plano_atual.cor_classes %>
-      <div class="flex items-center gap-4 p-4 rounded-xl border <%= cores[:ring] || 'border-gray-200' %> <%= cores[:bg] || 'bg-gray-50' %>">
-        <div class="w-12 h-12 rounded-xl <%= cores[:badge] || 'bg-gray-600' %> flex items-center justify-center text-white">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
-          </svg>
-        </div>
-        <div class="flex-1">
-          <p class="font-bold text-gray-900 text-lg"><%= @plano_atual.nome %></p>
-          <p class="text-sm text-gray-500"><%= @plano_atual.preco_formatado %></p>
-        </div>
-        <% if @subscription&.ativa? && !@plano_atual.gratuito? %>
-          <span class="text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full">Ativa</span>
+  <%# ── Status da assinatura vigente ── %>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-base font-bold text-gray-900">Minha Assinatura</h1>
+        <p class="text-xs text-gray-400 mt-0.5">Gerencie seu plano e acompanhe o histórico de cobranças</p>
+      </div>
+      <% if @subscription&.ativa? && !@plano_atual&.gratuito? %>
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          Assinatura ativa
+        </span>
+      <% end %>
+    </div>
+
+    <%# Grid de status %>
+    <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100">
+      <div class="px-5 py-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Plano atual</p>
+        <p class="font-bold text-gray-900"><%= @plano_atual&.nome || "Gratuito" %></p>
+      </div>
+      <div class="px-5 py-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Valor</p>
+        <p class="font-bold text-gray-900">
+          <%= @plano_atual&.gratuito? ? "Grátis" : (@plano_atual&.preco_formatado || "—") + "/mês" %>
+        </p>
+      </div>
+      <div class="px-5 py-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Próxima cobrança</p>
+        <p class="font-bold text-gray-900">
+          <%= @subscription&.prox_cobranca ? l(@subscription.prox_cobranca, format: :short) : "—" %>
+        </p>
+      </div>
+      <div class="px-5 py-4">
+        <p class="text-xs text-gray-400 uppercase tracking-wide font-semibold mb-1">Status</p>
+        <% if @subscription&.ativa? && !@plano_atual&.gratuito? %>
+          <p class="font-bold text-green-600">Ativa</p>
+        <% elsif @subscription&.cancelada? %>
+          <p class="font-bold text-red-500">Cancelada</p>
+        <% else %>
+          <p class="font-bold text-gray-500">Gratuito</p>
         <% end %>
       </div>
+    </div>
 
-      <% if @subscription&.prox_cobranca %>
-        <p class="text-sm text-gray-500 mt-3">
-          Próxima cobrança: <strong><%= l @subscription.prox_cobranca, format: :long %></strong>
+    <% if @subscription&.ativa? && !@plano_atual&.gratuito? %>
+      <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        <p class="text-xs text-gray-500">
+          Sua assinatura renova automaticamente em
+          <strong><%= @subscription.prox_cobranca ? l(@subscription.prox_cobranca, format: :long) : "—" %></strong>.
+          Cancele a qualquer momento sem multa.
         </p>
-      <% end %>
-
-      <% if @subscription&.ativa? && !@plano_atual.gratuito? %>
         <%= button_to usuario_assinatura_path, method: :patch,
-            data: { turbo_confirm: "Cancelar sua assinatura #{@plano_atual.nome}? Você perderá os benefícios no fim do período." },
-            class: "mt-4 text-sm text-red-500 hover:text-red-700 hover:underline" do %>
+            data: { turbo_confirm: "Cancelar sua assinatura #{@plano_atual.nome}? Você mantém o acesso até #{@subscription.prox_cobranca&.strftime('%d/%m/%Y') || 'o fim do período'}." },
+            class: "text-xs text-red-500 hover:text-red-700 font-medium hover:underline shrink-0" do %>
           Cancelar assinatura
         <% end %>
-      <% end %>
-    <% else %>
-      <p class="text-gray-500 text-sm">Nenhuma assinatura ativa. Explore nossos planos abaixo.</p>
+      </div>
     <% end %>
   </div>
 
-  <%# Upgrade options %>
-  <div>
-    <h3 class="font-bold text-gray-900 mb-4">Alterar Plano</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <% @planos.each do |plano| %>
-        <% cores = plano.cor_classes %>
-        <% is_atual = @plano_atual&.slug == plano.slug %>
-        <div class="bg-white rounded-xl border p-4 flex flex-col
-                    <%= plano.destaque? ? "ring-2 #{cores[:ring] || 'ring-blue-300'}" : 'border-gray-200' %>
-                    <%= is_atual ? 'opacity-60' : '' %>">
-          <p class="font-bold text-gray-900 mb-1"><%= plano.nome %></p>
-          <p class="text-lg font-black <%= cores[:text] || 'text-gray-700' %> mb-3">
-            <%= plano.preco_formatado %>
-          </p>
-          <% if is_atual %>
-            <span class="text-xs text-center text-gray-400 bg-gray-50 rounded-lg py-1.5 font-medium">Plano atual</span>
-          <% elsif plano.gratuito? %>
-            <span class="text-xs text-center text-gray-400 bg-gray-50 rounded-lg py-1.5 font-medium">Disponível grátis</span>
-          <% elsif plano.stripe_price_id.blank? %>
-            <span class="text-xs text-center text-gray-400 bg-gray-50 rounded-lg py-1.5 font-medium">Em breve</span>
-          <% else %>
-            <% tem_promo = plano.elegivel_para_promocao?(current_user) %>
-            <% if tem_promo %>
-              <div class="mb-2 text-center">
-                <p class="text-base font-black text-orange-500">
-                  R$ <%= format('%.2f', plano.preco_promocional).gsub('.', ',') %>/mês
-                </p>
-                <p class="text-[10px] text-gray-400">
-                  por <%= plano.meses_promocionais %> meses · depois <%= plano.preco_formatado %>
-                </p>
-              </div>
-            <% end %>
-            <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id), method: :post,
-                class: "w-full text-sm font-bold text-white py-2 rounded-lg transition-colors hover:opacity-90 #{tem_promo ? 'bg-gradient-to-r from-orange-500 to-amber-500' : (cores[:badge] || 'bg-gray-700')}" do %>
-              <%= tem_promo ? "🏷 Aproveitar oferta" : "Assinar" %>
-            <% end %>
-          <% end %>
-        </div>
+  <%# ── Tabela de planos ── %>
+  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-100">
+      <h2 class="text-base font-bold text-gray-900">
+        <%= (@subscription&.ativa? && !@plano_atual&.gratuito?) ? "Trocar de Plano" : "Escolha seu Plano" %>
+      </h2>
+      <% if @subscription&.ativa? && !@plano_atual&.gratuito? %>
+        <p class="text-xs text-gray-500 mt-1">
+          A troca é imediata — a nova cobrança começa no <strong>próximo ciclo de faturamento</strong>. Nenhum custo adicional agora.
+        </p>
       <% end %>
     </div>
-    <%= link_to "Ver todos os detalhes →", planos_publicos_path, class: "text-sm text-blue-600 hover:underline mt-3 inline-block" %>
+
+    <%# Cards dos planos %>
+    <div class="p-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <% @planos.each do |plano| %>
+          <% cores    = plano.cor_classes %>
+          <% is_atual = @plano_atual&.slug == plano.slug %>
+          <% eh_upgrade = !is_atual && plano.preco.to_f > (@plano_atual&.preco.to_f || 0) %>
+          <% tem_sub_ativa = @subscription&.ativa? && !@plano_atual&.gratuito? %>
+
+          <div class="relative flex flex-col rounded-xl border-2 transition-all
+                      <%= is_atual ? 'border-blue-500 bg-blue-50/30' : plano.destaque? ? 'border-gray-900 shadow-md' : 'border-gray-200' %>">
+
+            <% if is_atual %>
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span class="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">Seu plano atual</span>
+              </div>
+            <% elsif plano.destaque? && !is_atual %>
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span class="bg-gray-900 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">⭐ Mais popular</span>
+              </div>
+            <% end %>
+
+            <div class="p-5 flex-1">
+              <%# Header do plano %>
+              <div class="mb-4">
+                <p class="font-bold text-gray-900 text-base"><%= plano.nome %></p>
+                <p class="text-xs text-gray-500 mb-3"><%= plano.descricao.presence || "Acesso à plataforma" %></p>
+                <div class="flex items-baseline gap-1">
+                  <% if plano.gratuito? %>
+                    <span class="text-3xl font-black text-gray-900">Grátis</span>
+                  <% else %>
+                    <span class="text-3xl font-black <%= cores[:text] || 'text-blue-700' %>">
+                      R$ <%= format('%.2f', plano.preco).gsub('.', ',') %>
+                    </span>
+                    <span class="text-sm text-gray-400">/mês</span>
+                  <% end %>
+                </div>
+              </div>
+
+              <%# Benefícios (top 5) %>
+              <ul class="space-y-2 mb-5">
+                <% plano.beneficios.first(5).each do |b| %>
+                  <li class="flex items-start gap-2 text-xs text-gray-700">
+                    <svg class="w-4 h-4 <%= is_atual ? 'text-blue-500' : plano.gratuito? ? 'text-gray-400' : (cores[:text] || 'text-blue-500') %> shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <%= b %>
+                  </li>
+                <% end %>
+                <% if plano.beneficios.size > 5 %>
+                  <li class="text-xs text-gray-400 pl-6">+ <%= plano.beneficios.size - 5 %> outros benefícios</li>
+                <% end %>
+              </ul>
+            </div>
+
+            <%# CTA %>
+            <div class="px-5 pb-5">
+              <% if is_atual %>
+                <div class="w-full text-center py-2.5 rounded-xl bg-blue-100 text-blue-700 text-sm font-semibold">
+                  Plano atual ✓
+                </div>
+              <% elsif plano.gratuito? %>
+                <div class="w-full text-center py-2.5 rounded-xl bg-gray-100 text-gray-500 text-sm font-medium">
+                  Disponível gratuitamente
+                </div>
+              <% elsif plano.stripe_price_id.blank? %>
+                <div class="w-full text-center py-2.5 rounded-xl bg-gray-100 text-gray-400 text-sm">Em breve</div>
+              <% elsif tem_sub_ativa %>
+                <%# Já assinante — trocar plano %>
+                <button type="button"
+                        onclick="confirmarTroca(<%= plano.id.to_json %>, <%= plano.nome.to_json %>, <%= plano.preco_formatado.to_json %>, <%= eh_upgrade.to_json %>, <%= (@subscription.prox_cobranca&.strftime('%d/%m/%Y') || 'próxima renovação').to_json %>)"
+                        class="w-full py-2.5 rounded-xl text-white text-sm font-bold transition-colors
+                               <%= eh_upgrade ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700' %>">
+                  <%= eh_upgrade ? "⬆ Fazer upgrade" : "⬇ Mudar plano" %>
+                </button>
+              <% else %>
+                <%# Usuário gratuito — nova assinatura %>
+                <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id), method: :post,
+                    data: { turbo: false },
+                    class: "w-full py-2.5 rounded-xl text-white text-sm font-bold transition-colors
+                            #{plano.destaque? ? 'bg-gray-900 hover:bg-gray-800' : (cores[:badge] || 'bg-blue-600') + ' hover:opacity-90'}" do %>
+                  Assinar agora →
+                <% end %>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Selos de confiança %>
+      <div class="border-t border-gray-100 pt-4 flex flex-wrap items-center justify-center gap-5 text-xs text-gray-400">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          Pagamento seguro via Stripe
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+          Cancele a qualquer momento
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+          </svg>
+          Sem multa por cancelamento
+        </span>
+        <span class="flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+          Cobrança mensal recorrente
+        </span>
+      </div>
+    </div>
   </div>
+
+  <%# ── Histórico de assinaturas ── %>
+  <% if @historico.any? %>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-base font-bold text-gray-900">Histórico</h2>
+        <p class="text-xs text-gray-400 mt-0.5">Registro de alterações e eventos da sua assinatura</p>
+      </div>
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Evento</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Plano</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Valor</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Data</th>
+            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          <% @historico.each do |h| %>
+            <% cor = h.evento_cor %>
+            <% badge_cls = { 'green' => 'bg-green-100 text-green-700', 'blue' => 'bg-blue-100 text-blue-700', 'amber' => 'bg-amber-100 text-amber-700', 'red' => 'bg-red-100 text-red-600', 'gray' => 'bg-gray-100 text-gray-500' }[cor] %>
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-3">
+                  <% icon_bg = { 'green' => 'bg-green-100', 'blue' => 'bg-blue-100', 'amber' => 'bg-amber-100', 'red' => 'bg-red-100', 'gray' => 'bg-gray-100' }[cor] %>
+                  <% icon_cl = { 'green' => 'text-green-600', 'blue' => 'text-blue-600', 'amber' => 'text-amber-600', 'red' => 'text-red-500', 'gray' => 'text-gray-400' }[cor] %>
+                  <div class="w-8 h-8 rounded-full <%= icon_bg %> flex items-center justify-center shrink-0">
+                    <% if ['ativada','renovada'].include?(h.event_type) %>
+                      <svg class="w-3.5 h-3.5 <%= icon_cl %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <% elsif h.event_type == 'upgradada' %>
+                      <svg class="w-3.5 h-3.5 <%= icon_cl %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                    <% elsif h.event_type == 'downgradada' %>
+                      <svg class="w-3.5 h-3.5 <%= icon_cl %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                    <% else %>
+                      <svg class="w-3.5 h-3.5 <%= icon_cl %>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <% end %>
+                  </div>
+                  <span class="font-medium text-gray-800 text-sm"><%= h.evento_label %></span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-gray-600 hidden sm:table-cell">
+                <%= h.subscription_plan&.nome || "—" %>
+              </td>
+              <td class="px-6 py-4 text-gray-600 hidden md:table-cell">
+                <%= h.valor.to_f > 0 ? "R$ #{format('%.2f', h.valor).gsub('.', ',')}/mês" : "Grátis" %>
+              </td>
+              <td class="px-6 py-4 text-gray-500 text-xs">
+                <p><%= h.created_at.strftime("%d/%m/%Y") %></p>
+                <p class="text-gray-400"><%= h.created_at.strftime("%H:%M") %></p>
+              </td>
+              <td class="px-6 py-4 hidden sm:table-cell">
+                <% if h.vigente? && h.vigente_ate.nil? %>
+                  <span class="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Vigente</span>
+                <% elsif h.vigente_ate %>
+                  <span class="text-xs text-gray-400">até <%= h.vigente_ate.strftime("%d/%m/%Y") %></span>
+                <% else %>
+                  <span class="text-xs text-gray-400">—</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <p class="text-center text-xs text-gray-400">
+    Dúvidas sobre sua assinatura?
+    <%= link_to "Fale conosco", contato_path, class: "text-blue-600 hover:underline" %>
+    · Cobrança processada com segurança por <strong>Stripe</strong>.
+  </p>
+
 </div>
+
+<%# Modal de confirmação de troca de plano %>
+<dialog id="modal-trocar-plano"
+        class="rounded-2xl shadow-2xl w-full max-w-md p-0 backdrop:bg-black/50"
+        onclick="if(event.target===this)this.close()">
+  <div class="px-7 py-6 space-y-5">
+    <div>
+      <h3 class="text-lg font-bold text-gray-900" id="modal-titulo">Confirmar troca de plano</h3>
+      <p class="text-sm text-gray-500 mt-1" id="modal-subtitulo"></p>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
+      <p class="font-semibold mb-1">📅 Como funciona:</p>
+      <p>A troca é aplicada <strong>agora</strong>, mas você só paga o novo valor no <strong>próximo ciclo</strong> — <span id="modal-data-cobranca" class="font-semibold text-blue-900"></span>. Nenhuma cobrança adicional hoje.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <%= form_with url: trocar_plano_usuario_assinatura_path, method: :post, class: "flex-1", data: { turbo: false } do |f| %>
+        <%= hidden_field_tag :plan_id, nil, id: "modal-plan-id" %>
+        <button type="submit"
+                class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors"
+                id="modal-btn-confirmar">
+          Confirmar
+        </button>
+      <% end %>
+      <button type="button" onclick="document.getElementById('modal-trocar-plano').close()"
+              class="flex-1 py-3 rounded-xl border border-gray-300 text-gray-700 text-sm hover:bg-gray-50 transition-colors">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+function confirmarTroca(planId, planNome, planPreco, ehUpgrade, dataCobranca) {
+  document.getElementById('modal-plan-id').value = planId;
+  document.getElementById('modal-titulo').textContent = (ehUpgrade ? 'Upgrade para ' : 'Mudar para ') + planNome;
+  document.getElementById('modal-subtitulo').textContent = 'Novo valor: ' + planPreco + '/mês';
+  document.getElementById('modal-data-cobranca').textContent = dataCobranca;
+  document.getElementById('modal-btn-confirmar').textContent = 'Confirmar ' + (ehUpgrade ? 'upgrade →' : 'mudança →');
+  document.getElementById('modal-trocar-plano').showModal();
+}
+</script>

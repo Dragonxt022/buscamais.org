@@ -112,7 +112,7 @@
               </div>
             <% else %>
               <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id),
-                  method: :post,
+                  method: :post, data: { turbo: false },
                   class: "w-full py-3 rounded-xl text-white text-sm font-bold transition-colors #{tem_promo ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 shadow-sm' : plano.destaque? ? (cores[:badge] || 'bg-blue-600') + ' hover:opacity-90' : 'bg-gray-800 hover:bg-gray-700'}" do %>
                 <%= tem_promo ? "Aproveitar oferta →" : "Assinar #{plano.nome}" %>
               <% end %>
@@ -204,6 +204,7 @@
       <% if _plano_destaque %>
         <% if user_signed_in? %>
           <%= button_to checkout_usuario_assinatura_path(plan_id: _plano_destaque.id), method: :post,
+              data: { turbo: false },
               class: "w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors shadow-sm" do %>
             Assinar por R$ <%= _preco_exit %>/mês →
           <% end %>

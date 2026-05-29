@@ -69,7 +69,7 @@
             <%# Se Stripe está configurado, vai direto pro checkout; caso contrário, vai para a página de planos %>
             <% if plano_com_promo.promocao_disponivel? %>
               <%= button_to checkout_usuario_assinatura_path(plan_id: plano_com_promo.id),
-                  method: :post,
+                  method: :post, data: { turbo: false },
                   class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:opacity-90 transition-opacity shadow-md" do %>
                 🏷 Aproveitar por <%= plano_com_promo.preco_promo_formatado %>
               <% end %>
@@ -81,7 +81,7 @@
             <% end %>
           <% elsif plano_pago %>
             <%= button_to checkout_usuario_assinatura_path(plan_id: plano_pago.id),
-                method: :post,
+                method: :post, data: { turbo: false },
                 class: "px-7 py-3 rounded-full text-white font-bold text-sm bg-blue-600 hover:bg-blue-700 transition-colors shadow-md" do %>
               Assinar por <%= plano_pago.preco_formatado %>
             <% end %>

@@ -51,6 +51,7 @@ Rails.application.routes.draw do
     resource  :assinatura,  only: [:show, :update] do
       member do
         post :checkout
+        post :trocar_plano
         get  :sucesso
         get  :cancelado
       end

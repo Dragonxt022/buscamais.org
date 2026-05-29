@@ -16,7 +16,8 @@ class User < ApplicationRecord
   has_many :reading_histories, dependent: :destroy
   has_many :user_follows,     foreign_key: :follower_id, dependent: :destroy
   has_many :followers,        class_name: "UserFollow", as: :followable, dependent: :destroy
-  has_one  :subscription,     dependent: :destroy
+  has_one  :subscription,          dependent: :destroy
+  has_many :subscription_histories, dependent: :destroy
 
   has_one_attached :avatar_image
 

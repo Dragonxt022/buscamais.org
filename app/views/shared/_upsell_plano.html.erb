@@ -75,6 +75,7 @@
               <span class="block text-center text-xs text-gray-400 bg-gray-50 rounded-lg py-2 font-medium">Disponível grátis</span>
             <% elsif user_signed_in? && plano.stripe_price_id.present? %>
               <%= button_to checkout_usuario_assinatura_path(plan_id: plano.id), method: :post,
+                  data: { turbo: false },
                   class: "w-full text-sm font-bold text-white py-2 rounded-lg transition-opacity hover:opacity-90 #{cores[:badge] || 'bg-gray-700'}" do %>
                 Assinar agora →
               <% end %>

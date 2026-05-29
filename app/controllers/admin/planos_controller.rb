@@ -22,7 +22,7 @@ class Admin::PlanosController < Admin::BaseController
 
   def update
     if @plano.update(plano_params)
-      redirect_to admin_planos_path, notice: "Plano \"#{@plano.nome}\" atualizado."
+      redirect_to edit_admin_plano_path(@plano), notice: "Plano \"#{@plano.nome}\" salvo com sucesso.", status: :see_other
     else
       render :edit, status: :unprocessable_entity
     end
@@ -62,7 +62,7 @@ class Admin::PlanosController < Admin::BaseController
     params.require(:plano).permit(
       :nome, :slug, :descricao, :preco, :posicao, :destaque, :ativo, :cor,
       :promocao_ativa, :preco_promocional, :meses_promocionais,
-      :stripe_promo_price_id, :apenas_novos_usuarios
+      :stripe_price_id, :stripe_promo_price_id, :apenas_novos_usuarios
     ).merge(beneficios: beneficios_tratados, permissoes: permissoes_tratadas)
   end
 end

@@ -1,5 +1,6 @@
 <%= form_with model: plano,
               url: plano.new_record? ? admin_planos_path : admin_plano_path(plano),
+              as: :plano,
               class: "space-y-6" do |f| %>
   <% if plano.errors.any? %>
     <div class="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -76,6 +77,48 @@
     </div>
   </div>
 
+  <%# ── Integração Stripe ── %>
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+          <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M13.479 9.883c-1.626-.604-2.512-1.067-2.512-1.803 0-.604.559-1.24 1.716-1.24a5.63 5.63 0 012.34.572l.415-2.516A6.78 6.78 0 0013.04 4.4c-2.977 0-5.043 1.582-5.043 3.86 0 2.037 1.44 3.096 3.796 3.838 1.538.528 2.017 1.052 2.017 1.79 0 .72-.624 1.24-1.765 1.24a6.39 6.39 0 01-2.857-.72l-.44 2.543a7.38 7.38 0 003.21.72c3.13 0 5.27-1.516 5.27-3.94-.006-2.215-1.494-3.226-3.75-3.848z"/>
+          </svg>
+          Stripe — IDs de Preço
+        </h3>
+        <p class="text-xs text-gray-400 mt-0.5">
+          Obtenha os Price IDs em
+          <strong>dashboard.stripe.com → Products → seu produto → Prices</strong>.
+          Em modo teste use chaves <code class="font-mono bg-gray-100 px-1 rounded">price_test_...</code>.
+        </p>
+      </div>
+    </div>
+    <div class="p-6 space-y-4">
+      <% if plano.preco.to_f > 0 && plano.stripe_price_id.blank? %>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+          ⚠️ <strong>Atenção:</strong> sem o Price ID o botão "Assinar" vai dar erro. Crie um produto no Stripe e cole o Price ID abaixo.
+        </div>
+      <% end %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div>
+          <%= f.label :stripe_price_id, "Price ID (preço normal)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :stripe_price_id,
+              placeholder: "price_...",
+              class: "input text-sm font-mono" %>
+          <p class="text-xs text-gray-400 mt-1">Preço recorrente mensal principal. <strong>Obrigatório</strong> para planos pagos.</p>
+        </div>
+        <div>
+          <%= f.label :stripe_promo_price_id, "Price ID (preço promocional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :stripe_promo_price_id,
+              placeholder: "price_... (opcional)",
+              class: "input text-sm font-mono" %>
+          <p class="text-xs text-gray-400 mt-1">Preço da promoção de entrada. Deixe vazio se não houver.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <%# ── Preço Promocional de Entrada ── %>
   <div class="card">
     <div class="card-header">
@@ -109,10 +152,10 @@
           <p class="text-xs text-gray-400 mt-1">Após esse período cobra o preço normal.</p>
         </div>
         <div>
-          <%= f.label :stripe_promo_price_id, "Stripe Price ID (promo)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
-          <%= f.text_field :stripe_promo_price_id, placeholder: "price_xxx (do Stripe Dashboard)",
-              class: "input text-sm font-mono" %>
-          <p class="text-xs text-gray-400 mt-1">Crie um Price com o valor promocional no Stripe.</p>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Stripe Price ID (promo)</label>
+          <p class="text-sm text-gray-500 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+            Configure na seção <strong>"Stripe — IDs de Preço"</strong> acima.
+          </p>
         </div>
       </div>
 
