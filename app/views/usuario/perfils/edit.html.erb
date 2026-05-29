@@ -1,41 +1,78 @@
-<div class="max-w-xl mx-auto">
-  <div class="card">
-    <div class="card-header">
-      <h3 class="font-semibold text-gray-800">Editar Perfil</h3>
-    </div>
-    <div class="card-body">
-      <%= form_with model: [:usuario, @usuario], url: usuario_perfil_path, method: :patch,
-          multipart: true, class: "space-y-5" do |f| %>
-        <% if @usuario.errors.any? %>
-          <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
-              <% @usuario.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
-            </ul>
-          </div>
-        <% end %>
+<% content_for :title, "Editar Perfil" %>
 
-        <div>
-          <%= f.label :nome, "Nome completo", class: "label" %>
-          <%= f.text_field :nome, class: "input" %>
-        </div>
+<div class="max-w-2xl mx-auto space-y-5">
 
-        <div>
-          <%= f.label :bio, "Sobre você", class: "label" %>
-          <%= f.text_area :bio, rows: 4, class: "input resize-none",
-              placeholder: "Uma breve descrição sobre você..." %>
-        </div>
-
-        <div>
-          <%= f.label :avatar_image, "Foto de perfil", class: "label" %>
-          <%= f.file_field :avatar_image, class: "block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100",
-              accept: "image/*" %>
-        </div>
-
-        <div class="flex gap-3 pt-2">
-          <%= f.submit "Salvar Perfil", class: "btn-primary cursor-pointer" %>
-          <%= link_to "Cancelar", usuario_perfil_path, class: "btn-secondary" %>
-        </div>
-      <% end %>
-    </div>
+  <%# Cabeçalho %>
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold text-gray-900">Editar Perfil</h1>
+    <%= link_to usuario_perfil_path, class: "text-sm text-gray-500 hover:text-gray-800" do %>
+      ← Cancelar
+    <% end %>
   </div>
+
+  <%= form_with model: [:usuario, @usuario], url: usuario_perfil_path, method: :patch,
+      multipart: true do |f| %>
+
+    <% if @usuario.errors.any? %>
+      <div class="bg-red-50 border border-red-200 rounded-xl p-4">
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+          <% @usuario.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%# Foto de perfil %>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+      <h2 class="text-sm font-semibold text-gray-800 mb-4">Foto de Perfil</h2>
+      <div class="flex items-center gap-5">
+        <%# Preview atual %>
+        <div class="shrink-0">
+          <%= render "shared/user_avatar", user: @usuario, size: "xl" %>
+        </div>
+        <div class="flex-1">
+          <label class="block">
+            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Nova foto</span>
+            <label class="relative cursor-pointer inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              <span id="avatar-btn-label">Escolher imagem</span>
+              <%= f.file_field :avatar_image, class: "sr-only", accept: "image/*",
+                  onchange: "document.getElementById('avatar-btn-label').textContent = this.files[0]?.name || 'Escolher imagem'" %>
+            </label>
+          </label>
+          <p class="text-xs text-gray-400 mt-1.5">JPG, PNG ou WEBP · máx. 5MB</p>
+        </div>
+      </div>
+    </div>
+
+    <%# Dados pessoais %>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="text-sm font-semibold text-gray-800">Dados Pessoais</h2>
+
+      <div>
+        <%= f.label :nome, "Nome completo", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
+        <%= f.text_field :nome,
+            class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent",
+            placeholder: "Seu nome completo" %>
+      </div>
+
+      <div>
+        <%= f.label :bio, "Sobre você", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
+        <%= f.text_area :bio, rows: 4,
+            class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none",
+            placeholder: "Uma breve descrição sobre você, seus interesses e o que você faz..." %>
+        <p class="text-xs text-gray-400 mt-1">Aparece no seu perfil público.</p>
+      </div>
+    </div>
+
+    <%# Botões %>
+    <div class="flex gap-3">
+      <%= f.submit "Salvar Perfil",
+          class: "flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-8 py-2.5 rounded-lg cursor-pointer transition-colors" %>
+      <%= link_to "Cancelar", usuario_perfil_path,
+          class: "flex-1 sm:flex-none text-center border border-gray-300 text-gray-700 text-sm py-2.5 px-5 rounded-lg hover:bg-gray-50 transition-colors" %>
+    </div>
+
+  <% end %>
 </div>

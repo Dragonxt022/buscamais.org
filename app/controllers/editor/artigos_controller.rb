@@ -27,6 +27,7 @@ class Editor::ArtigosController < Editor::BaseController
 
     if @artigo.save
       attach_gallery_image
+      processar_tags(@artigo)
       redirect_to editor_artigos_path, notice: "Artigo salvo com sucesso."
     else
       @categorias = Category.ativas.order(:nome)
@@ -45,6 +46,7 @@ class Editor::ArtigosController < Editor::BaseController
     authorize @artigo, :update?
     if @artigo.update(artigo_params)
       attach_gallery_image
+      processar_tags(@artigo)
       redirect_to editor_artigos_path, notice: "Artigo atualizado."
     else
       @categorias = Category.ativas.order(:nome)
@@ -87,7 +89,16 @@ class Editor::ArtigosController < Editor::BaseController
   def artigo_params
     params.require(:article).permit(:titulo, :resumo, :status,
                                     :premium, :category_id, :agendado_em,
-                                    :conteudo, tag_ids: [])
+                                    :conteudo)
+  end
+
+  def processar_tags(artigo)
+    nomes_raw = params.dig(:article, :tag_names)
+    return unless nomes_raw.is_a?(String)
+    nomes = nomes_raw.split(",").map(&:strip).reject(&:empty?).uniq
+    artigo.tags = nomes.map { |nome| Tag.find_or_create_by!(nome: nome) }
+  rescue => e
+    Rails.logger.error "[Tags] Erro: #{e.message}"
   end
 
   def attach_gallery_image

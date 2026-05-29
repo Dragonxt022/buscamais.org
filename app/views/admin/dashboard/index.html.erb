@@ -1,61 +1,157 @@
 <% content_for :page_title, "Dashboard" %>
 <% content_for :page_subtitle, "Visão geral do portal" %>
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+<%# ── KPIs ── %>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total de Artigos</p>
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total de Artigos</p>
+      <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+    </div>
     <p class="text-3xl font-bold text-gray-900"><%= number_with_delimiter(@total_artigos) %></p>
+    <p class="text-xs text-gray-400 mt-1">publicados no portal</p>
   </div>
+
   <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total de Leituras</p>
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Leituras</p>
+      <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </div>
+    </div>
     <p class="text-3xl font-bold text-gray-900"><%= number_with_delimiter(@total_leituras) %></p>
+    <p class="text-xs text-gray-400 mt-1">visualizações totais</p>
   </div>
+
   <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Usuários</p>
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Usuários</p>
+      <div class="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+    </div>
     <p class="text-3xl font-bold text-gray-900"><%= number_with_delimiter(@total_usuarios) %></p>
+    <p class="text-xs text-gray-400 mt-1">cadastrados</p>
   </div>
+
   <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Aguardando Revisão</p>
-    <p class="text-3xl font-bold <%= @pendentes_revisao > 0 ? 'text-red-600' : 'text-gray-900' %>">
+    <div class="flex items-center justify-between mb-3">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Aguardando Revisão</p>
+      <div class="w-8 h-8 <%= @pendentes_revisao > 0 ? 'bg-amber-50' : 'bg-gray-50' %> rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 <%= @pendentes_revisao > 0 ? 'text-amber-600' : 'text-gray-400' %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="text-3xl font-bold <%= @pendentes_revisao > 0 ? 'text-amber-600' : 'text-gray-900' %>">
       <%= @pendentes_revisao %>
+    </p>
+    <p class="text-xs text-gray-400 mt-1">
+      <% if @pendentes_revisao > 0 %>
+        <%= link_to "Ver pendentes →", admin_artigos_path(status: "aguardando_revisao"), class: "text-amber-600 hover:underline" %>
+      <% else %>
+        nenhum pendente
+      <% end %>
     </p>
   </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-sm border border-gray-100">
-  <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-    <h2 class="font-semibold text-gray-900">Artigos Recentes</h2>
-    <%= link_to "Ver todos →", admin_artigos_path, class: "text-sm text-blue-600 hover:underline" %>
+<%# ── Artigos Recentes ── %>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+    <div>
+      <h2 class="font-bold text-gray-900">Artigos Recentes</h2>
+      <p class="text-xs text-gray-400 mt-0.5">Últimas publicações e rascunhos</p>
+    </div>
+    <%= link_to "Ver todos →", admin_artigos_path, class: "text-sm text-blue-600 hover:text-blue-800 font-medium shrink-0" %>
   </div>
-  <table class="w-full text-sm">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Título</th>
-        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Autor</th>
-        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Categoria</th>
-        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-        <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">Data</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-100">
-      <% @artigos_recentes.each do |artigo| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-5 py-4">
-            <p class="font-medium text-gray-900 line-clamp-1"><%= artigo.titulo %></p>
-            <p class="text-xs text-gray-400">#ART-<%= artigo.id %></p>
-          </td>
-          <td class="px-5 py-4 text-gray-600"><%= artigo.author.nome %></td>
-          <td class="px-5 py-4">
+
+  <div class="divide-y divide-gray-50">
+    <% @artigos_recentes.each do |artigo| %>
+      <%= link_to edit_admin_artigo_path(artigo),
+          class: "flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group" do %>
+
+        <%# Thumbnail %>
+        <div class="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+          <% if artigo.imagem_capa_file.attached? %>
+            <img src="<%= rails_blob_path(artigo.imagem_capa_file.blob, only_path: true) %>"
+                 alt=""
+                 class="w-full h-full object-cover">
+          <% else %>
+            <div class="w-full h-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Título + meta %>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-gray-900 text-sm line-clamp-1 group-hover:text-blue-600 transition-colors">
+            <%= artigo.titulo %>
+          </p>
+          <div class="flex items-center gap-2 mt-1 flex-wrap">
+            <%# Categoria %>
             <% if artigo.category %>
-              <span class="text-xs border border-gray-300 px-2 py-0.5 rounded"><%= artigo.category.nome %></span>
+              <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">
+                <%= artigo.category.nome %>
+              </span>
             <% end %>
-          </td>
-          <td class="px-5 py-4">
-            <%= render "shared/status_badge", status: artigo.status %>
-          </td>
-          <td class="px-5 py-4 text-gray-500"><%= l artigo.created_at, format: :short %></td>
-        </tr>
+            <%# Premium %>
+            <% if artigo.premium? %>
+              <span class="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-full font-medium">Premium</span>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Autor %>
+        <div class="hidden sm:flex items-center gap-2 shrink-0 w-36">
+          <%= render "shared/user_avatar", user: artigo.author, size: "sm" %>
+          <span class="text-xs text-gray-600 truncate"><%= artigo.author.nome.split.first %></span>
+        </div>
+
+        <%# Status %>
+        <div class="shrink-0 hidden md:block">
+          <%= render "shared/status_badge", status: artigo.status %>
+        </div>
+
+        <%# Data %>
+        <div class="shrink-0 text-right hidden lg:block">
+          <p class="text-xs text-gray-500"><%= artigo.created_at.strftime("%d/%m/%Y") %></p>
+          <p class="text-xs text-gray-400"><%= artigo.created_at.strftime("%H:%M") %></p>
+        </div>
+
+        <%# Seta %>
+        <svg class="w-4 h-4 text-gray-300 group-hover:text-blue-400 shrink-0 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
       <% end %>
-    </tbody>
-  </table>
+    <% end %>
+
+    <% if @artigos_recentes.empty? %>
+      <div class="px-6 py-16 text-center text-gray-400">
+        <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="text-sm">Nenhum artigo ainda.</p>
+        <%= link_to "Criar primeiro artigo →", new_admin_artigo_path, class: "text-sm text-blue-600 hover:underline mt-1 block" %>
+      </div>
+    <% end %>
+  </div>
+
+  <% if @artigos_recentes.size >= 5 %>
+    <div class="px-6 py-3 border-t border-gray-50 bg-gray-50/50 text-center">
+      <%= link_to "Ver todos os artigos →", admin_artigos_path,
+          class: "text-sm text-blue-600 hover:text-blue-800 font-medium" %>
+    </div>
+  <% end %>
 </div>

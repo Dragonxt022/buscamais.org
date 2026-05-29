@@ -6,9 +6,13 @@
 
     <%# Logo %>
     <div class="flex items-center gap-8">
-      <%= link_to root_path, class: "text-xl font-bold flex-shrink-0" do %>
-        <span class="text-gray-900">Busca</span>
-        <span class="text-blue-600">Mais</span><span class="text-blue-600 text-xs align-super">®</span>
+      <% _branding_nav = SiteBranding.instance rescue nil %>
+      <%= link_to root_path, class: "flex-shrink-0 hover:opacity-80 transition-opacity" do %>
+        <% if _branding_nav&.logo&.attached? %>
+          <img src="<%= _branding_nav.logo_url %>" alt="Logo" class="h-9 w-auto object-contain">
+        <% else %>
+          <span class="text-xl font-bold text-gray-900">Busca</span><span class="text-xl font-bold text-blue-600">Mais</span><span class="text-blue-600 text-xs align-super">®</span>
+        <% end %>
       <% end %>
 
       <%# Category triggers (desktop) %>

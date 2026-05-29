@@ -6,9 +6,7 @@
     <div class="card">
       <div class="card-body space-y-4">
         <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-            <%= @usuario.nome.first.upcase %>
-          </div>
+          <%= render "shared/user_avatar", user: @usuario, size: "lg" %>
           <div>
             <h2 class="text-xl font-bold text-gray-900"><%= @usuario.nome %></h2>
             <p class="text-sm text-gray-500"><%= @usuario.email %></p>

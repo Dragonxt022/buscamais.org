@@ -15,13 +15,13 @@ class Usuario::AssinaturaController < Usuario::BaseController
       return
     end
 
-    Stripe.api_key = secret_key
+    ::Stripe.api_key = secret_key
 
     sub = current_user.subscription || current_user.build_subscription
     customer_id = sub.stripe_customer_id
 
     unless customer_id
-      customer    = Stripe::Customer.create(email: current_user.email, name: current_user.nome)
+      customer    = ::Stripe::Customer.create(email: current_user.email, name: current_user.nome)
       customer_id = customer.id
       sub.update!(stripe_customer_id: customer_id)
     end
@@ -33,7 +33,7 @@ class Usuario::AssinaturaController < Usuario::BaseController
     else
       criar_checkout_normal(plano, customer_id)
     end
-  rescue Stripe::StripeError => e
+  rescue ::Stripe::StripeError => e
     redirect_to usuario_assinatura_path, alert: "Erro ao iniciar pagamento: #{e.message}"
   end
 
@@ -58,8 +58,8 @@ class Usuario::AssinaturaController < Usuario::BaseController
   def update
     sub = current_user.subscription
     if sub&.stripe_subscription_id.present?
-      Stripe.api_key = SiteSetting["stripe_secret_key"].presence
-      Stripe::Subscription.cancel(sub.stripe_subscription_id) rescue nil
+      ::Stripe.api_key = SiteSetting["stripe_secret_key"].presence
+      ::Stripe::Subscription.cancel(sub.stripe_subscription_id) rescue nil
     end
     sub&.update!(status: :cancelada, subscription_plan_id: nil, plano: :gratuito)
     redirect_to usuario_assinatura_path, notice: "Assinatura cancelada."
@@ -68,7 +68,7 @@ class Usuario::AssinaturaController < Usuario::BaseController
   private
 
   def criar_checkout_normal(plano, customer_id)
-    session = Stripe::Checkout::Session.create(
+    session = ::Stripe::Checkout::Session.create(
       customer:   customer_id,
       mode:       "subscription",
       line_items: [{ price: plano.stripe_price_id, quantity: 1 }],
@@ -79,13 +79,13 @@ class Usuario::AssinaturaController < Usuario::BaseController
     redirect_to session.url, allow_other_host: true, status: :see_other
   end
 
-  # Usa Stripe Subscription Schedule com 2 fases:
+  # Usa ::Stripe Subscription Schedule com 2 fases:
   #   Fase 1 → preço promocional por N meses
   #   Fase 2 → preço normal (automático, sem intervenção)
   def criar_checkout_com_promocao(plano, customer_id)
     meses = plano.meses_promocionais.to_i.clamp(1, 24)
 
-    session = Stripe::Checkout::Session.create(
+    session = ::Stripe::Checkout::Session.create(
       customer:   customer_id,
       mode:       "subscription",
       line_items: [{ price: plano.stripe_promo_price_id, quantity: 1 }],

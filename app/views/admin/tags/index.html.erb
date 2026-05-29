@@ -1,83 +1,135 @@
 <% content_for :page_title, "Tags" %>
 <% content_for :page_subtitle, "Gerencie as tags para categorização de artigos." %>
 
-<div class="card"
-     data-controller="table-select"
-     data-table-select-confirm-message-value="Remover {count} tag(s) selecionada(s)?\nEsta ação não pode ser desfeita.">
+<div class="space-y-4">
 
-  <div class="card-header">
-    <div class="flex items-center gap-3 flex-1">
-      <%= form_with url: admin_tags_path, method: :get, class: "flex gap-3" do |f| %>
-        <%= f.search_field :q, value: params[:q], placeholder: "Buscar tag...", class: "input max-w-xs" %>
-        <%= f.submit "Buscar", class: "btn-primary" %>
-        <%= link_to "Limpar", admin_tags_path, class: "text-sm text-blue-600 hover:underline self-center" %>
+  <%# Barra de ações %>
+  <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+    <%= form_with url: admin_tags_path, method: :get, class: "flex gap-2 flex-1" do |f| %>
+      <div class="relative flex-1 max-w-xs">
+        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <%= f.search_field :q, value: params[:q], placeholder: "Buscar tag...",
+            class: "w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      </div>
+      <%= f.submit "Buscar", class: "bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg cursor-pointer transition-colors" %>
+      <% if params[:q].present? %>
+        <%= link_to "Limpar", admin_tags_path, class: "text-sm text-gray-500 hover:text-gray-700 self-center" %>
       <% end %>
-    </div>
-    <%= link_to "Nova Tag", new_admin_tag_path, class: "btn-primary" %>
-  </div>
-
-  <%# Bulk actions bar %>
-  <div data-table-select-target="bulkBar"
-       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
-    <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
-    <button type="button" data-action="click->table-select#deleteSelected"
-            class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+    <% end %>
+    <%= link_to new_admin_tag_path,
+        class: "flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shrink-0" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
       </svg>
-      Excluir selecionadas
-    </button>
-    <button type="button" data-action="click->table-select#cancelSelection"
-            class="text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+      Nova Tag
+    <% end %>
   </div>
-  <form data-table-select-target="bulkForm" action="<%= bulk_destroy_admin_tags_path %>" method="post" class="hidden">
-    <%= hidden_field_tag :_method, :delete %>
-    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-  </form>
 
-  <table class="table-admin">
-    <thead>
-      <tr>
-        <th class="w-10">
-          <input type="checkbox" data-select-all data-action="change->table-select#onSelectAll"
-                 class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
-        </th>
-        <th>Tag</th>
-        <th>Slug</th>
-        <th>Artigos</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @tags.each do |tag| %>
+  <%# Card com tabela %>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+       data-controller="table-select"
+       data-table-select-confirm-message-value="Remover {count} tag(s)?\nEsta ação não pode ser desfeita.">
+
+    <%# Bulk bar %>
+    <div data-table-select-target="bulkBar"
+         class="hidden bg-blue-50 border-b border-blue-100 px-5 py-3 flex items-center gap-4">
+      <span class="text-sm font-semibold text-blue-700" data-table-select-target="selectedCount"></span>
+      <button type="button" data-action="click->table-select#deleteSelected"
+              class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+        Excluir selecionadas
+      </button>
+      <button type="button" data-action="click->table-select#cancelSelection"
+              class="text-sm text-gray-500 hover:text-gray-700">Cancelar</button>
+    </div>
+    <form data-table-select-target="bulkForm" action="<%= bulk_destroy_admin_tags_path %>" method="post" class="hidden">
+      <%= hidden_field_tag :_method, :delete %>
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    </form>
+
+    <table class="w-full">
+      <thead class="border-b border-gray-100">
         <tr>
-          <td>
-            <input type="checkbox"
-                   value="<%= tag.id %>"
-                   data-table-select-target="checkbox"
-                   data-action="change->table-select#onSelect"
+          <th class="w-10 px-5 py-3 text-left">
+            <input type="checkbox" data-select-all data-action="change->table-select#onSelectAll"
                    class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
-          </td>
-          <td class="font-medium text-gray-900"><%= tag.nome %></td>
-          <td class="font-mono text-xs text-gray-500"><%= tag.slug %></td>
-          <td><%= tag.articles.count %></td>
-          <td>
-            <div class="flex items-center gap-3">
-              <%= link_to "Editar", edit_admin_tag_path(tag), class: "text-sm text-blue-600 hover:underline" %>
-              <%= button_to admin_tag_path(tag), method: :delete,
-                  data: { turbo_confirm: "Remover a tag #{tag.nome}?" },
-                  class: "text-sm text-red-500 hover:text-red-700" do %>Remover<% end %>
-            </div>
-          </td>
+          </th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Tag</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Slug</th>
+          <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Artigos</th>
+          <th class="px-5 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Ações</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        <% if @tags.empty? %>
+          <tr>
+            <td colspan="5" class="px-5 py-16 text-center text-gray-400">
+              <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+              </svg>
+              <p class="text-sm">Nenhuma tag encontrada.</p>
+            </td>
+          </tr>
+        <% else %>
+          <% @tags.each do |tag| %>
+            <tr class="hover:bg-gray-50 transition-colors group">
+              <td class="px-5 py-3.5">
+                <input type="checkbox"
+                       value="<%= tag.id %>"
+                       data-table-select-target="checkbox"
+                       data-action="change->table-select#onSelect"
+                       class="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer">
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-800">
+                  <span class="text-gray-400 font-normal">#</span><%= tag.nome %>
+                </span>
+              </td>
+              <td class="px-5 py-3.5 hidden sm:table-cell">
+                <code class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono"><%= tag.slug %></code>
+              </td>
+              <td class="px-5 py-3.5">
+                <% count = tag.articles.count %>
+                <span class="inline-flex items-center text-sm <%= count > 0 ? 'text-gray-900 font-semibold' : 'text-gray-400' %>">
+                  <%= count %>
+                  <% if count > 0 %>
+                    <span class="ml-1 text-xs text-gray-400 font-normal"><%= count == 1 ? "artigo" : "artigos" %></span>
+                  <% end %>
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-right">
+                <div class="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <%= link_to "Editar", edit_admin_tag_path(tag),
+                      class: "text-sm text-blue-600 hover:text-blue-800 font-medium" %>
+                  <%= button_to admin_tag_path(tag), method: :delete,
+                      data: { turbo_confirm: "Remover a tag \"#{tag.nome}\"? Esta ação não pode ser desfeita." },
+                      class: "text-sm text-red-500 hover:text-red-700 font-medium" do %>
+                    Remover
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
 
-  <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
-    <p class="text-sm text-gray-500">
-      Mostrando <%= @pagy.from %> a <%= @pagy.to %> de <%= @pagy.count %> tags
-    </p>
-    <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+    <% if @pagy.pages > 1 || @pagy.count > 0 %>
+      <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+        <p class="text-sm text-gray-500">
+          <% if @pagy.count > 0 %>
+            Mostrando <%= @pagy.from %>–<%= @pagy.to %> de <strong><%= @pagy.count %></strong> tags
+          <% else %>
+            Nenhuma tag
+          <% end %>
+        </p>
+        <%== pagy_nav(@pagy) if @pagy.pages > 1 %>
+      </div>
+    <% end %>
   </div>
+
 </div>

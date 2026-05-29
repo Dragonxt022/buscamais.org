@@ -24,6 +24,7 @@ class Admin::ArtigosController < Admin::BaseController
     @artigo.author = current_user
     if @artigo.save
       attach_gallery_image
+      processar_tags(@artigo)
       redirect_to admin_artigos_path, notice: "Artigo criado com sucesso."
     else
       @categorias = Category.ativas.order(:nome)
@@ -40,6 +41,7 @@ class Admin::ArtigosController < Admin::BaseController
   def update
     if @artigo.update(artigo_params)
       attach_gallery_image
+      processar_tags(@artigo)
       redirect_to admin_artigos_path, notice: "Artigo atualizado."
     else
       @categorias = Category.ativas.order(:nome)
@@ -83,7 +85,16 @@ class Admin::ArtigosController < Admin::BaseController
   def artigo_params
     params.require(:article).permit(:titulo, :resumo, :status,
                                     :destaque, :premium, :category_id, :agendado_em,
-                                    :conteudo, tag_ids: [])
+                                    :conteudo)
+  end
+
+  def processar_tags(artigo)
+    nomes_raw = params.dig(:article, :tag_names)
+    return unless nomes_raw.is_a?(String)
+    nomes = nomes_raw.split(",").map(&:strip).reject(&:empty?).uniq
+    artigo.tags = nomes.map { |nome| Tag.find_or_create_by!(nome: nome) }
+  rescue => e
+    Rails.logger.error "[Tags] Erro: #{e.message}"
   end
 
   def attach_gallery_image

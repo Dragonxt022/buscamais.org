@@ -136,15 +136,28 @@
     </div>
   <% end %>
 
+  <% _corpo = @artigo.conteudo.body&.to_html.to_s.html_safe %>
   <% if @acesso_completo %>
-    <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8">
-      <%= @artigo.conteudo %>
+    <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed mb-8
+                prose-headings:font-bold prose-headings:text-gray-900
+                prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+                prose-p:text-gray-700 prose-p:leading-7
+                prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-gray-900 prose-blockquote:border-blue-500
+                prose-img:rounded-xl prose-img:shadow-sm
+                prose-ul:list-disc prose-ol:list-decimal
+                prose-code:bg-gray-100 prose-code:text-gray-800 prose-code:rounded prose-code:px-1">
+      <%= _corpo %>
     </div>
   <% else %>
     <%# Conteúdo truncado com fade-out %>
     <div class="relative mb-2" style="max-height: 320px; overflow: hidden;">
-      <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed">
-        <%= @artigo.conteudo %>
+      <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed
+                  prose-headings:font-bold prose-headings:text-gray-900
+                  prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
+                  prose-p:text-gray-700 prose-p:leading-7
+                  prose-img:rounded-xl prose-strong:text-gray-900">
+        <%= _corpo %>
       </div>
       <%# Gradiente de fade %>
       <div class="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none"></div>

@@ -1,0 +1,19 @@
+<%
+  # Locals: user (required), size (sm/md/lg/xl), extra_class
+  size_cls = case local_assigns[:size]&.to_s
+             when "sm"  then "w-7 h-7 text-xs"
+             when "lg"  then "w-14 h-14 text-xl"
+             when "xl"  then "w-20 h-20 text-3xl"
+             else            "w-9 h-9 text-sm"     # md (padrão)
+             end
+  extra    = local_assigns[:extra_class] || ""
+%>
+<% if user.avatar_image.attached? %>
+  <img src="<%= rails_blob_path(user.avatar_image.blob, only_path: true) %>"
+       alt="<%= user.nome %>"
+       class="<%= size_cls %> <%= extra %> rounded-full object-cover shrink-0">
+<% else %>
+  <div class="<%= size_cls %> <%= extra %> rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shrink-0 select-none">
+    <%= user.nome.first.upcase %>
+  </div>
+<% end %>

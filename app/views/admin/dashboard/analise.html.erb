@@ -124,9 +124,7 @@
           <tr>
             <td>
               <div class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                  <%= autor.nome.first.upcase %>
-                </div>
+                <%= render "shared/user_avatar", user: autor, size: "sm" %>
                 <%= link_to autor.nome, autor_path(autor.slug), class: "text-sm text-gray-900 hover:text-blue-600" %>
               </div>
             </td>

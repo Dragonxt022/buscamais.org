@@ -16,48 +16,48 @@
       <% end %>
 
       <%# Dados pessoais %>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-50">
-        <div class="px-6 py-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="px-6 pt-5 pb-1">
           <h3 class="text-sm font-semibold text-gray-800">Dados Pessoais</h3>
         </div>
         <div class="px-6 py-5 space-y-4">
           <div>
-            <%= f.label :nome, "Nome completo", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
-            <%= f.text_field :nome, class: "w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Nome do usuário" %>
+            <%= f.label :nome, "Nome completo", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
+            <%= f.text_field :nome, class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent", placeholder: "Nome do usuário" %>
           </div>
           <div>
-            <%= f.label :email, "E-mail", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
-            <%= f.email_field :email, class: "w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-            <p class="text-xs text-gray-400 mt-1">Alterar o e-mail exige que o usuário confirme novamente.</p>
+            <%= f.label :email, "E-mail", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
+            <%= f.email_field :email, class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" %>
+            <p class="text-xs text-gray-400 mt-1.5">Alterar o e-mail exige que o usuário confirme novamente.</p>
           </div>
           <div>
-            <%= f.label :bio, "Biografia", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.label :bio, "Biografia", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
             <%= f.text_area :bio, rows: 4,
-                class: "w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none",
+                class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none",
                 placeholder: "Uma breve apresentação do usuário..." %>
           </div>
         </div>
       </div>
 
       <%# Acesso e permissões %>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-50">
-        <div class="px-6 py-4">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="px-6 pt-5 pb-1">
           <h3 class="text-sm font-semibold text-gray-800">Acesso & Permissões</h3>
         </div>
-        <div class="px-6 py-5 space-y-5">
+        <div class="px-6 py-5 space-y-6">
 
-          <%# Role %>
+          <%# Role — cards visuais %>
           <div>
-            <p class="text-sm font-medium text-gray-700 mb-3">Papel do usuário</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Papel do usuário</p>
+            <div class="grid grid-cols-3 gap-3" id="role-cards">
               <% [
-                ["usuario",       "Usuário",       "Acesso básico ao portal.", "bg-gray-100 text-gray-700"],
-                ["editor",        "Editor",        "Pode criar e publicar artigos.", "bg-blue-100 text-blue-700"],
-                ["administrador", "Administrador", "Acesso total ao painel.", "bg-purple-100 text-purple-700"],
-              ].each do |value, label, desc, badge_cls| %>
-                <label class="cursor-pointer">
-                  <%= f.radio_button :role, value, class: "peer sr-only" %>
-                  <div class="border-2 border-gray-200 rounded-xl p-4 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 h-full">
+                ["usuario",       "Usuário",       "Acesso básico ao portal.",       "bg-gray-100 text-gray-700",   "border-gray-400 bg-gray-50"],
+                ["editor",        "Editor",        "Pode criar e publicar artigos.", "bg-blue-100 text-blue-700",   "border-blue-500 bg-blue-50"],
+                ["administrador", "Administrador", "Acesso total ao painel.",        "bg-purple-100 text-purple-700","border-purple-500 bg-purple-50"],
+              ].each do |value, label, desc, badge_cls, selected_cls| %>
+                <label class="cursor-pointer role-card-label" data-value="<%= value %>" data-selected-cls="<%= selected_cls %>">
+                  <%= f.radio_button :role, value, class: "sr-only role-radio" %>
+                  <div class="role-card border-2 border-gray-200 rounded-xl p-4 transition-all hover:border-gray-300 h-full">
                     <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-2 <%= badge_cls %>"><%= label %></span>
                     <p class="text-xs text-gray-500 leading-snug"><%= desc %></p>
                   </div>
@@ -67,7 +67,7 @@
           </div>
 
           <%# Status da conta %>
-          <div class="flex items-center justify-between py-1">
+          <div class="flex items-center justify-between py-1 border-t border-gray-100 pt-4">
             <div>
               <p class="text-sm font-medium text-gray-700">Conta ativa</p>
               <p class="text-xs text-gray-500 mt-0.5">Usuários inativos não conseguem fazer login.</p>
@@ -77,7 +77,7 @@
             <% else %>
               <label class="relative inline-flex items-center cursor-pointer">
                 <%= f.check_box :ativo, class: "sr-only peer", id: "usuario_ativo" %>
-                <div class="w-10 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
               </label>
             <% end %>
           </div>
@@ -88,7 +88,7 @@
       <%# Botões %>
       <div class="flex gap-3">
         <%= f.submit "Salvar Alterações",
-            class: "flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg cursor-pointer transition-colors text-center" %>
+            class: "flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2.5 rounded-lg cursor-pointer transition-colors" %>
         <%= link_to "Cancelar", admin_usuarios_path,
             class: "flex-1 sm:flex-none text-center border border-gray-300 text-gray-700 text-sm py-2.5 px-5 rounded-lg hover:bg-gray-50 transition-colors" %>
       </div>
@@ -101,9 +101,7 @@
       <%# Card do usuário %>
       <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
         <div class="flex flex-col items-center text-center mb-4">
-          <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
-            <%= @usuario.nome.first.upcase %>
-          </div>
+          <%= render "shared/user_avatar", user: @usuario, size: "lg", extra_class: "mb-3" %>
           <p class="font-semibold text-gray-900"><%= @usuario.nome %></p>
           <p class="text-xs text-gray-500 mt-0.5"><%= @usuario.email %></p>
           <% badge = { "administrador" => "bg-purple-100 text-purple-700", "editor" => "bg-blue-100 text-blue-700", "usuario" => "bg-gray-100 text-gray-600" } %>
@@ -153,7 +151,7 @@
       </div>
 
       <%# Ações rápidas %>
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-2">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-1">
         <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Ações</p>
 
         <%= link_to admin_usuario_path(@usuario), class: "flex items-center gap-2.5 text-sm text-gray-700 hover:bg-gray-50 px-3 py-2.5 rounded-lg transition-colors" do %>
@@ -190,3 +188,29 @@
     </div>
   </div>
 <% end %>
+
+<script>
+  (function() {
+    var cards = document.querySelectorAll('#role-cards .role-card-label');
+    function updateCards() {
+      cards.forEach(function(label) {
+        var radio = label.querySelector('.role-radio');
+        var card  = label.querySelector('.role-card');
+        var selCls = (label.dataset.selectedCls || '').split(' ');
+        if (radio.checked) {
+          card.classList.remove('border-gray-200');
+          selCls.forEach(function(c) { if(c) card.classList.add(c); });
+          card.style.boxShadow = '0 0 0 1px rgba(59,130,246,0.3)';
+        } else {
+          card.classList.add('border-gray-200');
+          selCls.forEach(function(c) { if(c) card.classList.remove(c); });
+          card.style.boxShadow = '';
+        }
+      });
+    }
+    cards.forEach(function(label) {
+      label.querySelector('.role-radio').addEventListener('change', updateCards);
+    });
+    updateCards();
+  })();
+</script>

@@ -8,9 +8,9 @@ class StripeWebhooksController < ApplicationController
 
     begin
       event = secret.present? ?
-        Stripe::Webhook.construct_event(payload, sig_header, secret) :
-        Stripe::Event.construct_from(JSON.parse(payload))
-    rescue JSON::ParserError, Stripe::SignatureVerificationError
+        ::Stripe::Webhook.construct_event(payload, sig_header, secret) :
+        ::Stripe::Event.construct_from(JSON.parse(payload))
+    rescue JSON::ParserError, ::Stripe::SignatureVerificationError
       head :bad_request and return
     end
 
@@ -56,15 +56,15 @@ class StripeWebhooksController < ApplicationController
   end
 
   def criar_subscription_schedule(subscription_id, regular_price_id, meses)
-    Stripe.api_key = SiteSetting["stripe_secret_key"].presence
-    return unless Stripe.api_key
+    ::Stripe.api_key = SiteSetting["stripe_secret_key"].presence
+    return unless ::Stripe.api_key
 
     # Converte a assinatura existente em um Schedule com 2 fases
-    schedule = Stripe::SubscriptionSchedule.create(
+    schedule = ::Stripe::SubscriptionSchedule.create(
       from_subscription: subscription_id
     )
 
-    Stripe::SubscriptionSchedule.update(
+    ::Stripe::SubscriptionSchedule.update(
       schedule.id,
       {
         end_behavior: "release",
@@ -79,8 +79,8 @@ class StripeWebhooksController < ApplicationController
         ]
       }
     )
-  rescue Stripe::StripeError => e
-    Rails.logger.error "[Stripe Schedule] Erro ao criar schedule: #{e.message}"
+  rescue ::Stripe::StripeError => e
+    Rails.logger.error "[::Stripe Schedule] Erro ao criar schedule: #{e.message}"
   end
 
   def handle_subscription_update(stripe_sub)

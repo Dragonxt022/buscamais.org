@@ -68,6 +68,7 @@ Rails.application.routes.draw do
     end
     get "configuracoes",    to: "configuracoes#edit"
     patch "configuracoes",  to: "configuracoes#update"
+    get "resumo",           to: "resumos#show", as: :resumo
   end
 
   # Área do editor (editor + admin)

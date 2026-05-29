@@ -1,0 +1,96 @@
+<% content_for :title, "Resumo do dia — #{l @data, format: :long rescue @data.strftime('%d/%m/%Y')}" %>
+
+<div class="max-w-4xl mx-auto space-y-8">
+
+  <%# Cabeçalho %>
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">
+        <%= l @data, format: :long rescue @data.strftime("%A, %d de %B de %Y") %>
+      </p>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Seu resumo do dia</h1>
+      <% if @artigos_hoje.any? %>
+        <p class="text-gray-500 mt-1 text-sm">
+          <%= @artigos_hoje.size %> <%= @artigos_hoje.size == 1 ? "artigo publicado" : "artigos publicados" %> hoje
+          <% lidos_hoje = @artigos_hoje.count { |a| @lidos.include?(a.id) } %>
+          <% if lidos_hoje > 0 %>
+            · <span class="text-green-600"><%= lidos_hoje %> <%= lidos_hoje == 1 ? "já lido" : "já lidos" %></span>
+          <% end %>
+        </p>
+      <% end %>
+    </div>
+    <%= link_to "← Dashboard", usuario_root_path,
+        class: "text-sm text-gray-500 hover:text-gray-800 shrink-0 mt-1" %>
+  </div>
+
+  <% if @artigos_hoje.empty? && (@artigos_recentes.nil? || @artigos_recentes.empty?) %>
+    <%# Estado vazio %>
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm py-20 text-center">
+      <svg class="w-14 h-14 mx-auto mb-4 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-.586-1.414l-4.5-4.5A2 2 0 0013.5 3H5"/>
+      </svg>
+      <p class="text-gray-500 font-medium mb-1">Nenhum artigo publicado hoje ainda.</p>
+      <p class="text-sm text-gray-400 mb-6">Volte mais tarde — nossa equipe está trabalhando nas matérias do dia.</p>
+      <%= link_to "Ver todos os artigos", noticias_path,
+          class: "inline-block bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors" %>
+    </div>
+
+  <% elsif @artigos_hoje.empty? && @artigos_recentes.present? %>
+    <%# Fallback: artigos recentes dos últimos 3 dias %>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-center gap-3">
+      <svg class="w-5 h-5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <p class="text-sm text-amber-800">Nenhum artigo publicado hoje. Mostrando os mais recentes dos últimos 3 dias.</p>
+    </div>
+    <%= render "secao_artigos", artigos: @artigos_recentes, titulo: "Publicações recentes", lidos: @lidos %>
+
+  <% else %>
+    <%# Seções por tópico do usuário %>
+    <% if @por_topico.any? %>
+      <div class="space-y-8">
+        <% @por_topico.each do |categoria, artigos| %>
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-1 h-6 bg-blue-600 rounded-full"></div>
+              <h2 class="text-lg font-bold text-gray-900"><%= categoria.nome %></h2>
+              <span class="text-xs text-gray-400"><%= artigos.size %> <%= artigos.size == 1 ? "artigo" : "artigos" %></span>
+            </div>
+            <%= render "secao_artigos", artigos: artigos, titulo: nil, lidos: @lidos %>
+          </div>
+        <% end %>
+
+        <%# Outros artigos (fora dos tópicos do usuário) %>
+        <% if @outros.any? %>
+          <div>
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-1 h-6 bg-gray-300 rounded-full"></div>
+              <h2 class="text-lg font-bold text-gray-900">Outras categorias</h2>
+              <span class="text-xs text-gray-400"><%= @outros.size %> <%= @outros.size == 1 ? "artigo" : "artigos" %></span>
+            </div>
+            <%= render "secao_artigos", artigos: @outros, titulo: nil, lidos: @lidos %>
+          </div>
+        <% end %>
+      </div>
+
+    <% else %>
+      <%# Sem tópicos configurados — todos os artigos do dia %>
+      <% if @topicos.empty? %>
+        <div class="bg-blue-50 border border-blue-100 rounded-xl px-5 py-4 flex items-start gap-3">
+          <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p class="text-sm text-blue-800 font-medium">Personalize seu resumo!</p>
+            <p class="text-xs text-blue-700 mt-0.5">
+              <%= link_to "Configure seus tópicos de interesse", usuario_configuracoes_path, class: "underline font-semibold" %>
+              e o resumo será organizado pelas categorias que você segue.
+            </p>
+          </div>
+        </div>
+      <% end %>
+      <%= render "secao_artigos", artigos: @outros, titulo: "Todos os artigos de hoje", lidos: @lidos %>
+    <% end %>
+  <% end %>
+
+</div>

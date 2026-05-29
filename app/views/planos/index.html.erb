@@ -133,3 +133,180 @@
     <%= link_to "Dúvidas? Fale conosco", contato_path, class: "text-blue-600 hover:underline" %>
   </div>
 </div>
+
+<%# ── Exit-intent modal (desktop only) ── %>
+<% _plano_destaque = @planos.find { |p| p.destaque? && !p.gratuito? } || @planos.reject(&:gratuito?).first %>
+<% _tem_promo_exit = _plano_destaque&.promocao_visivel? && (!user_signed_in? || _plano_destaque&.elegivel_para_promocao?(current_user)) %>
+<% _preco_exit = _tem_promo_exit ? format('%.2f', _plano_destaque&.preco_promocional).gsub('.', ',') : format('%.2f', _plano_destaque&.preco.to_f).gsub('.', ',') if _plano_destaque %>
+
+<div id="exit-intent-overlay"
+     class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6"
+     style="background: rgba(0,0,0,0.6); backdrop-filter: blur(3px)">
+
+  <div id="exit-intent-modal"
+       class="relative w-full max-w-[460px] bg-white rounded-2xl overflow-hidden"
+       style="box-shadow: 0 25px 60px rgba(0,0,0,0.25); animation: exitModalIn 0.35s cubic-bezier(0.22,1,0.36,1)">
+
+    <%# Botão fechar discreto %>
+    <button id="exit-intent-dismiss"
+            class="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+            aria-label="Fechar">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+
+    <%# Topo — identidade visual do portal %>
+    <div class="px-8 pt-8 pb-6 border-b border-gray-100 text-center">
+      <%# Logo ou nome do portal %>
+      <% _branding_exit = SiteBranding.instance rescue nil %>
+      <div class="flex justify-center mb-5">
+        <% if _branding_exit&.logo&.attached? %>
+          <img src="<%= _branding_exit.logo_url %>" alt="Logo" class="h-8 w-auto object-contain">
+        <% else %>
+          <span class="text-lg font-black text-gray-900">
+            <%= SiteSetting['site_titulo'] || 'Busca Mais' %>
+          </span>
+        <% end %>
+      </div>
+
+      <h2 class="text-[22px] font-bold text-gray-900 leading-snug mb-2">
+        Continue bem informado.<br>
+        <span class="text-blue-600">Sem paywall. Sem anúncios.</span>
+      </h2>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        Milhares de leitores confiam no <%= SiteSetting['site_titulo'] || 'Busca Mais' %> para se manter atualizados.<br>
+        Sua assinatura mantém esse jornalismo vivo e independente.
+      </p>
+    </div>
+
+    <%# Benefícios — lista limpa com checks %>
+    <div class="px-8 py-5">
+      <ul class="space-y-3">
+        <% [
+          "Acesso ilimitado a todos os artigos, sem paywall",
+          "Experiência completamente sem anúncios",
+          "Apoio ao jornalismo local e independente",
+          "Comentários com destaque e sem fila de moderação",
+        ].each do |b| %>
+          <li class="flex items-start gap-3 text-sm text-gray-700">
+            <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+            </svg>
+            <%= b %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <%# CTA principal %>
+    <div class="px-8 pb-7 space-y-3">
+      <% if _plano_destaque %>
+        <% if user_signed_in? %>
+          <%= button_to checkout_usuario_assinatura_path(plan_id: _plano_destaque.id), method: :post,
+              class: "w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors shadow-sm" do %>
+            Assinar por R$ <%= _preco_exit %>/mês →
+          <% end %>
+        <% else %>
+          <%= link_to "Assinar por R$ #{_preco_exit}/mês →", new_user_session_path,
+              class: "block w-full text-center py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-colors shadow-sm" %>
+        <% end %>
+        <% if _tem_promo_exit %>
+          <p class="text-center text-xs text-orange-600 font-medium">
+            🏷 Oferta especial: primeiros <%= _plano_destaque.meses_promocionais %> meses por R$ <%= _preco_exit %> · depois <%= _plano_destaque.preco_formatado %>
+          </p>
+        <% end %>
+      <% end %>
+
+      <%# Confiança %>
+      <div class="flex items-center justify-center gap-4 pt-1">
+        <span class="flex items-center gap-1.5 text-xs text-gray-400">
+          <svg class="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          </svg>
+          Pagamento seguro
+        </span>
+        <span class="text-gray-200">·</span>
+        <span class="text-xs text-gray-400">Cancele a qualquer momento</span>
+        <span class="text-gray-200">·</span>
+        <span class="text-xs text-gray-400">Sem contratos</span>
+      </div>
+
+      <%# Dismiss %>
+      <div class="text-center pt-2">
+        <button type="button" id="exit-intent-dismiss-2"
+                class="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+          Não, obrigado — continuar sem assinar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  @keyframes exitModalIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+(function() {
+  // Apenas desktop
+  if (window.innerWidth < 1024) return;
+
+  // Não repetir na mesma sessão
+  if (sessionStorage.getItem('exitIntentShown')) return;
+
+  var overlay  = document.getElementById('exit-intent-overlay');
+  var dismiss  = document.getElementById('exit-intent-dismiss');
+  var dismiss2 = document.getElementById('exit-intent-dismiss-2');
+  var fired    = false;
+  var delay    = null;
+
+  function show() {
+    if (fired) return;
+    fired = true;
+    sessionStorage.setItem('exitIntentShown', '1');
+    overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hide() {
+    overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Trigger: mouse sai pelo topo da janela (dentro dos primeiros 10px)
+  document.addEventListener('mouseleave', function(e) {
+    if (e.clientY <= 5) {
+      // Pequeno delay para evitar falso positivo em scroll rápido
+      delay = setTimeout(show, 200);
+    }
+  });
+
+  document.addEventListener('mouseenter', function() {
+    clearTimeout(delay);
+  });
+
+  // Fechar ao clicar no backdrop
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) hide();
+  });
+
+  // Fechar ao clicar nos botões de dismiss
+  if (dismiss)  dismiss.addEventListener('click', hide);
+  if (dismiss2) dismiss2.addEventListener('click', hide);
+
+  // Fechar com Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') hide();
+  });
+
+  // Após 45 segundos na página, mostrar mesmo sem exit-intent (se não mostrou ainda)
+  setTimeout(function() {
+    if (!fired) show();
+  }, 45000);
+})();
+</script>

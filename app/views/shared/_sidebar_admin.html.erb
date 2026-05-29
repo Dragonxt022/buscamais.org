@@ -18,16 +18,30 @@
        style="width: 15rem">
 
   <%# ── Brand / Toggle ── %>
-  <div class="sidebar-header flex items-center justify-between px-4 py-4 border-b border-gray-200 min-h-[64px]">
-    <div class="flex items-center gap-2 min-w-0">
-      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
-        <span class="text-white font-black text-sm select-none">B</span>
-      </div>
-      <div class="min-w-0" data-sidebar-target="brandText">
-        <p class="text-sm font-bold text-gray-800 truncate leading-tight">Busca Mais</p>
-        <p class="text-[10px] text-gray-400 truncate"><%= is_admin ? "Administração" : "Editor" %></p>
-      </div>
-    </div>
+  <% _branding = SiteBranding.instance rescue nil %>
+  <div class="sidebar-header flex items-center justify-between px-4 py-3 border-b border-gray-200 min-h-[72px] gap-2">
+    <a href="<%= root_path %>" target="_blank" rel="noopener"
+       class="flex flex-col justify-center min-w-0 flex-1 hover:opacity-80 transition-opacity overflow-hidden"
+       title="Ver site público">
+      <% if _branding&.logo&.attached? %>
+        <img src="<%= _branding.logo_url %>" alt="Logo"
+             class="h-9 w-auto object-contain object-left max-w-[140px]"
+             data-sidebar-target="brandText">
+        <span class="text-[10px] text-gray-400 mt-0.5 truncate" data-sidebar-target="brandText">
+          <%= is_admin ? "Administração" : "Editor" %>
+        </span>
+      <% else %>
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+            <span class="text-white font-black text-sm select-none">B</span>
+          </div>
+          <div class="min-w-0" data-sidebar-target="brandText">
+            <p class="text-sm font-bold text-gray-800 truncate leading-tight">Busca Mais</p>
+            <p class="text-[10px] text-gray-400 truncate"><%= is_admin ? "Administração" : "Editor" %></p>
+          </div>
+        </div>
+      <% end %>
+    </a>
     <button type="button"
             data-action="click->sidebar#toggle"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 shrink-0 transition-colors"

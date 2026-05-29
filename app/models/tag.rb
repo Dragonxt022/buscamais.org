@@ -1,6 +1,6 @@
 class Tag < ApplicationRecord
   extend FriendlyId
-  friendly_id :nome, use: :slugged
+  friendly_id :nome, use: [:slugged, :finders]
 
   has_many :article_tags, dependent: :destroy
   has_many :articles, through: :article_tags
