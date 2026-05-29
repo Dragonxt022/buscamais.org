@@ -1,0 +1,16 @@
+<p>Olá, <%= @mensagem.nome %>.</p>
+
+<p>Obrigado por entrar em contato. Seguem nossas considerações sobre a sua mensagem:</p>
+
+<hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+<div style="background:#f9fafb; border-left: 3px solid #3b82f6; padding: 16px; border-radius: 4px; margin-bottom: 24px;">
+  <%= simple_format @mensagem.resposta %>
+</div>
+
+<hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+<p style="color:#6b7280; font-size: 13px;">
+  <strong>Sua mensagem original:</strong><br>
+  <em><%= @mensagem.mensagem %></em>
+</p>

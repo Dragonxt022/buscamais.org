@@ -126,5 +126,8 @@ Rails.application.routes.draw do
     end
     resources :planos, only: [:index, :new, :create, :edit, :update, :destroy]
     resources :assinaturas, only: [:index, :new, :create, :edit, :update, :destroy]
+    resources :mensagens, only: [:index, :show] do
+      member { post :responder }
+    end
   end
 end

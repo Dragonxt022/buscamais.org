@@ -210,21 +210,193 @@
             <path d="M13.479 9.883c-1.626-.604-2.512-1.067-2.512-1.803 0-.604.559-1.24 1.716-1.24a5.63 5.63 0 012.34.572l.415-2.516A6.78 6.78 0 0013.04 4.4c-2.977 0-5.043 1.582-5.043 3.86 0 2.037 1.44 3.096 3.796 3.838 1.538.528 2.017 1.052 2.017 1.79 0 .72-.624 1.24-1.765 1.24a6.39 6.39 0 01-2.857-.72l-.44 2.543a7.38 7.38 0 003.21.72c3.13 0 5.27-1.516 5.27-3.94-.006-2.215-1.494-3.226-3.75-3.848zM2 4.4l-.96 5.568.937-4.696A1.2 1.2 0 013.168 4.4H2zm3.528 0l-1.8 10.8h2.04l.408-2.4h2.04l-.408 2.4h2.04l1.8-10.8H9.6l-.48 2.8H7.08l.48-2.8H5.528zm13.352 7.56l-.48-2.4H16.8l.504-2.88-.48-1.32-.864 4.2h-1.68L12.84 4.4h2.04l1.8 10.8h-2.04l-.36-2.16"/>
           </svg>
           <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Pagamentos — Stripe</h3>
+          <% stripe_test_mode = @configuracoes["stripe_publishable_key"]&.start_with?("pk_test_") %>
           <% if @configuracoes["stripe_secret_key"].present? %>
-            <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
-              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Configurado
-            </span>
+            <% if stripe_test_mode %>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Modo Teste
+              </span>
+            <% else %>
+              <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Configurado
+              </span>
+            <% end %>
           <% else %>
             <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Não configurado</span>
           <% end %>
+          <%# Ícone de ajuda %>
+          <button type="button"
+                  onclick="document.getElementById('stripe-help-modal').showModal()"
+                  title="Como configurar o Stripe"
+                  class="ml-auto flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-full transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Como configurar
+          </button>
         </div>
         <p class="text-xs text-gray-500 mb-4">
           Configure as chaves Stripe para habilitar cobranças de assinatura.
-          Obtenha em <strong>dashboard.stripe.com</strong> → Developers → API Keys.
           O webhook deve apontar para:
           <code class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-xs font-mono select-all"><%= "#{SiteSetting['site_url'].presence || request.base_url}/stripe/webhook" %></code>
         </p>
       </div>
+
+      <%# Modal de ajuda passo a passo %>
+      <dialog id="stripe-help-modal"
+              class="rounded-2xl shadow-2xl w-full max-w-2xl p-0 backdrop:bg-black/50"
+              onclick="if(event.target===this)this.close()">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <h2 class="text-base font-bold text-gray-900">Como configurar o Stripe</h2>
+          </div>
+          <button type="button" onclick="document.getElementById('stripe-help-modal').close()"
+                  class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="px-6 py-5 space-y-6 max-h-[70vh] overflow-y-auto">
+
+          <%# Passo 1 %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Crie uma conta ou acesse o Dashboard Stripe</h3>
+              <p class="text-sm text-gray-600">
+                Acesse
+                <a href="https://dashboard.stripe.com" target="_blank" rel="noopener"
+                   class="text-indigo-600 hover:underline font-medium">dashboard.stripe.com</a>
+                e faça login. Se ainda não tem conta, clique em <strong>Start now</strong> e siga o cadastro.
+              </p>
+              <p class="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mt-2">
+                Use o modo <strong>Test</strong> (chaves <code class="font-mono">pk_test_</code> / <code class="font-mono">sk_test_</code>) durante os testes, e <strong>Live</strong> somente em produção.
+              </p>
+            </div>
+          </div>
+
+          <%# Passo 2 %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">2</div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Copie as chaves de API</h3>
+              <p class="text-sm text-gray-600 mb-2">
+                No menu lateral, clique em <strong>Developers</strong> → <strong>API Keys</strong>.
+              </p>
+              <ul class="space-y-1.5 text-sm text-gray-600">
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+                  Copie a <strong>Publishable key</strong> (<code class="font-mono text-xs bg-gray-100 px-1 rounded">pk_live_…</code>) → campo <em>Publishable Key</em> acima.
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+                  Clique em <strong>Reveal test key</strong> para ver a <strong>Secret key</strong> (<code class="font-mono text-xs bg-gray-100 px-1 rounded">sk_live_…</code>) → campo <em>Secret Key</em> acima.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <%# Passo 3 %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">3</div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Crie o endpoint de Webhook</h3>
+              <p class="text-sm text-gray-600 mb-2">
+                Vá em <strong>Developers</strong> → <strong>Webhooks</strong> → <strong>Add endpoint</strong>.
+              </p>
+              <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2">
+                <p class="text-xs font-medium text-gray-500 mb-1">URL do endpoint:</p>
+                <code class="text-xs font-mono text-indigo-700 select-all break-all">
+                  <%= "#{SiteSetting['site_url'].presence || request.base_url}/stripe/webhook" %>
+                </code>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">Em <strong>Select events</strong>, adicione exatamente estes eventos:</p>
+              <div class="bg-gray-50 border border-gray-200 rounded-lg divide-y divide-gray-100 text-xs font-mono">
+                <% [
+                  ["checkout.session.completed",      "Pagamento no checkout concluído"],
+                  ["customer.subscription.updated",   "Assinatura alterada ou renovada"],
+                  ["customer.subscription.deleted",   "Assinatura cancelada"],
+                  ["invoice.payment_failed",          "Falha no pagamento da fatura"],
+                ].each do |evento, descricao| %>
+                  <div class="flex items-center gap-3 px-3 py-2">
+                    <svg class="w-3.5 h-3.5 text-green-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span class="text-gray-800"><%= evento %></span>
+                    <span class="text-gray-400 font-sans normal-case ml-auto hidden sm:inline"><%= descricao %></span>
+                  </div>
+                <% end %>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Clique em <strong>Add endpoint</strong> para salvar.</p>
+            </div>
+          </div>
+
+          <%# Passo 4 %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">4</div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Copie o Webhook Secret</h3>
+              <p class="text-sm text-gray-600">
+                Após criar o endpoint, clique nele na lista. Procure por <strong>Signing secret</strong> e clique em <strong>Reveal</strong>. Copie o valor (começa com <code class="font-mono text-xs bg-gray-100 px-1 rounded">whsec_…</code>) e cole no campo <em>Webhook Secret</em> acima.
+              </p>
+            </div>
+          </div>
+
+          <%# Passo 5 — modo teste %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center mt-0.5">5</div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Quer testar sem gastar dinheiro? Use o Modo Teste</h3>
+              <p class="text-sm text-gray-600 mb-2">
+                No Dashboard Stripe, ative o <strong>modo Test</strong> (toggle no topo da página). As chaves de teste começam com <code class="font-mono text-xs bg-gray-100 px-1 rounded">pk_test_</code> e <code class="font-mono text-xs bg-gray-100 px-1 rounded">sk_test_</code> — nenhuma cobrança real acontece.
+              </p>
+              <p class="text-sm text-gray-600 mb-2">Use estes cartões fictícios para simular pagamentos:</p>
+              <div class="bg-amber-50 border border-amber-200 rounded-lg divide-y divide-amber-100 text-xs">
+                <% [
+                  ["4242 4242 4242 4242", "Aprovado"],
+                  ["4000 0025 0000 3155", "Aprovado c/ 3D Secure"],
+                  ["4000 0000 0000 9995", "Recusado"],
+                ].each do |numero, resultado| %>
+                  <div class="flex items-center gap-3 px-3 py-2">
+                    <code class="font-mono tracking-wider text-amber-900 select-all"><%= numero %></code>
+                    <span class="ml-auto text-amber-700"><%= resultado %></span>
+                  </div>
+                <% end %>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">Validade: qualquer data futura · CVC: qualquer número</p>
+            </div>
+          </div>
+
+          <%# Passo 6 %>
+          <div class="flex gap-4">
+            <div class="flex-none w-7 h-7 rounded-full bg-green-500 text-white text-xs font-bold flex items-center justify-center mt-0.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">Salve as configurações</h3>
+              <p class="text-sm text-gray-600">
+                Volte a esta página, cole as chaves nos campos correspondentes e clique em <strong>Salvar Configurações</strong>. Os pagamentos já estarão ativos na próxima tentativa de assinatura.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end rounded-b-2xl">
+          <button type="button" onclick="document.getElementById('stripe-help-modal').close()"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+            Entendido
+          </button>
+        </div>
+      </dialog>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -256,6 +428,49 @@
                class="input text-sm font-mono max-w-sm">
         <p class="text-xs text-gray-400 mt-1">Encontrado em Dashboard → Webhooks → seu endpoint.</p>
       </div>
+
+      <%# Banner e cartões de teste — exibidos quando chaves pk_test_ estão ativas %>
+      <% if stripe_test_mode %>
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <p class="text-sm font-semibold text-amber-800">Modo Teste Ativo — nenhuma cobrança real será feita</p>
+          </div>
+          <p class="text-xs text-amber-700 mb-3">Use os cartões abaixo para simular transações. O dinheiro é fictício e não há cobrança real.</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-left text-amber-800 font-semibold border-b border-amber-200">
+                  <th class="pb-2 pr-4">Número do Cartão</th>
+                  <th class="pb-2 pr-4">Validade</th>
+                  <th class="pb-2 pr-4">CVC</th>
+                  <th class="pb-2">Resultado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-amber-100">
+                <% [
+                  ["4242 4242 4242 4242", "Qualquer data futura", "Qualquer", "✅ Pagamento aprovado"],
+                  ["4000 0025 0000 3155", "Qualquer data futura", "Qualquer", "🔐 Requer autenticação 3D Secure"],
+                  ["4000 0000 0000 9995", "Qualquer data futura", "Qualquer", "❌ Cartão recusado"],
+                  ["4000 0000 0000 0069", "Qualquer data futura", "Qualquer", "❌ Cartão expirado"],
+                ].each do |numero, validade, cvc, resultado| %>
+                  <tr class="text-amber-900">
+                    <td class="py-1.5 pr-4 font-mono tracking-wider select-all"><%= numero %></td>
+                    <td class="py-1.5 pr-4"><%= validade %></td>
+                    <td class="py-1.5 pr-4"><%= cvc %></td>
+                    <td class="py-1.5"><%= resultado %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-amber-600 mt-3">
+            Para ir à produção, substitua pelas chaves <code class="font-mono bg-amber-100 px-1 rounded">pk_live_</code> / <code class="font-mono bg-amber-100 px-1 rounded">sk_live_</code> no Dashboard Stripe.
+          </p>
+        </div>
+      <% end %>
     </div>
 
     <%# Actions %>

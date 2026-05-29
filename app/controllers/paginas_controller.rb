@@ -7,7 +7,17 @@ class PaginasController < ApplicationController
   def contato; end
 
   def enviar_contato
-    flash[:notice] = "Mensagem enviada com sucesso! Retornaremos em até 2 dias úteis."
+    msg = ContactMessage.new(
+      nome:     params[:nome],
+      email:    params[:email],
+      assunto:  params[:assunto],
+      mensagem: params[:mensagem]
+    )
+    if msg.save
+      flash[:notice] = "Mensagem enviada com sucesso! Retornaremos em até 2 dias úteis."
+    else
+      flash[:alert] = "Preencha todos os campos obrigatórios."
+    end
     redirect_to contato_path
   end
 

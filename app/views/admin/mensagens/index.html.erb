@@ -1,0 +1,72 @@
+<% content_for :page_title, "Mensagens" %>
+<% content_for :page_subtitle, "Mensagens recebidas pelo Fale Conosco" %>
+
+<div class="space-y-4">
+
+  <%# Filtros %>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "Todas", admin_mensagens_path,
+        class: "px-3 py-1.5 text-sm rounded-lg font-medium transition-colors #{params[:filtro].blank? ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}" %>
+    <%= link_to "Não lidas", admin_mensagens_path(filtro: "nao_lidas"),
+        class: "px-3 py-1.5 text-sm rounded-lg font-medium transition-colors #{params[:filtro] == 'nao_lidas' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}" %>
+    <%= link_to "Aguardando resposta", admin_mensagens_path(filtro: "pendentes"),
+        class: "px-3 py-1.5 text-sm rounded-lg font-medium transition-colors #{params[:filtro] == 'pendentes' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}" %>
+  </div>
+
+  <%# Lista %>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 divide-y divide-gray-50">
+    <% if @mensagens.empty? %>
+      <div class="py-16 text-center text-gray-400">
+        <svg class="w-10 h-10 mx-auto mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        <p class="text-sm">Nenhuma mensagem encontrada.</p>
+      </div>
+    <% else %>
+      <% @mensagens.each do |msg| %>
+        <%= link_to admin_mensagen_path(msg),
+            class: "flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors #{msg.lida? ? '' : 'bg-blue-50/40'}" do %>
+
+          <%# Indicador de lida/não lida %>
+          <div class="mt-1 shrink-0">
+            <% if msg.lida? %>
+              <div class="w-2 h-2 rounded-full bg-transparent"></div>
+            <% else %>
+              <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+            <% end %>
+          </div>
+
+          <%# Avatar inicial %>
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            <%= msg.nome.first.upcase %>
+          </div>
+
+          <%# Conteúdo %>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="font-semibold text-sm text-gray-900 <%= msg.lida? ? '' : 'font-bold' %>"><%= msg.nome %></span>
+              <span class="text-xs text-gray-400 hidden sm:inline">·</span>
+              <span class="text-xs text-gray-500 hidden sm:inline"><%= msg.email %></span>
+              <div class="ml-auto flex items-center gap-2 shrink-0">
+                <% if msg.respondida? %>
+                  <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Respondida</span>
+                <% end %>
+                <span class="text-xs text-gray-400"><%= time_ago_in_words(msg.created_at) %> atrás</span>
+              </div>
+            </div>
+            <p class="text-xs font-medium text-indigo-600 mb-0.5"><%= msg.assunto_label %></p>
+            <p class="text-sm text-gray-500 truncate"><%= msg.mensagem %></p>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# Paginação %>
+  <% if @pagy.pages > 1 %>
+    <div class="flex justify-center">
+      <%== pagy_nav(@pagy) %>
+    </div>
+  <% end %>
+
+</div>

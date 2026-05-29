@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_28_171816) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_125324) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -132,6 +132,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_28_171816) do
     t.index ["parent_id"], name: "index_comments_on_parent_id"
     t.index ["status"], name: "index_comments_on_status"
     t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "contact_messages", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.string "assunto"
+    t.datetime "created_at", null: false
+    t.string "email"
+    t.boolean "lida", default: false, null: false
+    t.text "mensagem"
+    t.string "nome"
+    t.boolean "respondida", default: false, null: false
+    t.datetime "respondida_em"
+    t.text "resposta"
+    t.datetime "updated_at", null: false
   end
 
   create_table "friendly_id_slugs", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|

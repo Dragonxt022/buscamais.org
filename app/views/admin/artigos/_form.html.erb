@@ -1,3 +1,30 @@
+<% content_for :head do %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+  <style>
+    .ql-toolbar.ql-snow { border: 1px solid #e5e7eb; border-radius: 0.5rem 0.5rem 0 0; background: #f9fafb; }
+    .ql-container.ql-snow { border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 0.5rem 0.5rem; font-size: 1rem; font-family: inherit; }
+    .ql-editor { min-height: 380px; line-height: 1.7; }
+    .ql-editor.ql-blank::before { color: #9ca3af; font-style: normal; }
+    .ql-editor img { max-width: 100%; height: auto; border-radius: 0.375rem; }
+    .ql-editor h1 { font-size: 1.75em; font-weight: 700; margin: 0.75em 0 0.4em; }
+    .ql-editor h2 { font-size: 1.4em; font-weight: 700; margin: 0.75em 0 0.4em; }
+    .ql-editor h3 { font-size: 1.15em; font-weight: 600; margin: 0.75em 0 0.4em; }
+    .ql-editor p  { margin-bottom: 0.75em; }
+    .ql-editor blockquote { border-left: 3px solid #3b82f6; padding-left: 1em; color: #6b7280; margin: 1em 0; }
+    .ql-editor pre.ql-syntax { background: #1e293b; color: #e2e8f0; border-radius: 0.375rem; padding: 0.75em 1em; font-size: 0.875em; }
+    .ql-editor ul, .ql-editor ol { padding-left: 1.5em; margin-bottom: 0.75em; }
+    .ql-snow .ql-picker.ql-header .ql-picker-label::before,
+    .ql-snow .ql-picker.ql-header .ql-picker-item::before { content: 'Normal'; }
+    .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+    .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before { content: 'Título 1'; }
+    .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+    .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before { content: 'Título 2'; }
+    .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+    .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before { content: 'Título 3'; }
+  </style>
+<% end %>
+
 <%= form_with model: artigo,
               url: artigo.new_record? ? admin_artigos_path : admin_artigo_path(artigo),
               class: "space-y-6" do |f| %>
@@ -22,26 +49,31 @@
             placeholder: "Título do artigo..." %>
       </div>
 
-      <%# Conteúdo — editor rico com galeria integrada %>
+      <%# Conteúdo — editor Quill com galeria integrada %>
       <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-           data-controller="trix-gallery"
-           data-trix-gallery-url-value="<%= admin_midias_path %>">
+           data-controller="rich-editor"
+           data-rich-editor-url-value="<%= admin_midias_path %>">
 
         <%= f.label :conteudo, "Conteúdo *", class: "block text-sm font-semibold text-gray-700 mb-2" %>
-        <%= f.rich_text_area :conteudo,
-            class: "prose max-w-none",
-            placeholder: "Escreva o conteúdo da matéria aqui. Use a barra de ferramentas para formatar texto, adicionar links e inserir imagens..." %>
+
+        <%# Hidden textarea — valor enviado no form %>
+        <textarea name="article[conteudo]" id="article_conteudo"
+                  data-rich-editor-target="input"
+                  class="hidden"><%= artigo.conteudo.body&.to_html %></textarea>
+
+        <%# Área visual do Quill %>
+        <div data-rich-editor-target="editor"></div>
 
         <%# Galeria picker para inserir imagens no corpo %>
-        <div data-trix-gallery-target="panel"
+        <div data-rich-editor-target="panel"
              class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
              style="background:rgba(0,0,0,0.55)"
-             data-action="click->trix-gallery#closeBackdrop">
+             data-action="click->rich-editor#closeBackdrop">
           <div class="bg-white rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col" style="max-height:85vh"
                onclick="event.stopPropagation()">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
               <h3 class="text-base font-bold text-gray-900">Inserir imagem da galeria</h3>
-              <button type="button" data-action="click->trix-gallery#close"
+              <button type="button" data-action="click->rich-editor#close"
                       class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -49,36 +81,34 @@
               </button>
             </div>
             <div class="px-5 pt-4 shrink-0 flex items-center gap-3">
-              <%# Upload button %>
               <label class="relative flex items-center gap-1.5 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-3 py-2 rounded-lg transition-colors shrink-0 select-none">
                 <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
                 Upload
                 <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple class="sr-only"
-                       data-trix-gallery-target="uploadInput"
-                       data-action="change->trix-gallery#upload">
+                       data-rich-editor-target="uploadInput"
+                       data-action="change->rich-editor#upload">
               </label>
-              <span data-trix-gallery-target="uploadStatus" class="hidden text-xs font-medium text-blue-600"></span>
-              <%# Search %>
+              <span data-rich-editor-target="uploadStatus" class="hidden text-xs font-medium text-blue-600"></span>
               <div class="relative flex-1">
                 <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
                 </svg>
                 <input type="text" placeholder="Buscar imagem…"
-                       data-trix-gallery-target="search"
-                       data-action="input->trix-gallery#search"
+                       data-rich-editor-target="search"
+                       data-action="input->rich-editor#search"
                        class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               </div>
             </div>
             <div class="p-5 overflow-y-auto flex-1">
-              <div data-trix-gallery-target="spinner" class="hidden flex justify-center py-10">
+              <div data-rich-editor-target="spinner" class="hidden flex justify-center py-10">
                 <svg class="animate-spin w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
               </div>
-              <div data-trix-gallery-target="grid"
+              <div data-rich-editor-target="grid"
                    class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3"></div>
             </div>
           </div>

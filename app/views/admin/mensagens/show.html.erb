@@ -1,0 +1,128 @@
+<% content_for :page_title, "Mensagem de #{@mensagem.nome}" %>
+<% content_for :page_subtitle, @mensagem.assunto_label %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <%# Coluna principal %>
+  <div class="lg:col-span-2 space-y-5">
+
+    <%# Mensagem recebida %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold">
+            <%= @mensagem.nome.first.upcase %>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-900 text-sm"><%= @mensagem.nome %></p>
+            <p class="text-xs text-gray-500"><%= @mensagem.email %></p>
+          </div>
+        </div>
+        <p class="text-xs text-gray-400"><%= l @mensagem.created_at, format: :long rescue @mensagem.created_at.strftime("%d/%m/%Y %H:%M") %></p>
+      </div>
+      <div class="px-6 py-5">
+        <p class="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap"><%= @mensagem.mensagem %></p>
+      </div>
+    </div>
+
+    <%# Se já foi respondida, mostrar a resposta %>
+    <% if @mensagem.respondida? %>
+      <div class="bg-green-50 border border-green-200 rounded-xl">
+        <div class="px-6 py-4 border-b border-green-200 flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-sm font-semibold text-green-800">Resposta enviada</p>
+          <p class="text-xs text-green-600 ml-auto">
+            <%= @mensagem.respondida_em ? (@mensagem.respondida_em.strftime("%d/%m/%Y %H:%M") rescue "") : "" %>
+          </p>
+        </div>
+        <div class="px-6 py-5">
+          <p class="text-sm leading-relaxed text-gray-800 whitespace-pre-wrap"><%= @mensagem.resposta %></p>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Formulário de resposta %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-sm font-semibold text-gray-800">
+          <%= @mensagem.respondida? ? "Enviar nova resposta" : "Responder mensagem" %>
+        </h3>
+        <p class="text-xs text-gray-500 mt-0.5">A resposta será enviada por e-mail para <strong><%= @mensagem.email %></strong></p>
+      </div>
+      <div class="px-6 py-5">
+        <%= form_with url: responder_admin_mensagen_path(@mensagem), method: :post do |f| %>
+          <textarea name="resposta" rows="6" required
+                    placeholder="Escreva sua resposta aqui..."
+                    class="w-full px-3.5 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none mb-4"><%= @mensagem.respondida? ? @mensagem.resposta : "" %></textarea>
+          <div class="flex items-center gap-3">
+            <button type="submit"
+                    class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+              Enviar resposta por e-mail
+            </button>
+            <%= link_to "← Voltar", admin_mensagens_path, class: "text-sm text-gray-500 hover:text-gray-800 py-2" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+  </div>
+
+  <%# Barra lateral %>
+  <div class="space-y-5">
+
+    <%# Detalhes %>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 space-y-3">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Detalhes</p>
+
+      <div class="text-sm space-y-2.5">
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Assunto</p>
+          <p class="font-medium text-gray-800"><%= @mensagem.assunto_label %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Remetente</p>
+          <p class="font-medium text-gray-800"><%= @mensagem.nome %></p>
+          <p class="text-xs text-gray-500 font-mono"><%= @mensagem.email %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Recebida em</p>
+          <p class="font-medium text-gray-800"><%= @mensagem.created_at.strftime("%d/%m/%Y às %H:%M") %></p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400 mb-0.5">Status</p>
+          <% if @mensagem.respondida? %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Respondida
+            </span>
+          <% elsif @mensagem.lida? %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+              Lida · aguardando resposta
+            </span>
+          <% else %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Não lida
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Link rápido para responder no cliente de e-mail %>
+    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4">
+      <p class="text-xs text-gray-500 mb-2">Prefere responder pelo seu e-mail?</p>
+      <%= link_to "mailto:#{@mensagem.email}?subject=Re: #{CGI.escape(@mensagem.assunto_label)}",
+          class: "flex items-center gap-2 text-sm text-blue-600 hover:underline font-medium" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        Abrir no cliente de e-mail
+      <% end %>
+    </div>
+
+  </div>
+</div>

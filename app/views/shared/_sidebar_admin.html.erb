@@ -169,6 +169,21 @@
               </span>
             <% end %>
           <% end %>
+
+          <%# Mensagens (Fale Conosco) %>
+          <% mensagens_nao_lidas = ContactMessage.nao_lidas.count rescue 0 %>
+          <%= link_to admin_mensagens_path, title: "Mensagens",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'mensagens' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Mensagens</span>
+            <% if mensagens_nao_lidas > 0 %>
+              <span class="text-xs font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
+                <%= mensagens_nao_lidas %>
+              </span>
+            <% end %>
+          <% end %>
         <% end %>
 
       </div>
