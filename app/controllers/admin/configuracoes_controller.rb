@@ -9,6 +9,8 @@ class Admin::ConfiguracoesController < Admin::BaseController
     SiteSetting::CHAVES.each do |chave|
       valor = params.dig(:site_setting, chave)
       next if valor.nil?
+      # Checkbox com hidden field envia array; usar o último valor (o real)
+      valor = valor.last if valor.is_a?(Array)
       if valor.blank? && !%w[site_titulo email_remetente].include?(chave)
         SiteSetting.find_by(chave: chave)&.destroy
         Rails.cache.delete("site_setting_#{chave}")

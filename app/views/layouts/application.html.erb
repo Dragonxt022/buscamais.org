@@ -36,6 +36,20 @@
         <%== yield :analytics %>
       </script>
     <% end %>
+
+    <%# Verificação de propriedade do AdSense (meta tag obrigatória para aprovação) %>
+    <% if SiteSetting["ads_publisher_id"].present? %>
+      <meta name="google-adsense-account" content="<%= SiteSetting['ads_publisher_id'] %>">
+    <% end %>
+
+    <%# ── Google AdSense ───────────────────────────────────────────────────────
+        Carregado apenas quando: ADS_ENABLED=true, publisher ID configurado,
+        usuário não é assinante ativo e aceitou cookies.
+        Para ativar: defina ADS_ENABLED e ADS_PUBLISHER_ID no .env %>
+    <% if SiteSetting["ads_ativo"] == "true" && SiteSetting["ads_publisher_id"].present? && mostrar_anuncio? && cookie_consent_aceito? %>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=<%= SiteSetting['ads_publisher_id'] %>"
+              crossorigin="anonymous"></script>
+    <% end %>
   </head>
   <body class="bg-gray-50">
     <%= render "shared/flash" %>

@@ -5,12 +5,47 @@ class NoticiasController < ApplicationController
                               .with_attached_imagem_capa_file
                               .includes(:author, :category)
                               .order(publicado_em: :desc).first
+
+    excluir_ids = [@artigo_destaque&.id].compact
+
+    @secundarias = Article.publicados
+                           .with_attached_imagem_capa_file
+                           .includes(:author, :category)
+                           .where.not(id: excluir_ids)
+                           .order(publicado_em: :desc)
+                           .limit(4)
+
+    @mais_lidos = Article.publicados
+                          .with_attached_imagem_capa_file
+                          .includes(:author, :category)
+                          .order(visualizacoes: :desc)
+                          .limit(5)
+
+    categorias_ativas = Category.joins(:articles)
+                                 .merge(Article.publicados)
+                                 .group("categories.id")
+                                 .having("COUNT(articles.id) >= 3")
+                                 .order("COUNT(articles.id) DESC")
+                                 .limit(4)
+
+    ids_excluir = ([@artigo_destaque&.id] + @secundarias.map(&:id)).compact
+
+    @por_categoria = categorias_ativas.map do |cat|
+      artigos = cat.articles.publicados
+                    .with_attached_imagem_capa_file
+                    .includes(:author)
+                    .where.not(id: ids_excluir)
+                    .order(publicado_em: :desc)
+                    .limit(4)
+      [cat, artigos]
+    end.reject { |_, artigos| artigos.empty? }
+
     @pagy, @ultimas = pagy(
       Article.publicados
              .with_attached_imagem_capa_file
              .includes(:author, :category)
              .order(publicado_em: :desc),
-      limit: 12
+      limit: 8
     )
   end
 

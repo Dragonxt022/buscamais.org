@@ -172,12 +172,13 @@ class Usuario::AssinaturasController < Usuario::BaseController
 
   def criar_checkout_normal(plano, customer_id)
     session = ::Stripe::Checkout::Session.create(
-      customer:   customer_id,
-      mode:       "subscription",
-      line_items: [{ price: plano.stripe_price_id, quantity: 1 }],
-      success_url: sucesso_usuario_assinatura_url(plan_id: plano.id) + "&session_id={CHECKOUT_SESSION_ID}",
-      cancel_url:  cancelado_usuario_assinatura_url,
-      metadata:    { user_id: current_user.id, plan_id: plano.id }
+      customer:             customer_id,
+      mode:                 "subscription",
+      payment_method_types: ["card"],
+      line_items:           [{ price: plano.stripe_price_id, quantity: 1 }],
+      success_url:          sucesso_usuario_assinatura_url(plan_id: plano.id) + "&session_id={CHECKOUT_SESSION_ID}",
+      cancel_url:           cancelado_usuario_assinatura_url,
+      metadata:             { user_id: current_user.id, plan_id: plano.id }
     )
     redirect_to session.url, allow_other_host: true, status: :see_other
   end
@@ -185,9 +186,10 @@ class Usuario::AssinaturasController < Usuario::BaseController
   def criar_checkout_com_promocao(plano, customer_id)
     meses = plano.meses_promocionais.to_i.clamp(1, 24)
     session = ::Stripe::Checkout::Session.create(
-      customer:   customer_id,
-      mode:       "subscription",
-      line_items: [{ price: plano.stripe_promo_price_id, quantity: 1 }],
+      customer:             customer_id,
+      mode:                 "subscription",
+      payment_method_types: ["card"],
+      line_items:           [{ price: plano.stripe_promo_price_id, quantity: 1 }],
       subscription_data: {
         metadata: { user_id: current_user.id, plan_id: plano.id, promocao: "true" }
       },

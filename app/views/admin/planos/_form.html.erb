@@ -1,6 +1,5 @@
 <%= form_with model: plano,
               url: plano.new_record? ? admin_planos_path : admin_plano_path(plano),
-              as: :plano,
               class: "space-y-6" do |f| %>
   <% if plano.errors.any? %>
     <div class="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -200,7 +199,7 @@
             <svg class="w-4 h-4 text-gray-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
-            <input type="text" name="plano[beneficios][]" value="<%= b %>"
+            <input type="text" name="subscription_plan[beneficios][]" value="<%= b %>"
                    placeholder="Ex: Salvar matérias ilimitadas"
                    class="input text-sm flex-1">
             <button type="button"
@@ -230,7 +229,7 @@
           <div class="<%= defn[:tipo] == :boolean ? 'flex items-center gap-2' : '' %>">
             <% if defn[:tipo] == :boolean %>
               <input type="checkbox"
-                     name="plano[permissoes][<%= chave %>]"
+                     name="subscription_plan[permissoes][<%= chave %>]"
                      value="1"
                      id="perm_<%= chave %>"
                      <%= val ? "checked" : "" %>
@@ -243,7 +242,7 @@
                 <%= defn[:label] %>
               </label>
               <input type="number"
-                     name="plano[permissoes][<%= chave %>]"
+                     name="subscription_plan[permissoes][<%= chave %>]"
                      value="<%= val.to_i %>"
                      min="0"
                      class="input text-sm">
@@ -252,7 +251,7 @@
                 <%= defn[:label] %>
               </label>
               <input type="text"
-                     name="plano[permissoes][<%= chave %>]"
+                     name="subscription_plan[permissoes][<%= chave %>]"
                      value="<%= val.to_s %>"
                      placeholder="vazio = nenhum"
                      class="input text-sm">

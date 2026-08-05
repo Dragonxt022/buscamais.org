@@ -45,15 +45,17 @@ class User < ApplicationRecord
 
     user = find_by(email: auth.info.email)
     if user
-      user.update!(provider: auth.provider, uid: auth.uid)
+      user.update!(provider: auth.provider, uid: auth.uid,
+                   avatar: auth.info.image.presence || user.avatar)
       return user
     end
 
-    create!(
+    create(
       provider: auth.provider,
       uid:      auth.uid,
       email:    auth.info.email,
       nome:     auth.info.name.presence || auth.info.email.split("@").first,
+      avatar:   auth.info.image,
       password: Devise.friendly_token[0, 20]
     )
   end

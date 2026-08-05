@@ -1,6 +1,13 @@
 module ApplicationHelper
   include Pagy::Frontend
 
+  # Retorna true para usuários que devem ver anúncios:
+  # não-logados e logados sem assinatura paga ativa.
+  def mostrar_anuncio?
+    return false if user_signed_in? && current_user.assinante_ativo?
+    true
+  end
+
   def pagy_nav(pagy, id: nil, aria_label: nil, **vars)
     id_attr = id ? %( id="#{id}") : ""
     a = pagy_anchor(pagy, **vars)

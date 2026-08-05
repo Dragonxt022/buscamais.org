@@ -1,0 +1,49 @@
+<%
+  # Uso: render "shared/anuncio", formato: :horizontal (padrão)
+  #      render "shared/anuncio", formato: :quadrado
+  #      render "shared/anuncio", formato: :in_content
+
+  ads_ativo  = SiteSetting["ads_ativo"] == "true" && SiteSetting["ads_publisher_id"].present?
+  formato  ||= :horizontal
+%>
+<% unless ads_ativo && mostrar_anuncio? && cookie_consent_aceito? %><% return %><% end %>
+
+<%
+  slot_map = {
+    horizontal:  "ads_slot_horizontal",
+    quadrado:    "ads_slot_quadrado",
+    in_content:  "ads_slot_in_content"
+  }
+  publisher_id = SiteSetting["ads_publisher_id"]
+  slot_id      = SiteSetting[slot_map[formato]]
+%>
+<% unless slot_id.present? %><% return %><% end %>
+
+<div class="anuncio-wrapper text-center my-6 overflow-hidden">
+  <p class="text-[10px] uppercase tracking-widest text-gray-300 mb-1 select-none">Publicidade</p>
+
+  <% if formato == :quadrado %>
+    <ins class="adsbygoogle"
+         style="display:inline-block;width:300px;height:250px"
+         data-ad-client="<%= publisher_id %>"
+         data-ad-slot="<%= slot_id %>"></ins>
+
+  <% elsif formato == :in_content %>
+    <ins class="adsbygoogle"
+         style="display:block;text-align:center"
+         data-ad-layout="in-article"
+         data-ad-format="fluid"
+         data-ad-client="<%= publisher_id %>"
+         data-ad-slot="<%= slot_id %>"></ins>
+
+  <% else %>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-format="auto"
+         data-full-width-responsive="true"
+         data-ad-client="<%= publisher_id %>"
+         data-ad-slot="<%= slot_id %>"></ins>
+  <% end %>
+
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>

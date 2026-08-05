@@ -473,6 +473,96 @@
       <% end %>
     </div>
 
+    <%# Google AdSense %>
+    <div class="p-6 space-y-5">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 3H3a2 2 0 00-2 2v14a2 2 0 002 2h18a2 2 0 002-2V5a2 2 0 00-2-2zm-1 14H4V6h16v11zM6 10h2v4H6zm3.5 0h2v4h-2zm3.5 0h2v4h-2z"/>
+          </svg>
+          <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Google AdSense</h3>
+          <% if @configuracoes["ads_ativo"] == "true" && @configuracoes["ads_publisher_id"].present? %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Ativo
+            </span>
+          <% else %>
+            <span class="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              Desativado
+            </span>
+          <% end %>
+        </div>
+        <p class="text-xs text-gray-500 mb-4">
+          Anúncios são exibidos apenas para usuários <strong>sem assinatura paga</strong> (visitantes e plano gratuito).
+          Assinantes ativos nunca veem anúncios. Obtenha as credenciais em
+          <strong>adsense.google.com</strong> → Conta → Informações da conta.
+        </p>
+      </div>
+
+      <%# Toggle ativar/desativar %>
+      <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div>
+          <p class="text-sm font-semibold text-gray-800">Ativar anúncios no site</p>
+          <p class="text-xs text-gray-500 mt-0.5">Exige Publisher ID e pelo menos um Slot ID configurado abaixo.</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="hidden" name="site_setting[ads_ativo]" value="false">
+          <input type="checkbox" name="site_setting[ads_ativo]" value="true"
+                 class="sr-only peer"
+                 <%= "checked" if @configuracoes["ads_ativo"] == "true" %>>
+          <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+        </label>
+      </div>
+
+      <%# Publisher ID %>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Publisher ID</label>
+        <input type="text" name="site_setting[ads_publisher_id]"
+               value="<%= @configuracoes['ads_publisher_id'] %>"
+               placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+               autocomplete="off"
+               class="input text-sm font-mono">
+        <p class="text-xs text-gray-400 mt-1">Encontrado em AdSense → Conta → Informações da conta.</p>
+      </div>
+
+      <%# Slots %>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Slot — Faixa horizontal</label>
+          <input type="text" name="site_setting[ads_slot_horizontal]"
+                 value="<%= @configuracoes['ads_slot_horizontal'] %>"
+                 placeholder="XXXXXXXXXX"
+                 autocomplete="off"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Entre seções da homepage.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Slot — Quadrado 300×250</label>
+          <input type="text" name="site_setting[ads_slot_quadrado]"
+                 value="<%= @configuracoes['ads_slot_quadrado'] %>"
+                 placeholder="XXXXXXXXXX"
+                 autocomplete="off"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Sidebar e posições compactas.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Slot — In-content (fluido)</label>
+          <input type="text" name="site_setting[ads_slot_in_content]"
+                 value="<%= @configuracoes['ads_slot_in_content'] %>"
+                 placeholder="XXXXXXXXXX"
+                 autocomplete="off"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Dentro dos artigos, após o conteúdo.</p>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-700">
+        <strong>Como obter os Slot IDs:</strong> no painel do AdSense, vá em
+        <strong>Anúncios → Por anúncio → Criar novo anúncio</strong>, escolha o formato
+        e copie o número do campo <code class="font-mono bg-blue-100 px-1 rounded">data-ad-slot</code>
+        gerado pelo AdSense.
+      </div>
+    </div>
+
     <%# Actions %>
     <div class="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3">
       <button type="submit" class="btn-primary">

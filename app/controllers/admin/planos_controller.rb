@@ -41,12 +41,13 @@ class Admin::PlanosController < Admin::BaseController
   end
 
   def plano_params
-    permissoes_tratadas = {}
-    if params[:plano][:permissoes].present?
-      SubscriptionPlan::PERMISSOES_DEFINICOES.each_key do |chave|
-        val = params[:plano][:permissoes][chave]
-        next if val.nil?
+    p = params.require(:subscription_plan)
 
+    permissoes_tratadas = {}
+    if p[:permissoes].present?
+      SubscriptionPlan::PERMISSOES_DEFINICOES.each_key do |chave|
+        val = p[:permissoes][chave]
+        next if val.nil?
         defn = SubscriptionPlan::PERMISSOES_DEFINICOES[chave]
         permissoes_tratadas[chave] = case defn[:tipo]
                                      when :boolean then val == "1"
@@ -56,10 +57,9 @@ class Admin::PlanosController < Admin::BaseController
       end
     end
 
-    beneficios_tratados = Array(params[:plano][:beneficios])
-                           .map(&:strip).reject(&:blank?)
+    beneficios_tratados = Array(p[:beneficios]).map(&:strip).reject(&:blank?)
 
-    params.require(:plano).permit(
+    p.permit(
       :nome, :slug, :descricao, :preco, :posicao, :destaque, :ativo, :cor,
       :promocao_ativa, :preco_promocional, :meses_promocionais,
       :stripe_price_id, :stripe_promo_price_id, :apenas_novos_usuarios
