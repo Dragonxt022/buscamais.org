@@ -35,7 +35,7 @@
                   class="hidden"><%= artigo.conteudo.body&.to_html %></textarea>
 
         <%# Área visual do Quill %>
-        <div data-rich-editor-target="editor"></div>
+        <div data-rich-editor-target="editor" data-action="contextmenu->rich-editor#openContextMenu"></div>
 
         <%# Galeria picker para inserir imagens no corpo %>
         <div data-rich-editor-target="panel"

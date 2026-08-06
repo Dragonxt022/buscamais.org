@@ -17,4 +17,5 @@
 
 ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular "notificacao", "notificacoes"
+  inflect.irregular "album", "albuns"
 end

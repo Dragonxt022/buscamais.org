@@ -1,0 +1,7 @@
+<%# locals: (anuncio:) %>
+<div class="anuncio-wrapper text-center my-6 overflow-hidden">
+  <p class="text-[10px] uppercase tracking-widest text-gray-300 mb-1 select-none">Publicidade</p>
+  <%= link_to anuncio_clique_path(anuncio), target: "_blank", rel: "sponsored noopener" do %>
+    <%= image_tag url_for(anuncio.imagem), class: "mx-auto rounded-lg max-w-full h-auto", alt: anuncio.titulo %>
+  <% end %>
+</div>

@@ -6,6 +6,12 @@ class Admin::MidiasController < Admin::BaseController
     scope = MediaFile.includes(arquivo_attachment: :blob).recentes
     scope = scope.imagens if params[:apenas_imagens].present?
     scope = scope.where("nome LIKE ?", "%#{params[:q]}%") if params[:q].present?
+    if params[:album_id] == "sem_album"
+      scope = scope.where(album_id: nil)
+    elsif params[:album_id].present?
+      scope = scope.where(album_id: params[:album_id])
+    end
+    @albuns = Album.ordenados
     @pagy, @midias = pagy(scope, limit: 30)
 
     respond_to do |format|
@@ -102,6 +108,6 @@ class Admin::MidiasController < Admin::BaseController
   private
 
   def midia_params
-    params.require(:media_file).permit(:nome, :descricao)
+    params.require(:media_file).permit(:nome, :descricao, :album_id)
   end
 end

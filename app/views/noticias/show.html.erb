@@ -58,7 +58,9 @@
   </script>
 <% end %>
 
-<div class="max-w-4xl mx-auto px-4 py-10">
+<div class="max-w-4xl lg:max-w-6xl mx-auto px-4 py-10">
+<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-8">
+<div class="min-w-0">
   <div class="mb-6">
     <div class="flex items-center gap-2 mb-4">
       <% if @artigo.category %>
@@ -345,4 +347,12 @@
     </div>
   </section>
   <% end %><%# /if @acesso_completo %>
+</div>
+
+<aside class="hidden lg:block">
+  <div class="sticky top-24">
+    <%= render "shared/anuncio", formato: :vertical %>
+  </div>
+</aside>
+</div>
 </div>

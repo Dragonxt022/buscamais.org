@@ -1,0 +1,4 @@
+<% content_for :page_title, "Editar Álbum" %>
+<% content_for :page_subtitle, @album.nome %>
+
+<%= render "shared/album_form", album: @album, ns: "editor" %>

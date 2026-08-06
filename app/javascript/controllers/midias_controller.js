@@ -5,7 +5,8 @@ export default class extends Controller {
     "item", "checkbox",
     "bulkBar", "selectedCount",
     "gridView", "listView",
-    "editModal", "editNome", "editDescricao", "editUrl", "editPreview"
+    "editModal", "editNome", "editDescricao", "editUrl", "editPreview",
+    "moveAlbumSelect"
   ]
 
   connect() {
@@ -205,5 +206,36 @@ export default class extends Controller {
     this._clearSelection()
     btn.disabled = false
     btn.textContent = "Excluir selecionados"
+  }
+
+  // ── Bulk move to album ────────────────────────────────────────────────────────
+
+  async moveSelected(event) {
+    const selected = this.checkboxTargets
+      .filter(cb => cb.checked)
+      .map(cb => cb.closest("[data-midias-target='item']"))
+      .filter(Boolean)
+    if (!selected.length || !this.hasMoveAlbumSelectTarget) return
+
+    const seen     = new Set()
+    const unique   = selected.filter(el => !seen.has(el.dataset.id) && seen.add(el.dataset.id))
+    const albumId  = this.moveAlbumSelectTarget.value
+    const csrf     = document.querySelector('meta[name="csrf-token"]')?.content
+    const btn      = event.currentTarget
+    btn.disabled = true
+    btn.textContent = "Movendo..."
+
+    await Promise.allSettled(unique.map(async item => {
+      const form = new FormData()
+      form.append("media_file[album_id]", albumId)
+      form.append("_method", "PATCH")
+      await fetch(item.dataset.updateUrl, {
+        method:  "POST",
+        headers: { "X-CSRF-Token": csrf, Accept: "application/json" },
+        body:    form
+      })
+    }))
+
+    window.location.reload()
   }
 }

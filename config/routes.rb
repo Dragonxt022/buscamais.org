@@ -23,6 +23,8 @@ Rails.application.routes.draw do
 
   post "cookie_consent", to: "cookie_consents#create", as: :cookie_consent
 
+  get "anuncios/:id/ir", to: "anuncio_cliques#show", as: :anuncio_clique
+
   # Planos e assinatura
   get  "planos",          to: "planos#index",  as: :planos_publicos
   get  "autores/:slug",   to: "autores#show",  as: :autor
@@ -85,6 +87,7 @@ Rails.application.routes.draw do
     resources :midias, only: [:index, :create, :update, :destroy] do
       collection { delete :bulk_destroy }
     end
+    resources :albuns, except: [:show]
   end
 
   # Área administrativa (somente admin)
@@ -121,6 +124,8 @@ Rails.application.routes.draw do
     resources :midias, only: [:index, :create, :update, :destroy] do
       collection { delete :bulk_destroy }
     end
+    resources :albuns, except: [:show]
+    resources :anuncios, except: [:show]
     get "analise", to: "dashboard#analise"
     resource :configuracoes, only: [:show, :update]
     resources :notificacoes, only: [:index, :destroy] do

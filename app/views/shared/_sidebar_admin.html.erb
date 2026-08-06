@@ -6,6 +6,7 @@
   artigos_path_ns    = ns == :admin ? admin_artigos_path    : editor_artigos_path
   new_artigo_path_ns = ns == :admin ? new_admin_artigo_path : new_editor_artigo_path
   midias_path_ns     = ns == :admin ? admin_midias_path     : editor_midias_path
+  albuns_path_ns      = ns == :admin ? admin_albuns_path     : editor_albuns_path
 
   in_artigos    = controller_name == "artigos"
   in_categorias = controller_name == "categorias" && ns == :admin
@@ -14,8 +15,7 @@
 %>
 
 <aside class="w-60 bg-white border-r border-gray-200 flex flex-col min-h-screen shrink-0 overflow-hidden"
-       data-controller="sidebar"
-       style="width: 15rem">
+       data-controller="sidebar">
 
   <%# ── Brand / Toggle ── %>
   <% _branding = SiteBranding.instance rescue nil %>
@@ -46,11 +46,7 @@
             data-action="click->sidebar#toggle"
             class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 shrink-0 transition-colors"
             title="Recolher / expandir menu">
-      <svg data-sidebar-target="toggleIcon"
-           class="w-4 h-4 transition-transform duration-200"
-           fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-      </svg>
+      <%= lucide_icon "chevrons-left", css: "w-4 h-4 transition-transform duration-200", "data-sidebar-target": "toggleIcon" %>
     </button>
   </div>
 
@@ -65,18 +61,14 @@
 
         <%= link_to root_path_ns, title: "Dashboard",
             class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{current_page?(root_path_ns) ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-          </svg>
+          <%= lucide_icon "home" %>
           <span class="truncate whitespace-nowrap" data-sidebar-target="label">Dashboard</span>
         <% end %>
 
         <% if is_admin %>
           <%= link_to admin_analise_path, title: "Análise",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{current_page?(admin_analise_path) ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
+            <%= lucide_icon "bar-chart-2" %>
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Análise</span>
           <% end %>
         <% end %>
@@ -98,15 +90,9 @@
                   title="Artigos"
                   class="sidebar-link w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors
                          <%= in_conteudo ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100' %>">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            <span class="flex-1 text-left truncate whitespace-nowrap" data-sidebar-target="label">Artigos</span>
-            <svg data-sidebar-target="submenuArrow"
-                 class="w-3.5 h-3.5 shrink-0 transition-transform duration-200 <%= in_conteudo ? 'rotate-180' : '' %>"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
+            <%= lucide_icon "file-text" %>
+            <span class="flex-1 min-w-0 text-left truncate whitespace-nowrap" data-sidebar-target="label">Artigos</span>
+            <%= lucide_icon "chevron-down", css: "w-3.5 h-3.5 transition-transform duration-200 #{in_conteudo ? 'rotate-180' : ''}", "data-sidebar-target": "submenuArrow" %>
           </button>
 
           <div data-sidebar-target="submenu" data-id="artigos"
@@ -115,9 +101,7 @@
             <%= link_to artigos_path_ns,
                 class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
                         #{in_artigos && !in_categorias && !in_tags ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
-              <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
-              </svg>
+              <%= lucide_icon "list", css: "w-4 h-4 opacity-60" %>
               Todos os Artigos
             <% end %>
 
@@ -125,18 +109,14 @@
               <%= link_to admin_categorias_path,
                   class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
                           #{in_categorias ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
-                <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                </svg>
+                <%= lucide_icon "folder", css: "w-4 h-4 opacity-60" %>
                 Categorias
               <% end %>
 
               <%= link_to admin_tags_path,
                   class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors
                           #{in_tags ? 'submenu-active text-blue-700 font-semibold bg-blue-50' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'}" do %>
-                <svg class="w-4 h-4 shrink-0 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
-                </svg>
+                <%= lucide_icon "tag", css: "w-4 h-4 opacity-60" %>
                 Tags
               <% end %>
             <% end %>
@@ -144,9 +124,7 @@
             <div class="pt-1.5 border-t border-gray-100">
               <%= link_to new_artigo_path_ns,
                   class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors" do %>
-                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                </svg>
+                <%= lucide_icon "plus", css: "w-4 h-4" %>
                 Novo Artigo
               <% end %>
             </div>
@@ -159,10 +137,8 @@
           <% denuncias_count = Comment.joins(:comment_reports).distinct.where(comment_reports: { resolvido: false }).count rescue 0 %>
           <%= link_to admin_comentarios_path, title: "Comentários",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'comentarios' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-            </svg>
-            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Comentários</span>
+            <%= lucide_icon "message-square" %>
+            <span class="flex-1 min-w-0 truncate whitespace-nowrap" data-sidebar-target="label">Comentários</span>
             <% if pendentes_count > 0 %>
               <span class="text-xs font-bold bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
                 <%= pendentes_count %>
@@ -173,10 +149,8 @@
           <%# Denúncias com badge vermelho %>
           <%= link_to admin_comentarios_path(denunciados: "1"), title: "Denúncias",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'comentarios' && params[:denunciados].present? ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H12l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
-            </svg>
-            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Denúncias</span>
+            <%= lucide_icon "flag" %>
+            <span class="flex-1 min-w-0 truncate whitespace-nowrap" data-sidebar-target="label">Denúncias</span>
             <% if denuncias_count > 0 %>
               <span class="text-xs font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
                 <%= denuncias_count %>
@@ -188,10 +162,8 @@
           <% mensagens_nao_lidas = ContactMessage.nao_lidas.count rescue 0 %>
           <%= link_to admin_mensagens_path, title: "Mensagens",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'mensagens' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Mensagens</span>
+            <%= lucide_icon "mail" %>
+            <span class="flex-1 min-w-0 truncate whitespace-nowrap" data-sidebar-target="label">Mensagens</span>
             <% if mensagens_nao_lidas > 0 %>
               <span class="text-xs font-bold bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
                 <%= mensagens_nao_lidas %>
@@ -211,10 +183,14 @@
 
         <%= link_to midias_path_ns, title: "Biblioteca de Mídia",
             class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'midias' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-          </svg>
+          <%= lucide_icon "image" %>
           <span class="truncate whitespace-nowrap" data-sidebar-target="label">Biblioteca de Mídia</span>
+        <% end %>
+
+        <%= link_to albuns_path_ns, title: "Álbuns",
+            class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'albuns' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+          <%= lucide_icon "folder" %>
+          <span class="truncate whitespace-nowrap" data-sidebar-target="label">Álbuns</span>
         <% end %>
 
       </div>
@@ -229,26 +205,26 @@
 
           <%= link_to admin_usuarios_path, title: "Usuários",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'usuarios' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-            </svg>
+            <%= lucide_icon "users" %>
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Usuários</span>
           <% end %>
 
           <%= link_to admin_planos_path, title: "Planos de Assinatura",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'planos' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-            </svg>
+            <%= lucide_icon "credit-card" %>
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Planos</span>
           <% end %>
 
           <%= link_to admin_assinaturas_path, title: "Assinaturas",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'assinaturas' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-            </svg>
+            <%= lucide_icon "receipt" %>
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Assinaturas</span>
+          <% end %>
+
+          <%= link_to admin_anuncios_path, title: "Anúncios",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'anuncios' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <%= lucide_icon "megaphone" %>
+            <span class="truncate whitespace-nowrap" data-sidebar-target="label">Anúncios</span>
           <% end %>
 
         </div>
@@ -263,14 +239,12 @@
           <%= link_to admin_notificacoes_path, title: "Notificações",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'notificacoes' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
             <div class="relative shrink-0">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-              </svg>
+              <%= lucide_icon "bell", css: "w-5 h-5" %>
               <% if @notificacoes_nao_lidas_count.to_i > 0 %>
                 <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               <% end %>
             </div>
-            <span class="flex-1 truncate whitespace-nowrap" data-sidebar-target="label">Notificações</span>
+            <span class="flex-1 min-w-0 truncate whitespace-nowrap" data-sidebar-target="label">Notificações</span>
             <% if @notificacoes_nao_lidas_count.to_i > 0 %>
               <span class="text-xs font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none shrink-0" data-sidebar-target="label">
                 <%= @notificacoes_nao_lidas_count %>
@@ -280,10 +254,7 @@
 
           <%= link_to admin_configuracoes_path, title: "Configurações",
               class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'configuracoes' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
+            <%= lucide_icon "settings" %>
             <span class="truncate whitespace-nowrap" data-sidebar-target="label">Configurações</span>
           <% end %>
 
@@ -299,9 +270,7 @@
         class: "sidebar-link w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors",
         title: "Sair",
         form: { style: "width:100%" } do %>
-      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-      </svg>
+      <%= lucide_icon "log-out" %>
       <span class="truncate whitespace-nowrap" data-sidebar-target="label">Sair da conta</span>
     <% end %>
   </div>

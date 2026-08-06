@@ -13,6 +13,10 @@
     <%# Quill — editor de conteúdo para artigos %>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+
+    <%# Chartkick — gráficos da página de Análise %>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartkick@5.0.1/dist/chartkick.js"></script>
     <style>
       .ql-toolbar.ql-snow { border: 1px solid #e5e7eb; border-radius: 0.5rem 0.5rem 0 0; background: #f9fafb; }
       .ql-container.ql-snow { border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 0.5rem 0.5rem; font-size: 1rem; font-family: inherit; }
@@ -56,9 +60,7 @@
             <button class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 shrink-0"
                     onclick="document.getElementById('admin-sidebar').classList.toggle('-translate-x-full'); document.getElementById('admin-sidebar-backdrop').classList.toggle('hidden')"
                     aria-label="Menu">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
+              <%= lucide_icon "menu", css: "w-5 h-5" %>
             </button>
             <div class="min-w-0">
               <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate"><%= content_for(:page_title) || "Painel" %></h1>
@@ -71,10 +73,7 @@
               <button data-action="click->notificacoes-dropdown#toggle"
                       class="relative p-2 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                       title="Notificações" aria-label="Notificações">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                </svg>
+                <%= lucide_icon "bell", css: "w-5 h-5" %>
                 <% if @notificacoes_nao_lidas_count.to_i > 0 %>
                   <span class="absolute top-1 right-1 min-w-[1.1rem] h-[1.1rem] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none px-0.5">
                     <%= @notificacoes_nao_lidas_count > 9 ? "9+" : @notificacoes_nao_lidas_count %>

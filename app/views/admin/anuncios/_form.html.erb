@@ -1,0 +1,84 @@
+<%# locals: (anuncio:) %>
+<div class="card max-w-2xl">
+  <div class="card-header">
+    <h2 class="text-lg font-bold text-gray-900"><%= anuncio.new_record? ? "Novo Anúncio" : "Editar Anúncio" %></h2>
+  </div>
+
+  <%= form_with model: anuncio, url: (anuncio.new_record? ? admin_anuncios_path : admin_anuncio_path(anuncio)),
+      multipart: true, class: "card-body space-y-5" do |f| %>
+    <% if anuncio.errors.any? %>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+          <% anuncio.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :titulo, "Título *", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.text_field :titulo, class: "input text-sm", placeholder: "Ex: Promoção de verão — Loja X" %>
+    </div>
+
+    <div>
+      <%= f.label :url_destino, "URL de destino (clique) *", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.url_field :url_destino, class: "input text-sm", placeholder: "https://..." %>
+    </div>
+
+    <div>
+      <%= f.label :formato, "Formato / posição *", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.select :formato,
+          [
+            ["Quadrado — 1080×1080px (dentro do conteúdo, entre artigos)", "quadrado"],
+            ["Retangular — 1080×566px (faixa horizontal no topo)",          "retangular"],
+            ["Vertical — 1080×1920px (coluna lateral)",                    "vertical"]
+          ], {}, class: "input text-sm" %>
+      <p class="text-xs text-gray-400 mt-1">A imagem enviada precisa ter exatamente as dimensões do formato escolhido.</p>
+    </div>
+
+    <div>
+      <%= f.label :imagem, "Imagem do anúncio #{'*' unless anuncio.imagem.attached?}", class: "block text-sm font-medium text-gray-700 mb-2" %>
+      <div class="flex items-center gap-4">
+        <div class="w-28 h-20 rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden shrink-0">
+          <% if anuncio.persisted? && anuncio.imagem.attached? %>
+            <%= image_tag url_for(anuncio.imagem), class: "max-w-full max-h-full object-contain", alt: "Imagem atual" %>
+          <% else %>
+            <%= lucide_icon "image", css: "w-8 h-8 text-gray-300" %>
+          <% end %>
+        </div>
+        <div class="flex-1">
+          <%= f.file_field :imagem, accept: "image/png,image/jpeg,image/webp", class: "input text-sm" %>
+          <p class="text-xs text-gray-400 mt-1.5">PNG, JPG ou WebP — dimensões exatas do formato escolhido acima.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <%= f.label :inicio_em, "Início (opcional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.datetime_field :inicio_em, class: "input text-sm" %>
+        <p class="text-xs text-gray-400 mt-1">Vazio = já vale imediatamente.</p>
+      </div>
+      <div>
+        <%= f.label :fim_em, "Fim (opcional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.datetime_field :fim_em, class: "input text-sm" %>
+        <p class="text-xs text-gray-400 mt-1">Vazio = sem data de expiração.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+      <div>
+        <p class="text-sm font-semibold text-gray-800">Anúncio ativo</p>
+        <p class="text-xs text-gray-500 mt-0.5">Desative para pausar sem excluir o cadastro.</p>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer">
+        <%= f.check_box :ativo, class: "sr-only peer" %>
+        <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+      </label>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 pt-2">
+      <%= link_to "Cancelar", admin_anuncios_path, class: "btn-secondary" %>
+      <%= f.submit (anuncio.new_record? ? "Criar Anúncio" : "Salvar Anúncio"), class: "btn-primary" %>
+    </div>
+  <% end %>
+</div>

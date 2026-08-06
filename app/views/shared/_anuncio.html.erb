@@ -2,48 +2,71 @@
   # Uso: render "shared/anuncio", formato: :horizontal (padrão)
   #      render "shared/anuncio", formato: :quadrado
   #      render "shared/anuncio", formato: :in_content
+  #      render "shared/anuncio", formato: :vertical
 
-  ads_ativo  = SiteSetting["ads_ativo"] == "true" && SiteSetting["ads_publisher_id"].present?
-  formato  ||= :horizontal
+  formato ||= :horizontal
 %>
-<% unless ads_ativo && mostrar_anuncio? && cookie_consent_aceito? %><% return %><% end %>
+<% unless mostrar_anuncio? && cookie_consent_aceito? %><% return %><% end %>
 
 <%
-  slot_map = {
-    horizontal:  "ads_slot_horizontal",
-    quadrado:    "ads_slot_quadrado",
-    in_content:  "ads_slot_in_content"
-  }
-  publisher_id = SiteSetting["ads_publisher_id"]
-  slot_id      = SiteSetting[slot_map[formato]]
+  # Anúncio direto (upload próprio) tem prioridade sobre o Google AdSense no mesmo slot.
+  formato_direto_map = { horizontal: "retangular", in_content: "quadrado", vertical: "vertical" }
+  formato_direto      = formato_direto_map[formato]
+  anuncio_direto      = formato_direto && Advertisement.ativos_para(formato_direto).order(Arel.sql("RAND()")).first
 %>
-<% unless slot_id.present? %><% return %><% end %>
 
-<div class="anuncio-wrapper text-center my-6 overflow-hidden">
-  <p class="text-[10px] uppercase tracking-widest text-gray-300 mb-1 select-none">Publicidade</p>
+<% if anuncio_direto %>
+  <%= render "shared/anuncio_direto", anuncio: anuncio_direto %>
+<% else %>
+  <%
+    ads_ativo = SiteSetting["ads_ativo"] == "true" && SiteSetting["ads_publisher_id"].present?
+  %>
+  <% if ads_ativo %>
+    <%
+      slot_map = {
+        horizontal:  "ads_slot_horizontal",
+        quadrado:    "ads_slot_quadrado",
+        in_content:  "ads_slot_in_content",
+        vertical:    "ads_slot_vertical"
+      }
+      publisher_id = SiteSetting["ads_publisher_id"]
+      slot_id      = SiteSetting[slot_map[formato]]
+    %>
+    <% if slot_id.present? %>
+      <div class="anuncio-wrapper text-center my-6 overflow-hidden">
+        <p class="text-[10px] uppercase tracking-widest text-gray-300 mb-1 select-none">Publicidade</p>
 
-  <% if formato == :quadrado %>
-    <ins class="adsbygoogle"
-         style="display:inline-block;width:300px;height:250px"
-         data-ad-client="<%= publisher_id %>"
-         data-ad-slot="<%= slot_id %>"></ins>
+        <% if formato == :quadrado %>
+          <ins class="adsbygoogle"
+               style="display:inline-block;width:300px;height:250px"
+               data-ad-client="<%= publisher_id %>"
+               data-ad-slot="<%= slot_id %>"></ins>
 
-  <% elsif formato == :in_content %>
-    <ins class="adsbygoogle"
-         style="display:block;text-align:center"
-         data-ad-layout="in-article"
-         data-ad-format="fluid"
-         data-ad-client="<%= publisher_id %>"
-         data-ad-slot="<%= slot_id %>"></ins>
+        <% elsif formato == :in_content %>
+          <ins class="adsbygoogle"
+               style="display:block;text-align:center"
+               data-ad-layout="in-article"
+               data-ad-format="fluid"
+               data-ad-client="<%= publisher_id %>"
+               data-ad-slot="<%= slot_id %>"></ins>
 
-  <% else %>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-format="auto"
-         data-full-width-responsive="true"
-         data-ad-client="<%= publisher_id %>"
-         data-ad-slot="<%= slot_id %>"></ins>
+        <% elsif formato == :vertical %>
+          <ins class="adsbygoogle"
+               style="display:inline-block;width:300px;height:600px"
+               data-ad-client="<%= publisher_id %>"
+               data-ad-slot="<%= slot_id %>"></ins>
+
+        <% else %>
+          <ins class="adsbygoogle"
+               style="display:block"
+               data-ad-format="auto"
+               data-full-width-responsive="true"
+               data-ad-client="<%= publisher_id %>"
+               data-ad-slot="<%= slot_id %>"></ins>
+        <% end %>
+
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    <% end %>
   <% end %>
-
-  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
+<% end %>

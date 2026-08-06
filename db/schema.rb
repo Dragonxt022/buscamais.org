@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -47,6 +47,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "advertisements", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.boolean "ativo", default: true, null: false
+    t.integer "cliques", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "fim_em"
+    t.integer "formato", default: 0, null: false
+    t.datetime "inicio_em"
+    t.string "titulo", null: false
+    t.datetime "updated_at", null: false
+    t.string "url_destino", null: false
+    t.bigint "user_id", null: false
+    t.index ["formato", "ativo"], name: "index_advertisements_on_formato_and_ativo"
+    t.index ["user_id"], name: "index_advertisements_on_user_id"
+  end
+
+  create_table "albums", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "capa_media_file_id"
+    t.datetime "created_at", null: false
+    t.text "descricao"
+    t.string "nome", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_albums_on_user_id"
   end
 
   create_table "article_tags", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -159,6 +184,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
   end
 
   create_table "media_files", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "album_id"
     t.integer "altura"
     t.datetime "created_at", null: false
     t.text "descricao"
@@ -168,6 +194,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
     t.string "tipo"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.index ["album_id"], name: "index_media_files_on_album_id"
     t.index ["user_id"], name: "index_media_files_on_user_id"
   end
 
@@ -339,6 +366,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "advertisements", "users"
+  add_foreign_key "albums", "users"
   add_foreign_key "article_tags", "articles"
   add_foreign_key "article_tags", "tags"
   add_foreign_key "articles", "categories"
@@ -349,6 +378,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_29_142711) do
   add_foreign_key "comment_reports", "users"
   add_foreign_key "comments", "articles"
   add_foreign_key "comments", "users"
+  add_foreign_key "media_files", "albums"
   add_foreign_key "media_files", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "reading_histories", "articles"

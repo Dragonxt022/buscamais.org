@@ -1,6 +1,13 @@
 <% content_for :page_title, "Biblioteca de Mídia" %>
 <% content_for :page_subtitle, "Gerencie seus ativos visuais e recursos de narrativa digital." %>
 
+<div class="flex justify-end mb-4">
+  <%= link_to admin_albuns_path, class: "btn-secondary flex items-center gap-2 text-sm" do %>
+    <%= lucide_icon "folder", css: "w-4 h-4" %>
+    Gerenciar Álbuns
+  <% end %>
+</div>
+
 <div class="card">
-  <%= render "shared/midias_galeria", midias: @midias, pagy: @pagy, ns: "admin" %>
+  <%= render "shared/midias_galeria", midias: @midias, pagy: @pagy, ns: "admin", albuns: @albuns %>
 </div>

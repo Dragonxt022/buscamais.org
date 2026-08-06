@@ -65,19 +65,7 @@
     </div>
     <div class="p-5">
       <% if @leituras_por_mes.any? %>
-        <% max_leituras = @leituras_por_mes.values.max.to_f %>
-        <div class="space-y-2.5">
-          <% @leituras_por_mes.sort.last(12).each do |mes, total| %>
-            <div class="flex items-center gap-3">
-              <span class="text-xs text-gray-500 w-16 shrink-0 tabular-nums"><%= mes %></span>
-              <div class="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
-                <div class="h-4 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full"
-                     style="width:<%= max_leituras > 0 ? (total * 100 / max_leituras).round : 0 %>%"></div>
-              </div>
-              <span class="text-xs font-semibold text-gray-700 w-12 text-right tabular-nums"><%= number_with_delimiter(total) %></span>
-            </div>
-          <% end %>
-        </div>
+        <%= column_chart @leituras_por_mes, colors: ["#2563eb"], height: "220px" %>
       <% else %>
         <p class="text-center text-gray-400 py-8 text-sm">Nenhuma leitura registrada ainda.</p>
       <% end %>
@@ -90,23 +78,11 @@
       <h3 class="font-semibold text-gray-800">Usuários por Plano</h3>
     </div>
     <div class="p-5">
-      <% total_c = @usuarios_por_plano.sum { |h| h[:count] }.to_f %>
-      <div class="space-y-3">
-        <% @usuarios_por_plano.each do |item| %>
-          <% cores = item[:plano].cor_classes %>
-          <div class="flex items-center gap-3">
-            <span class="text-sm font-medium text-gray-700 w-20 shrink-0"><%= item[:plano].nome %></span>
-            <div class="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
-              <div class="h-5 rounded-full <%= cores[:badge] || 'bg-gray-500' %>"
-                   style="width:<%= total_c > 0 ? (item[:count] * 100 / total_c).round : 0 %>%; min-width: <%= item[:count] > 0 ? '4px' : '0' %>"></div>
-            </div>
-            <span class="text-sm font-bold text-gray-900 w-10 text-right tabular-nums"><%= item[:count] %></span>
-          </div>
-        <% end %>
-        <% if @usuarios_por_plano.empty? %>
-          <p class="text-gray-400 text-sm text-center py-4">Nenhum dado ainda.</p>
-        <% end %>
-      </div>
+      <% if @usuarios_por_plano.sum { |h| h[:count] } > 0 %>
+        <%= pie_chart @usuarios_por_plano.map { |h| [h[:plano].nome, h[:count]] }, height: "220px" %>
+      <% else %>
+        <p class="text-gray-400 text-sm text-center py-4">Nenhum dado ainda.</p>
+      <% end %>
     </div>
   </div>
 
@@ -146,19 +122,51 @@
     </div>
     <div class="p-5">
       <% if @comentarios_por_mes.any? %>
-        <% max_c = @comentarios_por_mes.values.max.to_f %>
-        <div class="flex items-end gap-2 h-28">
-          <% @comentarios_por_mes.sort.last(12).each do |mes, total| %>
-            <div class="flex-1 flex flex-col items-center gap-1 group">
-              <span class="text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity tabular-nums"><%= total %></span>
-              <div class="w-full rounded-t-md bg-blue-500 transition-all hover:bg-blue-600"
-                   style="height:<%= max_c > 0 ? [(total * 100 / max_c).round, 4].max : 4 %>%; min-height: 4px; max-height: 80px"></div>
-              <span class="text-[9px] text-gray-400 truncate w-full text-center"><%= mes.split("-").last %>/<%= mes.split("-").first.last(2) %></span>
-            </div>
-          <% end %>
-        </div>
+        <%= line_chart @comentarios_por_mes, colors: ["#2563eb"], height: "220px" %>
       <% else %>
         <p class="text-center text-gray-400 py-8 text-sm">Nenhum comentário ainda.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Leituras diárias (30d) %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Leituras Diárias (30d)</h3>
+    </div>
+    <div class="p-5">
+      <% if @leituras_diarias.any? %>
+        <%= line_chart @leituras_diarias, colors: ["#16a34a"], height: "220px" %>
+      <% else %>
+        <p class="text-center text-gray-400 py-8 text-sm">Nenhuma leitura registrada nos últimos 30 dias.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Top categorias por visualizações %>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Top Categorias por Visualizações</h3>
+    </div>
+    <div class="p-5">
+      <% if @top_categorias.any? %>
+        <%= pie_chart @top_categorias, height: "220px" %>
+      <% else %>
+        <p class="text-center text-gray-400 py-8 text-sm">Nenhum dado ainda.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Receita mensal (MRR) %>
+  <div class="card lg:col-span-2">
+    <div class="card-header">
+      <h3 class="font-semibold text-gray-800">Receita Mensal (MRR)</h3>
+    </div>
+    <div class="p-5">
+      <% if @receita_por_mes.any? %>
+        <%= line_chart @receita_por_mes, colors: ["#d97706"], height: "220px", prefix: "R$ " %>
+      <% else %>
+        <p class="text-center text-gray-400 py-8 text-sm">Nenhuma receita registrada ainda.</p>
       <% end %>
     </div>
   </div>

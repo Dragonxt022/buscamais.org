@@ -1,0 +1,36 @@
+<%# locals: (album:, ns:) %>
+<% form_url = album.new_record? ? (ns == "admin" ? admin_albuns_path : editor_albuns_path) :
+                                   (ns == "admin" ? admin_album_path(album) : editor_album_path(album))
+   index_path = ns == "admin" ? admin_albuns_path : editor_albuns_path
+%>
+
+<div class="card max-w-xl">
+  <div class="card-header">
+    <h2 class="text-lg font-bold text-gray-900"><%= album.new_record? ? "Novo Álbum" : "Editar Álbum" %></h2>
+  </div>
+
+  <%= form_with model: album, url: form_url, class: "card-body space-y-5" do |f| %>
+    <% if album.errors.any? %>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+          <% album.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div>
+      <%= f.label :nome, "Nome *", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.text_field :nome, class: "input text-sm", placeholder: "Ex: Cavalgada do Fundão 2026" %>
+    </div>
+
+    <div>
+      <%= f.label :descricao, "Descrição", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+      <%= f.text_area :descricao, rows: 3, class: "input text-sm resize-none", placeholder: "Do que se trata esse álbum..." %>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 pt-2">
+      <%= link_to "Cancelar", index_path, class: "btn-secondary" %>
+      <%= f.submit (album.new_record? ? "Criar Álbum" : "Salvar Álbum"), class: "btn-primary" %>
+    </div>
+  <% end %>
+</div>

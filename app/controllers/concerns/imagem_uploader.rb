@@ -38,6 +38,7 @@ module ImagemUploader
       descricao: m.descricao,
       tipo:      m.tipo,
       tamanho:   m.tamanho_formatado,
+      album_id:  m.album_id,
       url:       blob_path,
       signed_id: blob.signed_id,
       sgid:      blob.to_sgid.to_s

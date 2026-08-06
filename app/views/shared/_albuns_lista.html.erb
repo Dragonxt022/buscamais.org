@@ -1,0 +1,64 @@
+<%# locals: (albuns:, ns:) %>
+<% index_path   = ->     { ns == "admin" ? admin_albuns_path      : editor_albuns_path }
+   new_path     = ->     { ns == "admin" ? new_admin_album_path   : new_editor_album_path }
+   edit_path    = ->(a)  { ns == "admin" ? edit_admin_album_path(a) : edit_editor_album_path(a) }
+   album_path_  = ->(a)  { ns == "admin" ? admin_album_path(a)    : editor_album_path(a) }
+   midias_path_ = ->(a)  { (ns == "admin" ? admin_midias_path : editor_midias_path) + "?album_id=#{a.id}" }
+%>
+
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <p class="text-sm text-gray-500">
+      <%= pluralize(albuns.count, "álbum cadastrado", "álbuns cadastrados") %>
+    </p>
+    <%= link_to new_path.call, class: "btn-primary flex items-center gap-2" do %>
+      <%= lucide_icon "plus", css: "w-4 h-4" %>
+      Novo Álbum
+    <% end %>
+  </div>
+
+  <% if albuns.empty? %>
+    <div class="card text-center py-16 text-gray-400">
+      <%= lucide_icon "folder", css: "w-14 h-14 mx-auto mb-4 text-gray-200" %>
+      <p class="font-medium text-gray-500">Nenhum álbum cadastrado</p>
+      <p class="text-sm mt-1">Crie álbuns para organizar as imagens da biblioteca de mídia.</p>
+      <%= link_to "Criar primeiro álbum", new_path.call, class: "mt-4 inline-block btn-primary" %>
+    </div>
+  <% else %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <% albuns.each do |album| %>
+        <div class="card overflow-hidden">
+          <div class="aspect-video bg-gray-100 flex items-center justify-center overflow-hidden">
+            <% capa = album.capa || album.media_files.first %>
+            <% if capa&.arquivo&.attached? && capa.imagem? %>
+              <%= image_tag url_for(capa.arquivo), class: "w-full h-full object-cover", alt: album.nome %>
+            <% else %>
+              <%= lucide_icon "folder", css: "w-10 h-10 text-gray-300" %>
+            <% end %>
+          </div>
+          <div class="p-5">
+            <h3 class="text-base font-bold text-gray-900 truncate"><%= album.nome %></h3>
+            <p class="text-sm text-gray-500 mt-0.5 line-clamp-2"><%= album.descricao %></p>
+            <p class="text-xs text-gray-400 mt-2"><%= pluralize(album.media_files.count, "imagem", "imagens") %></p>
+
+            <div class="flex items-center gap-2 mt-4">
+              <%= link_to midias_path_.call(album),
+                  class: "flex-1 text-center text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors" do %>
+                Ver imagens
+              <% end %>
+              <%= link_to edit_path.call(album), title: "Editar",
+                  class: "p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" do %>
+                <%= lucide_icon "settings", css: "w-4 h-4" %>
+              <% end %>
+              <%= button_to album_path_.call(album), method: :delete,
+                  form: { data: { turbo_confirm: "Remover o álbum \"#{album.nome}\"? As imagens continuam disponíveis, sem álbum." } },
+                  class: "p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors", title: "Excluir" do %>
+                <%= lucide_icon "x", css: "w-4 h-4" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

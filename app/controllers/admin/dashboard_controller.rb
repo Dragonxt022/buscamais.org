@@ -22,6 +22,14 @@ class Admin::DashboardController < Admin::BaseController
     end
     @novos_usuarios_30d  = User.where("created_at > ?", 30.days.ago).count
     @comentarios_por_mes = Comment.group("DATE_FORMAT(created_at, '%Y-%m')").count
+
+    @leituras_diarias = ReadingHistory.where("lido_em >= ?", 30.days.ago)
+                                       .group("DATE_FORMAT(lido_em, '%Y-%m-%d')").count
+    @receita_por_mes  = SubscriptionHistory.where(status: "ativa").group("DATE_FORMAT(created_at, '%Y-%m')").sum(:valor)
+    @top_categorias   = Category.joins(:articles).where(articles: { status: :publicado })
+                                 .group(:nome).order(Arel.sql("SUM(articles.visualizacoes) DESC"))
+                                 .limit(8).sum("articles.visualizacoes")
+
     @top_autores = User.pode_publicar
                        .joins(:articles)
                        .where(articles: { status: :publicado })

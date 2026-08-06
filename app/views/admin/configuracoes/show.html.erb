@@ -1,15 +1,18 @@
-<div class="card max-w-3xl mx-auto">
-  <div class="card-header">
+<div class="max-w-6xl mx-auto space-y-6">
+  <div>
     <h2 class="text-lg font-bold text-gray-900">Configurações do Site</h2>
     <p class="text-sm text-gray-500 mt-0.5">Personalize as informações e aparência do portal.</p>
   </div>
 
-  <%= form_with url: admin_configuracoes_path, method: :patch,
-      multipart: true, class: "divide-y divide-gray-100" do |f| %>
+  <%= form_with url: admin_configuracoes_path, method: :patch, multipart: true do |f| %>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     <%# Site info %>
-    <div class="p-6 space-y-5">
-      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Informações do Site</h3>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Informações do Site</h3>
+      </div>
+      <div class="card-body space-y-5">
 
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1.5">
@@ -35,11 +38,15 @@
                placeholder="https://buscamais.org"
                class="input text-sm">
       </div>
+      </div>
     </div>
 
     <%# Branding — upload real de arquivos %>
-    <div class="p-6 space-y-6">
-      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Identidade Visual</h3>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Identidade Visual</h3>
+      </div>
+      <div class="card-body space-y-6">
 
       <%# Logo %>
       <div>
@@ -111,11 +118,15 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
 
     <%# Email %>
-    <div class="p-6 space-y-5">
-      <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Configurações de E-mail</h3>
+    <div class="card">
+      <div class="card-header">
+        <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider">Configurações de E-mail</h3>
+      </div>
+      <div class="card-body space-y-5">
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -142,10 +153,12 @@
                   placeholder="Texto exibido no rodapé de todos os e-mails..."
                   class="input text-sm resize-none"><%= @configuracoes['email_rodape'] %></textarea>
       </div>
+      </div>
     </div>
 
     <%# Google OAuth %>
-    <div class="p-6 space-y-5">
+    <div class="card">
+      <div class="card-body space-y-5">
       <div>
         <div class="flex items-center gap-2 mb-1">
           <svg class="w-5 h-5" viewBox="0 0 24 24">
@@ -200,10 +213,12 @@
           Após salvar novas credenciais, o login com Google começa a funcionar imediatamente na próxima tentativa — sem reiniciar o servidor.
         </p>
       <% end %>
+      </div>
     </div>
 
     <%# Stripe %>
-    <div class="p-6 space-y-5">
+    <div class="card lg:col-span-2">
+      <div class="card-body space-y-5">
       <div>
         <div class="flex items-center gap-2 mb-1">
           <svg class="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="currentColor">
@@ -471,10 +486,12 @@
           </p>
         </div>
       <% end %>
+      </div>
     </div>
 
     <%# Google AdSense %>
-    <div class="p-6 space-y-5">
+    <div class="card lg:col-span-2">
+      <div class="card-body space-y-5">
       <div>
         <div class="flex items-center gap-2 mb-1">
           <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
@@ -525,7 +542,7 @@
       </div>
 
       <%# Slots %>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Slot — Faixa horizontal</label>
           <input type="text" name="site_setting[ads_slot_horizontal]"
@@ -553,6 +570,15 @@
                  class="input text-sm font-mono">
           <p class="text-xs text-gray-400 mt-1">Dentro dos artigos, após o conteúdo.</p>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Slot — Vertical (sidebar)</label>
+          <input type="text" name="site_setting[ads_slot_vertical]"
+                 value="<%= @configuracoes['ads_slot_vertical'] %>"
+                 placeholder="XXXXXXXXXX"
+                 autocomplete="off"
+                 class="input text-sm font-mono">
+          <p class="text-xs text-gray-400 mt-1">Usado quando não há anúncio direto ativo nesse slot.</p>
+        </div>
       </div>
 
       <div class="rounded-lg bg-blue-50 border border-blue-100 px-4 py-3 text-xs text-blue-700">
@@ -561,10 +587,13 @@
         e copie o número do campo <code class="font-mono bg-blue-100 px-1 rounded">data-ad-slot</code>
         gerado pelo AdSense.
       </div>
+      </div>
+    </div>
+
     </div>
 
     <%# Actions %>
-    <div class="px-6 py-4 bg-gray-50 flex items-center justify-end gap-3">
+    <div class="flex items-center justify-end gap-3 mt-6">
       <button type="submit" class="btn-primary">
         Salvar Configurações
       </button>

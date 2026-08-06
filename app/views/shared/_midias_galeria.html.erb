@@ -1,7 +1,7 @@
-<%# locals: (midias:, pagy:, ns:) %>
+<%# locals: (midias:, pagy:, ns:, albuns: []) %>
 <% midia_url    = ->(m) { ns == "admin" ? admin_midia_path(m)  : editor_midia_path(m) }
    index_url    = ns == "admin" ? admin_midias_path            : editor_midias_path
-   bulk_url     = ns == "admin" ? bulk_destroy_admin_midias_path : bulk_destroy_editor_midias_path
+   albuns     ||= []
 %>
 
 <div data-controller="midias">
@@ -9,7 +9,7 @@
   <%# ── Toolbar ── %>
   <div class="card-header flex-wrap gap-3 border-b border-gray-100">
 
-    <%# Search %>
+    <%# Search + filtro de álbum %>
     <%= form_with url: index_url, method: :get, class: "flex gap-2 flex-1 min-w-52" do |f| %>
       <div class="relative flex-1">
         <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17,6 +17,14 @@
         </svg>
         <%= f.search_field :q, value: params[:q], placeholder: "Buscar por nome…", class: "input pl-9 text-sm" %>
       </div>
+      <% if albuns.any? %>
+        <%= f.select :album_id,
+            options_for_select(
+              [["Todos os álbuns", ""], ["Sem álbum", "sem_album"]] + albuns.map { |a| [a.nome, a.id] },
+              params[:album_id]
+            ),
+            {}, class: "input text-sm w-40 shrink-0", onchange: "this.form.submit()" %>
+      <% end %>
       <%= f.submit "Buscar", class: "btn-secondary text-sm" %>
     <% end %>
 
@@ -56,8 +64,24 @@
 
   <%# ── Bulk actions bar ── %>
   <div data-midias-target="bulkBar"
-       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4">
+       class="hidden bg-blue-50 border-b border-blue-100 px-5 py-2.5 flex items-center gap-4 flex-wrap">
     <span class="text-sm font-semibold text-blue-700" data-midias-target="selectedCount"></span>
+    <% if albuns.any? %>
+      <div class="flex items-center gap-1.5">
+        <select data-midias-target="moveAlbumSelect" class="input text-sm py-1.5">
+          <option value="">Sem álbum</option>
+          <% albuns.each do |a| %>
+            <option value="<%= a.id %>"><%= a.nome %></option>
+          <% end %>
+        </select>
+        <button type="button"
+                data-action="click->midias#moveSelected"
+                class="flex items-center gap-1.5 text-sm font-semibold text-blue-700 bg-white border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors">
+          <%= lucide_icon "folder", css: "w-4 h-4" %>
+          Mover para álbum
+        </button>
+      </div>
+    <% end %>
     <button type="button"
             data-action="click->midias#deleteSelected"
             class="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-white border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
