@@ -37,6 +37,7 @@
     "image": {
       "@type": "ImageObject",
       "url": <%= _img_url.to_json %>
+      <% if @artigo.legenda_capa.present? %>,"caption": <%= @artigo.legenda_capa.to_json %><% end %>
     },
     <% end %>
     "author": {
@@ -134,10 +135,15 @@
   <% end %>
 
   <% if @artigo.imagem_capa_file.attached? %>
-    <div class="mb-8 rounded-xl overflow-hidden shimmer" data-controller="shimmer">
-      <%= image_tag url_for(@artigo.imagem_capa_file.variant(resize_to_limit: [1200, 630], format: :webp)),
-          class: "w-full max-h-[480px] object-cover",
-          alt: @artigo.titulo %>
+    <div class="mb-8">
+      <div class="rounded-xl overflow-hidden shimmer" data-controller="shimmer">
+        <%= image_tag url_for(@artigo.imagem_capa_file.variant(resize_to_limit: [1200, 630], format: :webp)),
+            class: "w-full max-h-[480px] object-cover",
+            alt: @artigo.titulo %>
+      </div>
+      <% if @artigo.legenda_capa.present? %>
+        <p class="text-xs text-gray-400 mt-2"><%= @artigo.legenda_capa %></p>
+      <% end %>
     </div>
   <% end %>
 

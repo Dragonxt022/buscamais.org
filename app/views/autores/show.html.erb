@@ -11,6 +11,7 @@
     "url": <%= autor_url(@autor.slug).to_json %>,
     "jobTitle": <%= @autor.role.humanize.to_json %>
     <% if @autor.bio.present? %>,"description": <%= @autor.bio.to_json %><% end %>
+    <% if @autor.area_atuacao.present? %>,"knowsAbout": <%= @autor.area_atuacao.to_json %><% end %>
     <% if @autor.avatar_image.attached? %>,"image": <%= (request.base_url + rails_blob_path(@autor.avatar_image.blob)).to_json %><% end %>
   }
   </script>
@@ -34,6 +35,11 @@
         <span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full capitalize">
           <%= @autor.role.humanize %>
         </span>
+        <% if @autor.area_atuacao.present? %>
+          <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-0.5 rounded-full">
+            <%= @autor.area_atuacao %>
+          </span>
+        <% end %>
         <%= render "shared/badge_plano", user: @autor %>
       </div>
       <% if @autor.bio.present? %>

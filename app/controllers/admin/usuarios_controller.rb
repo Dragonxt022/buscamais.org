@@ -60,6 +60,6 @@ class Admin::UsuariosController < Admin::BaseController
   end
 
   def usuario_params
-    params.require(:user).permit(:nome, :email, :bio, :role, :ativo)
+    params.require(:user).permit(:nome, :email, :bio, :area_atuacao, :role, :ativo)
   end
 end

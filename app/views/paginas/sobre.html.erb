@@ -1,31 +1,64 @@
 <% content_for :title, "Sobre Nós - Busca Mais" %>
+<% content_for :meta_description, "Conheça o Busca Mais: o que é, qual região cobrimos, como produzimos o conteúdo e como você pode entrar em contato." %>
 
 <%# Hero %>
 <div class="text-white py-24 px-4 text-center" style="background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)">
-  <p class="text-blue-200 text-sm font-semibold uppercase tracking-widest mb-3">Nossa História</p>
+  <p class="text-blue-200 text-sm font-semibold uppercase tracking-widest mb-3">Sobre o Busca Mais</p>
   <h1 class="text-4xl md:text-5xl font-bold mb-4 max-w-2xl mx-auto leading-tight text-white">
     A Verdade, Esclarecida
   </h1>
   <p class="text-blue-100 text-lg max-w-xl mx-auto">
-    Nascemos com um propósito: entregar jornalismo de profundidade, rigor analítico e integridade editorial para o leitor brasileiro.
+    Notícias e informação de utilidade pública para quem vive em Cujubim, Rio Crespo e região.
   </p>
 </div>
 
-<%# Missão %>
 <div class="max-w-4xl mx-auto px-4 py-16">
+
+  <%# O que é / região %>
   <div class="grid md:grid-cols-2 gap-12 items-center mb-16">
     <div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">Nossa Missão</h2>
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">O que é o Busca Mais</h2>
       <p class="text-gray-600 leading-relaxed mb-4">
-        O <strong>Busca Mais</strong> foi fundado com a crença de que a informação de qualidade é um direito, não um privilégio. Em um cenário de desinformação crescente, nos comprometemos a produzir conteúdo verificado, contextualizado e relevante.
+        O <strong>Busca Mais</strong> é um portal de notícias focado em Cujubim, Rio Crespo e região, no interior de Rondônia. Cobrimos saúde, educação, economia, cultura, serviços públicos e o que afeta o dia a dia de quem mora aqui.
       </p>
       <p class="text-gray-600 leading-relaxed">
-        Produzimos cada matéria com o rigor que o leitor exige e merece, verificando informações antes da publicação.
+        Nosso compromisso é produzir conteúdo verificado, contextualizado e útil — não apenas reproduzir comunicados oficiais sem checagem.
       </p>
     </div>
     <div class="bg-blue-50 rounded-2xl p-8 text-center">
-      <p class="text-5xl font-black text-blue-600 mb-2">2024</p>
+      <p class="text-5xl font-black text-blue-600 mb-2">2025</p>
       <p class="text-gray-500 text-sm">Ano de fundação</p>
+    </div>
+  </div>
+
+  <%# Como funciona %>
+  <div class="grid md:grid-cols-2 gap-8 mb-16">
+    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-2">Quem produz o conteúdo</h3>
+      <p class="text-sm text-gray-500 leading-relaxed mb-3">
+        As matérias são assinadas individualmente — cada notícia mostra quem escreveu, quando foi publicada e, se houve alteração relevante depois, quando foi atualizada.
+      </p>
+      <%= link_to "Ver autores →", autores_path, class: "text-sm text-blue-600 font-semibold hover:underline" %>
+    </div>
+    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-2">Como obtemos as informações</h3>
+      <p class="text-sm text-gray-500 leading-relaxed">
+        Parte do conteúdo parte de comunicados e documentos de órgãos públicos (prefeitura, secretarias, editais); quando isso acontece, identificamos a fonte e acrescentamos contexto. Também apuramos matérias próprias, com entrevistas e cobertura de eventos locais.
+      </p>
+    </div>
+    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-2">Proposta editorial</h3>
+      <p class="text-sm text-gray-500 leading-relaxed mb-3">
+        Nossos critérios para apuração, correção e tratamento de fontes estão detalhados na íntegra na política editorial.
+      </p>
+      <%= link_to "Ler política editorial →", politica_editorial_path, class: "text-sm text-blue-600 font-semibold hover:underline" %>
+    </div>
+    <div class="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+      <h3 class="font-bold text-gray-900 mb-2">Encontrou um erro?</h3>
+      <p class="text-sm text-gray-500 leading-relaxed mb-3">
+        Erros acontecem — o que importa é como lidamos com eles. Veja como relatar um erro ou pedir uma correção.
+      </p>
+      <%= link_to "Ver política de correções →", correcoes_path, class: "text-sm text-blue-600 font-semibold hover:underline" %>
     </div>
   </div>
 

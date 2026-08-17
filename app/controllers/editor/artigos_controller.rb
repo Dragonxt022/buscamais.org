@@ -89,7 +89,7 @@ class Editor::ArtigosController < Editor::BaseController
   def artigo_params
     params.require(:article).permit(:titulo, :resumo, :status,
                                     :premium, :category_id, :agendado_em,
-                                    :conteudo)
+                                    :conteudo, :legenda_capa, categorias_extras_ids: [])
   end
 
   def processar_tags(artigo)

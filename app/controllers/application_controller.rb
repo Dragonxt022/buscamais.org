@@ -37,20 +37,14 @@ class ApplicationController < ActionController::Base
   end
 
   def carregar_categorias_menu
-    categorias = Category.ativas
-                          .joins(:articles)
-                          .merge(Article.publicados)
-                          .distinct
-                          .order(:nome)
-    artigos_por_categoria = Article.publicados
-                                   .with_attached_imagem_capa_file
-                                   .where(category: categorias)
-                                   .order(publicado_em: :desc)
-                                   .select(:id, :titulo, :slug, :category_id, :publicado_em)
-                                   .group_by(&:category_id)
+    categorias = Category.ativas.com_artigos_publicados.order(:nome)
 
     @categorias_menu = categorias.map do |cat|
-      { categoria: cat, artigos: (artigos_por_categoria[cat.id] || []).first(4) }
+      artigos = cat.artigos_publicados_todos
+                   .with_attached_imagem_capa_file
+                   .order(publicado_em: :desc)
+                   .limit(4)
+      { categoria: cat, artigos: artigos }
     end
   rescue
     @categorias_menu = []

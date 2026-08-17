@@ -29,12 +29,14 @@ class NoticiasController < ApplicationController
                           .order(visualizacoes: :desc)
                           .limit(5)
 
-    categorias_ativas = Category.joins(:articles)
-                                 .merge(Article.publicados)
-                                 .group("categories.id")
-                                 .having("COUNT(articles.id) >= 3")
-                                 .order("COUNT(articles.id) DESC")
-                                 .limit(4)
+    # Conta artigos publicados de cada categoria (principal + extras) para decidir
+    # quais categorias já têm volume suficiente para ganhar uma seção na home.
+    categorias_ativas = Category.ativas.com_artigos_publicados
+                                 .map { |cat| [cat, cat.artigos_publicados_todos.count] }
+                                 .select { |_, total| total >= 3 }
+                                 .sort_by { |_, total| -total }
+                                 .first(4)
+                                 .map(&:first)
 
     # As seções por categoria mostram os melhores artigos de cada categoria
     # independente do que já apareceu no slider/secundárias: com poucos artigos
@@ -42,7 +44,7 @@ class NoticiasController < ApplicationController
     # com 1 card só). Repetir uma matéria no destaque e na sua categoria é
     # prática normal de portal de notícias, não duplicidade de conteúdo.
     @por_categoria = categorias_ativas.map do |cat|
-      artigos = cat.articles.publicados
+      artigos = cat.artigos_publicados_todos
                     .with_attached_imagem_capa_file
                     .includes(:author)
                     .order(publicado_em: :desc)
@@ -115,7 +117,7 @@ class NoticiasController < ApplicationController
   def categoria
     @categoria = Category.friendly.find(params[:slug])
     @pagy, @artigos = pagy(
-      @categoria.articles.publicados
+      @categoria.artigos_publicados_todos
                          .with_attached_imagem_capa_file
                          .includes(:author)
                          .order(publicado_em: :desc),

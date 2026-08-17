@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_17_150148) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -74,6 +74,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
     t.index ["user_id"], name: "index_albums_on_user_id"
   end
 
+  create_table "article_categories", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.bigint "article_id", null: false
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["article_id", "category_id"], name: "index_article_categories_on_article_id_and_category_id", unique: true
+    t.index ["article_id"], name: "index_article_categories_on_article_id"
+    t.index ["category_id"], name: "index_article_categories_on_category_id"
+  end
+
   create_table "article_tags", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.bigint "article_id", null: false
     t.datetime "created_at", null: false
@@ -91,6 +101,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
     t.datetime "created_at", null: false
     t.boolean "destaque", default: false, null: false
     t.string "imagem_capa"
+    t.string "legenda_capa"
     t.boolean "premium", default: false, null: false
     t.datetime "publicado_em"
     t.text "resumo"
@@ -342,6 +353,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.string "area_atuacao"
     t.boolean "ativo", default: true, null: false
     t.string "avatar"
     t.text "bio"
@@ -368,6 +380,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_131616) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "advertisements", "users"
   add_foreign_key "albums", "users"
+  add_foreign_key "article_categories", "articles"
+  add_foreign_key "article_categories", "categories"
   add_foreign_key "article_tags", "articles"
   add_foreign_key "article_tags", "tags"
   add_foreign_key "articles", "categories"

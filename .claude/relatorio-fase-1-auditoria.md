@@ -206,3 +206,59 @@ Modo de trabalho combinado: sigo sem parar pelas fases técnicas/mecânicas; só
 - Ainda não verificado: contraste de cores em todos os componentes, navegação por teclado no mega-menu/modais, headings (`h1`-`h6`) fora das páginas de notícia/institucionais.
 
 **Ainda não iniciado (fases inteiras):** 9 (estrutura de notícias — já está boa, mas não fiz auditoria item a item), 10 (classificação de originalidade Tipo A/B/C), 11 (conteúdo evergreen), 12 (concursos), 13 (serviços públicos), 21 (contato — parcialmente feito), 23 (UX cross-device — preciso rodar no navegador), 25 (acessibilidade — spot-check pendente), 26 (conteúdo duplicado — já verificado no relatório da Fase 1, sem duplicatas), 27 (notícias antigas — não há notícias antigas o suficiente para classificar ainda), 28 (conteúdo superficial — já verificado, todas as notícias têm 200+ palavras), 30 (Search Console — externo, precisa de acesso), 31 (checklist final AdSense).
+
+---
+
+## Atualização 3 — bug reportado pelo usuário + redesign da home + Fase 5 (2026-08-17)
+
+**Descoberta importante de infraestrutura:** o CSS do Tailwind não estava sendo recompilado automaticamente neste servidor (build de 29/maio, sem processo `tailwindcss:watch` rodando junto do `start-buscamais.sh`). Rebuildei manualmente (`bin/rails tailwindcss:build`) após cada mudança visual desta sessão. **Isso ainda precisa de uma solução permanente no processo de deploy** — sem isso, qualquer alteração visual futura (minha ou de quem editar o código depois) pode silenciosamente não aparecer no site. Ainda não mexi no `start-buscamais.sh`/Dockerfile porque isso é infraestrutura de deploy, não front-end — aguardando decisão do usuário sobre a abordagem preferida.
+
+**Bug: paginação da Home voltava ao topo.** Causa raiz: `/noticias` renderizava, por acidente, o mesmo conteúdo de `/` (conteúdo duplicado — achado extra de Fase 26). Corrigido: `/noticias` agora é uma listagem própria e limpa (`NoticiasController#todas`); a Home ganhou um botão "Ver mais notícias →" no lugar da paginação interna.
+
+**Redesign da Home (pedido explícito do usuário, "mais profissional"):**
+- Hero virou **slider automático dos 5 destaques mais recentes** (`hero_slider_controller.js`, Stimulus puro, sem lib externa) — antes só a notícia mais recente marcada como destaque aparecia em algum lugar de evidência; das 10 notícias marcadas como destaque, 9 não apareciam em lugar nenhum.
+- Blocos por categoria (Mundo/Saúde/Educação) uniformizados — antes 1 imagem gigante + 3 pequenas, hoje 4 cards do mesmo tamanho.
+- Removida a exclusão de artigos do destaque/secundárias nos blocos de categoria — com só 15 notícias no total, excluir deixava blocos praticamente vazios (ex.: Saúde com 1 card só). Repetir uma notícia no destaque e na sua categoria é prática normal de portal, não duplicidade.
+- Setas do slider redesenhadas (branco translúcido + blur, não preto chapado).
+- Título/resumo do hero limitados a 2 linhas cada — título muito longo estava empurrando o conteúdo para cima da área do menu transparente.
+- Banners de anúncio direto agora têm tamanho máximo por formato (retangular ~500×280, quadrado ~280×280, vertical ~300×600) em vez de ocupar a largura toda no tamanho enviado pelo anunciante.
+
+**Fase 8/9 — dois gaps reais fechados com migration:**
+- `articles.legenda_capa` (novo campo) — formulário de editor/admin, exibida abaixo da imagem da notícia publicada, incluída no `caption` do JSON-LD.
+- `users.area_atuacao` (novo campo) — formulário admin de usuários, exibida na página do autor (badge ao lado do cargo) e no `knowsAbout` do JSON-LD `Person`.
+- Ambos os campos são opcionais (nullable), não obrigatórios — não force preenchimento retroativo de nada.
+
+**Fase 5 — Sobre Nós reescrita por completo:**
+- Agora explica: o que é o Busca Mais, região atendida (Cujubim, Rio Crespo e região — antes não mencionava região nenhuma), como as informações são obtidas, quem produz o conteúdo (institucional, sem inventar "equipe" — linka para `/autores` em vez de nomear alguém), com links para política editorial e correções.
+- Removida a última frase de tom "portal nacional genérico" que restava no site ("...para o leitor brasileiro"). Busquei em todo o `app/views` por variações desse tipo de frase — não encontrei mais nenhuma.
+- "2024 — Ano de fundação" continua intocado, ainda pendente da sua confirmação.
+
+**Verificado de novo (Fase 26):** canonical de `/`, `/noticias`, `/categoria/saude`, `/autores`, `/sobre-nos` — todos distintos e corretos, sem duplicidade.
+
+---
+
+## Atualização 4 — categorias múltiplas, correção de categorização, decisões do usuário (2026-08-17)
+
+Decisões recebidas do usuário: (1) não precisa citar fonte nas 4 notícias Tipo C; (2) criar categorias geográficas com suporte a múltiplas categorias por notícia; (3) ano de fundação real é 2025; (4) somos jornal independente/descentralizado, sem escritório físico — não adicionar endereço institucional do Busca Mais; (5) "faça o que for melhor" quanto ao build do Tailwind no deploy.
+
+**Categorias múltiplas (mudança estrutural real):**
+- Antes, `Article belongs_to :category` — uma notícia só podia ter 1 categoria. Criei uma tabela de junção nova (`article_categories`, migration `20260817150148`) para categorias **adicionais**, sem tocar no campo `category_id` existente (que continua sendo a "categoria principal" — define selo/cor do card, continua obrigatória do jeito que já era).
+- `Article#categorias_extras` / `Category#articles_extras` (novas associações `has_many :through`). `Category.com_artigos_publicados` e `Category#artigos_publicados_todos` combinam principal + extras em todo lugar que precisa saber "quais categorias existem/quais notícias pertencem a X": menu, sitemap, página de categoria, seções da home.
+- Formulário de editor/admin ganhou um segundo controle: "Categoria principal" (select, como já era) + "Categorias adicionais" (checkboxes, `f.collection_check_boxes`). Testei renderização ERB e todas as páginas públicas afetadas — 200 OK.
+
+**5 categorias novas criadas:** Cujubim, Rio Crespo, Ariquemes, Porto Velho, Machadinho do Oeste (todas com cor própria, `ativo: true`, inicialmente vazias — corretamente não aparecem no menu/sitemap até terem conteúdo).
+
+**Recategorização de verdade, com base em evidência textual (não suposição):**
+- Verifiquei, artigo por artigo, quais das 15 notícias mencionam "Cujubim" no título/resumo/corpo. 14 de 15 mencionam.
+- As **5 notícias que estavam incorretamente em "Mundo"** (achado original da Fase 1) tiveram a **categoria principal corrigida para Cujubim**: "Projeto PM Amiga da Criança", "Processo Seletivo Unificado 2026", "Cujubim inaugura nova UBS", "Prefeitura de Cujubim intensifica recuperação das estradas", "Engenharia no Campo: Cujubim Moderniza Estradas Vicinais". "Mundo" ficou sem nenhuma notícia e sumiu do menu (correto, categoria vazia).
+- As outras **9 notícias que mencionam Cujubim mas já tinham categoria principal correta** (Saúde, Educação, Economia, Política) **ganharam "Cujubim" como categoria adicional** — mantêm a categoria principal, mas também aparecem em `/categoria/cujubim`. Hoje essa categoria tem 14 notícias.
+- A notícia do concurso da Câmara de Ariquemes (não é sobre Cujubim) ganhou **"Ariquemes" como categoria adicional**, mantendo "Educação" como principal.
+- Não toquei em "4ª Cavalgada do Fundão" nem em "Rondônia diante do calor..." — a primeira não menciona Cujubim explicitamente no texto (não tive como confirmar se "Fundão" é localidade de Cujubim sem inventar) e a segunda é sobre o estado inteiro, não teria sentido marcar como Cujubim.
+
+**Fase 5 (complemento):** "2025" corrigido em `/sobre-nos` (estava "2024", intocado até agora aguardando confirmação).
+
+**Item 4 do usuário — jornal descentralizado, sem escritório:** não é mais necessário adicionar endereço físico institucional em lugar nenhum do site — o texto do Sobre Nós/Contato já não afirma isso. Fases 11-13 (conteúdo evergreen, concursos, serviços públicos) continuam paradas: ainda preciso de dados públicos reais (endereços de UBS/escolas, telefones, etc. — esses são serviços do *município*, não do jornal) que não tenho disponíveis; não vou inventar.
+
+**Infraestrutura — build do Tailwind no deploy (item 5, "faça o que for melhor"):** descobri que o `Dockerfile` já roda `assets:precompile` corretamente (que dispara o build do Tailwind) — só que o site em produção não usa o Dockerfile, sobe direto via `start-buscamais.sh`, que só chamava `rails server`. Adicionei `bundle exec rails tailwindcss:build` nesse script antes de subir o servidor. Não reiniciei o processo atual (que já está rodando e com CSS atualizado manualmente por mim) — a mudança vale a partir do próximo restart/deploy.
+
+**Regressão completa testada:** 17 URLs (home, categorias novas e antigas, institucionais, sitemap) — todas 200 OK.

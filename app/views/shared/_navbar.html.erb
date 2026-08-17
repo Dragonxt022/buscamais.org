@@ -22,15 +22,14 @@
 
         <% @categorias_menu&.first(6)&.each do |item| %>
           <% cat = item.is_a?(Hash) ? item[:categoria] : item %>
-          <button type="button"
-                  data-category-id="<%= cat.id %>"
-                  data-action="mouseenter->mega-menu#show mouseleave->mega-menu#hide"
-                  class="text-sm text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1">
+          <%= link_to categoria_path(cat.slug),
+              data: { category_id: cat.id, action: "mouseenter->mega-menu#show mouseleave->mega-menu#hide focus->mega-menu#show blur->mega-menu#hide" },
+              class: "text-sm text-gray-600 hover:text-blue-600 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1" do %>
             <%= cat.nome %>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
-          </button>
+          <% end %>
         <% end %>
       </div>
     </div>
@@ -157,7 +156,7 @@
 
     <div data-mega-menu-target="panel"
          data-category-id="<%= cat.id %>"
-         data-action="mouseenter->mega-menu#keepOpen mouseleave->mega-menu#hide"
+         data-action="mouseenter->mega-menu#keepOpen mouseleave->mega-menu#hide focusin->mega-menu#keepOpen focusout->mega-menu#hide"
          class="hidden absolute top-full left-0 right-0 bg-white border-t border-gray-100 shadow-xl z-50">
       <div class="max-w-7xl mx-auto px-4 py-6">
 

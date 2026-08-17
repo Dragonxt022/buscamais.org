@@ -7,6 +7,13 @@ class Article < ApplicationRecord
 
   has_many :article_tags, dependent: :destroy
   has_many :tags, through: :article_tags
+
+  # Categoria adicionais além da principal (category_id) — ex.: uma notícia de
+  # Cujubim marcada também em "Mundo". A categoria principal continua sendo a
+  # usada para o badge/cor no card; as extras só afetam em quais páginas de
+  # categoria a notícia aparece.
+  has_many :article_categories, dependent: :destroy
+  has_many :categorias_extras, through: :article_categories, source: :category
   has_many :comments, dependent: :destroy
   has_many :saved_articles, dependent: :destroy
   has_many :reading_histories, dependent: :destroy
