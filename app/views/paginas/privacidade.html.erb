@@ -1,4 +1,5 @@
 <% content_for :title, "Política de Privacidade - Busca Mais" %>
+<% content_for :meta_description, "Política de privacidade do Busca Mais: como coletamos, usamos e protegemos os dados dos leitores." %>
 
 <div class="max-w-3xl mx-auto px-4 py-16">
   <div class="mb-10">
@@ -56,7 +57,7 @@
         <li><strong>Portabilidade:</strong> receber seus dados em formato estruturado;</li>
         <li><strong>Revogação:</strong> retirar o consentimento a qualquer momento.</li>
       </ul>
-      <p class="mt-3">Para exercer seus direitos, entre em contato pelo e-mail <strong>privacidade@buscamais.org</strong>.</p>
+      <p class="mt-3">Para exercer seus direitos, entre em contato pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>.</p>
     </section>
 
     <section>
@@ -90,7 +91,7 @@
     <section>
       <h2 class="text-xl font-bold text-gray-900 mb-3">10. Contato</h2>
       <p class="leading-relaxed">
-        Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados pessoais, entre em contato com nosso Encarregado de Dados (DPO) pelo e-mail <strong>privacidade@buscamais.org</strong> ou pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>.
+        Para dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados pessoais, entre em contato pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>.
       </p>
     </section>
 

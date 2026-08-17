@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   # Área pública
   root "noticias#index"
 
-  get  "noticias",                        to: "noticias#index",     as: :noticias
+  get  "noticias",                        to: "noticias#todas",     as: :noticias
   get  "noticias/:slug",                  to: "noticias#show",      as: :noticia
   get  "categoria/:slug",                 to: "noticias#categoria", as: :categoria
   post "comentarios",                     to: "comments#create",    as: :comentarios_publicos
@@ -42,6 +42,9 @@ Rails.application.routes.draw do
   post "boletim",     to: "paginas#assinar_boletim"
   get  "privacidade", to: "paginas#privacidade",     as: :privacidade
   get  "termos",      to: "paginas#termos",          as: :termos
+  get  "politica-editorial", to: "paginas#politica_editorial", as: :politica_editorial
+  get  "correcoes",   to: "paginas#correcoes",       as: :correcoes
+  get  "autores",     to: "autores#index",           as: :autores
   get  "mapa-do-site",to: "paginas#mapa_site",       as: :mapa_site
   get  "sitemap.xml", to: "paginas#sitemap",         as: :sitemap, defaults: { format: "xml" }
 

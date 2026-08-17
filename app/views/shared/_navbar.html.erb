@@ -117,6 +117,7 @@
       <%= form_with url: busca_path, method: :get, local: true, class: "flex items-center gap-1" do |f| %>
         <%= f.text_field :q,
             placeholder: "Buscar notícias...",
+            "aria-label": "Buscar notícias",
             autocomplete: "off",
             class: "hidden w-44 text-sm bg-white/10 border-b border-current placeholder-current/60 outline-none px-2 py-0.5 transition-all",
             data: { navbar_target: "searchInput", action: "keydown->navbar#searchKeydown" } %>
@@ -173,9 +174,9 @@
                   class: "group flex flex-col gap-2 hover:no-underline" do %>
                 <div class="aspect-[16/9] rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-gray-100">
                   <% if artigo.imagem_capa_file.attached? %>
-                    <%= image_tag url_for(artigo.imagem_capa_file),
+                    <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_limit: [400, 225], format: :webp)),
                         class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
-                        alt: artigo.titulo %>
+                        alt: artigo.titulo, loading: "lazy" %>
                   <% else %>
                     <div class="w-full h-full flex items-center justify-center">
                       <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

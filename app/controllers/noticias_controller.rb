@@ -1,18 +1,26 @@
 class NoticiasController < ApplicationController
 
   def index
-    @artigo_destaque = Article.publicados.destaques
-                              .with_attached_imagem_capa_file
-                              .includes(:author, :category)
-                              .order(publicado_em: :desc).first
+    @destaques = Article.publicados.destaques
+                        .with_attached_imagem_capa_file
+                        .includes(:author, :category)
+                        .order(publicado_em: :desc)
+                        .limit(5)
+                        .to_a
+    @destaques = Article.publicados
+                        .with_attached_imagem_capa_file
+                        .includes(:author, :category)
+                        .order(publicado_em: :desc)
+                        .limit(5)
+                        .to_a if @destaques.empty?
 
-    excluir_ids = [@artigo_destaque&.id].compact
+    excluir_ids = @destaques.map(&:id)
 
     @secundarias = Article.publicados
                            .with_attached_imagem_capa_file
                            .includes(:author, :category)
                            .where.not(id: excluir_ids)
-                           .order(publicado_em: :desc)
+                           .order(Arel.sql("destaque DESC"), publicado_em: :desc)
                            .limit(4)
 
     @mais_lidos = Article.publicados
@@ -28,13 +36,15 @@ class NoticiasController < ApplicationController
                                  .order("COUNT(articles.id) DESC")
                                  .limit(4)
 
-    ids_excluir = ([@artigo_destaque&.id] + @secundarias.map(&:id)).compact
-
+    # As seções por categoria mostram os melhores artigos de cada categoria
+    # independente do que já apareceu no slider/secundárias: com poucos artigos
+    # no site, excluir esses IDs deixava blocos praticamente vazios (ex.: Saúde
+    # com 1 card só). Repetir uma matéria no destaque e na sua categoria é
+    # prática normal de portal de notícias, não duplicidade de conteúdo.
     @por_categoria = categorias_ativas.map do |cat|
       artigos = cat.articles.publicados
                     .with_attached_imagem_capa_file
                     .includes(:author)
-                    .where.not(id: ids_excluir)
                     .order(publicado_em: :desc)
                     .limit(4)
       [cat, artigos]
@@ -90,6 +100,16 @@ class NoticiasController < ApplicationController
       @plano_pago = SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? && p.destaque? } ||
                     SubscriptionPlan.ativos.ordenados.find { |p| !p.gratuito? }
     end
+  end
+
+  def todas
+    @pagy, @artigos = pagy(
+      Article.publicados
+             .with_attached_imagem_capa_file
+             .includes(:author, :category)
+             .order(publicado_em: :desc),
+      limit: 12
+    )
   end
 
   def categoria

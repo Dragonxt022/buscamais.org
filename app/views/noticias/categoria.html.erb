@@ -1,6 +1,11 @@
 <% content_for :title, "#{@categoria.nome} - Busca Mais" %>
 <% content_for :meta_description, @categoria.descricao.presence || "Notícias de #{@categoria.nome} no portal Busca Mais." %>
 <% content_for :canonical, categoria_url(@categoria.slug) %>
+<% if @artigos.empty? %>
+  <% content_for :head do %>
+    <meta name="robots" content="noindex,follow">
+  <% end %>
+<% end %>
 
 <div class="max-w-7xl mx-auto px-4 py-10">
   <div class="flex items-center justify-between gap-4 mb-8">
@@ -40,9 +45,9 @@
         <article class="article-card">
           <div class="article-card-img">
             <% if artigo.imagem_capa_file.attached? %>
-              <%= image_tag url_for(artigo.imagem_capa_file),
+              <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_limit: [600, 340], format: :webp)),
                   class: "w-full h-full object-cover hover:scale-105 transition-transform duration-300",
-                  alt: artigo.titulo %>
+                  alt: artigo.titulo, loading: "lazy" %>
             <% end %>
           </div>
           <div class="p-5">

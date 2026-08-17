@@ -3,6 +3,8 @@ class PaginasController < ApplicationController
   def carreiras; end
   def privacidade; end
   def termos; end
+  def politica_editorial; end
+  def correcoes; end
 
   def contato; end
 
@@ -38,7 +40,7 @@ class PaginasController < ApplicationController
 
   def sitemap
     @artigos    = Article.publicados.order(publicado_em: :desc)
-    @categorias = Category.ativas.order(:nome)
+    @categorias = Category.ativas.joins(:articles).merge(Article.publicados).distinct.order(:nome)
     @autores    = User.pode_publicar.where.not(slug: nil)
     respond_to do |format|
       format.xml { render layout: false }

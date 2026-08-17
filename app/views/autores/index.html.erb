@@ -1,0 +1,35 @@
+<% content_for :title, "Autores - Busca Mais" %>
+<% content_for :meta_description, "Conheça quem produz o conteúdo do Busca Mais." %>
+<% content_for :canonical, autores_url %>
+
+<div class="max-w-5xl mx-auto px-4 py-12">
+  <div class="mb-10">
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Autores</h1>
+    <p class="text-gray-500">Quem produz o conteúdo publicado no Busca Mais.</p>
+  </div>
+
+  <% if @autores.any? %>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <% @autores.each do |autor| %>
+        <%= link_to autor_path(autor.slug),
+            class: "flex items-center gap-4 bg-white rounded-xl border border-gray-100 shadow-sm p-5 hover:border-blue-200 transition-colors" do %>
+          <% if autor.avatar_image.attached? %>
+            <%= image_tag url_for(autor.avatar_image),
+                class: "w-14 h-14 rounded-full object-cover shrink-0", alt: autor.nome, loading: "lazy" %>
+          <% else %>
+            <div class="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center text-white text-xl font-black shrink-0">
+              <%= autor.nome.first.upcase %>
+            </div>
+          <% end %>
+          <div class="min-w-0">
+            <p class="font-bold text-gray-900"><%= autor.nome %></p>
+            <p class="text-xs text-gray-400 capitalize"><%= autor.role.humanize %></p>
+            <p class="text-xs text-gray-400 mt-0.5"><%= autor.articles.publicados.count %> artigos publicados</p>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-gray-400">Nenhum autor com artigos publicados no momento.</p>
+  <% end %>
+</div>

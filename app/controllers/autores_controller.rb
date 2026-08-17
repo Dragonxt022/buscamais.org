@@ -1,4 +1,11 @@
 class AutoresController < ApplicationController
+  def index
+    @autores = User.pode_publicar
+                   .joins(:articles).merge(Article.publicados)
+                   .distinct
+                   .order(:nome)
+  end
+
   def show
     @autor = User.pode_publicar.find_by!(slug: params[:slug])
     @pagy, @artigos = pagy(

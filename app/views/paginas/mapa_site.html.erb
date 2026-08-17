@@ -1,4 +1,5 @@
 <% content_for :title, "Mapa do Site - Busca Mais" %>
+<% content_for :meta_description, "Mapa do site do Busca Mais: todas as páginas, categorias e notícias publicadas." %>
 
 <div class="max-w-5xl mx-auto px-4 py-16">
   <div class="mb-12">
@@ -13,6 +14,7 @@
       <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Início</h2>
       <ul class="space-y-2">
         <li><%= link_to "Página Inicial", root_path, class: "text-sm text-gray-700 hover:text-blue-600 flex items-center gap-1.5" %></li>
+        <li><%= link_to "Todas as Notícias", noticias_path, class: "text-sm text-gray-700 hover:text-blue-600 flex items-center gap-1.5" %></li>
       </ul>
     </div>
 
@@ -21,6 +23,7 @@
       <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Empresa</h2>
       <ul class="space-y-2">
         <li><%= link_to "Sobre Nós", sobre_nos_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Autores", autores_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
         <li><%= link_to "Carreiras", carreiras_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
         <li><%= link_to "Contato", contato_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
         <li><%= link_to "Boletim Informativo", boletim_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
@@ -33,6 +36,8 @@
       <ul class="space-y-2">
         <li><%= link_to "Política de Privacidade", privacidade_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
         <li><%= link_to "Termos de Serviço", termos_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Política Editorial", politica_editorial_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
+        <li><%= link_to "Correções", correcoes_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
         <li><%= link_to "Sitemap XML (SEO)", sitemap_path, class: "text-sm text-gray-700 hover:text-blue-600" %></li>
       </ul>
     </div>

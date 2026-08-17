@@ -1,1 +1,8 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+User-agent: *
+Disallow: /admin/
+Disallow: /editor/
+Disallow: /usuario/
+Disallow: /conta/
+Disallow: /busca
+
+Sitemap: https://buscamais.org/sitemap.xml

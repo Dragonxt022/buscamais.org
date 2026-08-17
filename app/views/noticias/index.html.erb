@@ -1,4 +1,5 @@
 <% content_for :title, "Busca Mais - Notícias" %>
+<% content_for :meta_description, "Notícias de Cujubim e região: saúde, educação, economia, cultura e serviços públicos, com cobertura local atualizada." %>
 
 <style>
   @keyframes ticker-slide {
@@ -13,41 +14,73 @@
   .ticker-track:hover { animation-play-state: paused; }
 </style>
 
-<%# ── Hero gigante (começa atrás do nav transparente) ───────── %>
-<% if @artigo_destaque %>
+<%# ── Hero slider — últimos destaques (começa atrás do nav transparente) ── %>
+<% if @destaques.any? %>
   <section id="hero-section"
            class="relative text-white overflow-hidden"
-           style="height: 100vh; min-height: 520px; margin-top: -3.5rem;">
-    <% if @artigo_destaque.imagem_capa_file.attached? %>
-      <%= image_tag url_for(@artigo_destaque.imagem_capa_file),
-          class: "absolute inset-0 w-full h-full object-cover",
-          alt: @artigo_destaque.titulo %>
-    <% else %>
-      <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
-    <% end %>
-    <%# Gradiente: faixa escura no topo (nav), claro no meio, escuro na base (texto) %>
-    <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.28) 20%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.92) 100%);"></div>
+           style="height: 64vh; min-height: 500px; max-height: 620px; margin-top: -3.5rem;"
+           data-controller="hero-slider"
+           data-hero-slider-interval-value="7000">
 
-    <div class="relative z-10 max-w-7xl mx-auto px-4 flex flex-col justify-end h-full" style="padding-top: 5rem; padding-bottom: 4rem;">
-      <div class="max-w-3xl">
-        <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight drop-shadow-lg">
-          <%= link_to @artigo_destaque.titulo, noticia_path(@artigo_destaque.slug), class: "hover:underline" %>
-        </h1>
-
-        <% if @artigo_destaque.resumo.present? %>
-          <p class="text-gray-200 text-base md:text-lg mb-6 leading-relaxed max-w-2xl line-clamp-3"><%= @artigo_destaque.resumo %></p>
+    <% @destaques.each_with_index do |artigo, i| %>
+      <div data-hero-slider-target="slide"
+           class="absolute inset-0 transition-opacity duration-700 <%= i.zero? ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none" %>">
+        <% if artigo.imagem_capa_file.attached? %>
+          <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_limit: [1920, 1080], format: :webp)),
+              class: "absolute inset-0 w-full h-full object-cover",
+              alt: artigo.titulo, loading: (i.zero? ? nil : "lazy") %>
+        <% else %>
+          <div class="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
         <% end %>
+        <%# Gradiente: faixa escura no topo (nav), claro no meio, escuro na base (texto) %>
+        <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.28) 20%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.92) 100%);"></div>
 
-        <div class="flex items-center gap-4 text-sm text-gray-300 mb-6">
-          <span class="font-medium"><%= @artigo_destaque.author.nome %></span>
-          <span>·</span>
-          <span><%= l @artigo_destaque.publicado_em, format: :short if @artigo_destaque.publicado_em %></span>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 flex flex-col justify-end h-full" style="padding-top: 5rem; padding-bottom: 4rem;">
+          <div class="max-w-3xl">
+            <% if artigo.category %>
+              <span class="inline-block text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded mb-3"
+                    style="background-color: <%= artigo.category.cor %>"><%= artigo.category.nome %></span>
+            <% end %>
+            <h1 class="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight drop-shadow-lg line-clamp-2">
+              <%= link_to artigo.titulo, noticia_path(artigo.slug), class: "hover:underline" %>
+            </h1>
+
+            <% if artigo.resumo.present? %>
+              <p class="text-gray-200 text-sm md:text-base mb-5 leading-relaxed max-w-2xl line-clamp-2"><%= artigo.resumo %></p>
+            <% end %>
+
+            <div class="flex items-center gap-4 text-sm text-gray-300 mb-6">
+              <span class="font-medium"><%= artigo.author.nome %></span>
+              <span>·</span>
+              <span><%= l artigo.publicado_em, format: :short if artigo.publicado_em %></span>
+            </div>
+
+            <%= link_to "LER ARTIGO COMPLETO →", noticia_path(artigo.slug),
+                class: "inline-flex items-center bg-white text-gray-900 px-6 py-3 rounded font-bold text-sm hover:bg-gray-100 transition-colors shadow-lg" %>
+          </div>
         </div>
-
-        <%= link_to "LER ARTIGO COMPLETO →", noticia_path(@artigo_destaque.slug),
-            class: "inline-flex items-center bg-white text-gray-900 px-6 py-3 rounded font-bold text-sm hover:bg-gray-100 transition-colors shadow-lg" %>
       </div>
-    </div>
+    <% end %>
+
+    <% if @destaques.size > 1 %>
+      <button type="button" data-action="hero-slider#prev" aria-label="Notícia anterior"
+              class="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" data-action="hero-slider#next" aria-label="Próxima notícia"
+              class="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white flex items-center justify-center transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+
+      <div class="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+        <% @destaques.each_with_index do |_artigo, i| %>
+          <button type="button" data-action="hero-slider#goTo" data-index="<%= i %>"
+                  data-hero-slider-target="dot"
+                  class="h-2 rounded-full transition-all <%= i.zero? ? "bg-white w-6" : "bg-white/40 hover:bg-white/70 w-2" %>"
+                  aria-label="Ir para destaque <%= i + 1 %>"></button>
+        <% end %>
+      </div>
+    <% end %>
   </section>
 <% end %>
 
@@ -84,9 +117,9 @@
           <article class="flex gap-3 group py-4 <%= i.even? && i < @secundarias.length - 1 ? 'border-b border-gray-100 lg:border-b-0 lg:border-r lg:pr-5' : '' %> <%= i.odd? && i < @secundarias.length - 1 ? 'border-b border-gray-100 lg:pl-5' : '' %> <%= i.odd? ? 'lg:pl-5' : '' %>">
             <a href="<%= noticia_path(artigo.slug) %>" class="shrink-0 w-24 h-[68px] rounded overflow-hidden bg-gray-100 relative block">
               <% if artigo.imagem_capa_file.attached? %>
-                <%= image_tag url_for(artigo.imagem_capa_file),
+                <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_fill: [200, 140], format: :webp)),
                     class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
-                    alt: artigo.titulo %>
+                    alt: artigo.titulo, loading: "lazy" %>
               <% end %>
             </a>
             <div class="flex-1 min-w-0">
@@ -147,52 +180,25 @@
         <%= link_to "Ver todos →", categoria_path(categoria.slug), class: "text-xs font-semibold text-blue-600 hover:text-blue-800 border border-blue-200 px-3 py-1 rounded hover:bg-blue-50 transition-colors" %>
       </div>
 
-      <div class="grid grid-cols-12 gap-5">
-        <%# Primeiro artigo — grande %>
-        <% if artigos.first %>
-          <% a = artigos.first %>
-          <article class="col-span-12 md:col-span-5 group">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <% artigos.first(4).each do |a| %>
+          <article class="group">
             <a href="<%= noticia_path(a.slug) %>" class="block aspect-video overflow-hidden rounded mb-2 bg-gray-100 relative">
               <% if a.imagem_capa_file.attached? %>
-                <%= image_tag url_for(a.imagem_capa_file),
+                <%= image_tag url_for(a.imagem_capa_file.variant(resize_to_limit: [500, 300], format: :webp)),
                     class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
-                    alt: a.titulo %>
+                    alt: a.titulo, loading: "lazy" %>
               <% end %>
               <% if a.premium? %>
-                <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">★ Premium</span>
+                <span class="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">★ Premium</span>
               <% end %>
             </a>
-            <h3 class="font-bold text-gray-900 text-base leading-snug group-hover:text-blue-700 transition-colors line-clamp-3 mb-1">
+            <h3 class="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-700 transition-colors line-clamp-3 mb-1">
               <%= link_to a.titulo, noticia_path(a.slug) %>
             </h3>
-            <% if a.resumo.present? %>
-              <p class="text-sm text-gray-500 line-clamp-2 mb-1"><%= a.resumo %></p>
-            <% end %>
-            <span class="text-xs text-gray-400"><%= a.author.nome %> · <%= l a.publicado_em, format: :short if a.publicado_em %></span>
+            <span class="text-[11px] text-gray-400"><%= a.author.nome %> · <%= l a.publicado_em, format: :short if a.publicado_em %></span>
           </article>
         <% end %>
-
-        <%# Demais artigos — compactos em 3 colunas %>
-        <div class="col-span-12 md:col-span-7 grid grid-cols-3 gap-4">
-          <% artigos.drop(1).first(3).each do |a| %>
-            <article class="group">
-              <a href="<%= noticia_path(a.slug) %>" class="block aspect-video overflow-hidden rounded mb-2 bg-gray-100 relative">
-                <% if a.imagem_capa_file.attached? %>
-                  <%= image_tag url_for(a.imagem_capa_file),
-                      class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
-                      alt: a.titulo %>
-                <% end %>
-                <% if a.premium? %>
-                  <span class="absolute top-1.5 left-1.5 bg-amber-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">★</span>
-                <% end %>
-              </a>
-              <h4 class="text-sm font-bold text-gray-900 leading-snug group-hover:text-blue-700 transition-colors line-clamp-3 mb-1">
-                <%= link_to a.titulo, noticia_path(a.slug) %>
-              </h4>
-              <span class="text-[11px] text-gray-400"><%= l a.publicado_em, format: :short if a.publicado_em %></span>
-            </article>
-          <% end %>
-        </div>
       </div>
     </div>
   </div>
@@ -217,9 +223,9 @@
         <article class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col group">
           <a href="<%= noticia_path(artigo.slug) %>" class="block aspect-video overflow-hidden relative bg-gray-100">
             <% if artigo.imagem_capa_file.attached? %>
-              <%= image_tag url_for(artigo.imagem_capa_file),
+              <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_limit: [600, 340], format: :webp)),
                   class: "w-full h-full object-cover group-hover:scale-105 transition-transform duration-300",
-                  alt: artigo.titulo %>
+                  alt: artigo.titulo, loading: "lazy" %>
             <% end %>
             <% if artigo.premium? %>
               <span class="absolute top-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">★ Premium</span>
@@ -243,7 +249,7 @@
       <% end %>
     </div>
 
-    <% if @ultimas.empty? && @artigo_destaque.nil? %>
+    <% if @ultimas.empty? && @destaques.empty? %>
       <div class="py-20 text-center text-gray-400">
         <p>Nenhuma notícia publicada ainda.</p>
       </div>
@@ -251,7 +257,8 @@
 
     <% if @pagy.pages > 1 %>
       <div class="mt-10 flex justify-center">
-        <%== pagy_nav(@pagy) %>
+        <%= link_to "Ver mais notícias →", noticias_path,
+            class: "inline-flex items-center bg-gray-900 text-white px-6 py-3 rounded font-bold text-sm hover:bg-gray-700 transition-colors" %>
       </div>
     <% end %>
   </div>

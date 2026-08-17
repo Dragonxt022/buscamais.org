@@ -10,6 +10,8 @@
     "name": <%= @autor.nome.to_json %>,
     "url": <%= autor_url(@autor.slug).to_json %>,
     "jobTitle": <%= @autor.role.humanize.to_json %>
+    <% if @autor.bio.present? %>,"description": <%= @autor.bio.to_json %><% end %>
+    <% if @autor.avatar_image.attached? %>,"image": <%= (request.base_url + rails_blob_path(@autor.avatar_image.blob)).to_json %><% end %>
   }
   </script>
 <% end %>
@@ -17,9 +19,15 @@
 <div class="max-w-5xl mx-auto px-4 py-8">
   <%# Perfil do autor %>
   <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-    <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-black shrink-0">
-      <%= @autor.nome.first.upcase %>
-    </div>
+    <% if @autor.avatar_image.attached? %>
+      <%= image_tag url_for(@autor.avatar_image),
+          class: "w-20 h-20 rounded-full object-cover shrink-0",
+          alt: @autor.nome %>
+    <% else %>
+      <div class="w-20 h-20 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-black shrink-0">
+        <%= @autor.nome.first.upcase %>
+      </div>
+    <% end %>
     <div class="flex-1 min-w-0">
       <div class="flex flex-wrap items-center gap-2 mb-1">
         <h1 class="text-2xl font-black text-gray-900"><%= @autor.nome %></h1>
@@ -28,6 +36,9 @@
         </span>
         <%= render "shared/badge_plano", user: @autor %>
       </div>
+      <% if @autor.bio.present? %>
+        <p class="text-sm text-gray-600 mt-1.5 max-w-xl"><%= @autor.bio %></p>
+      <% end %>
       <div class="flex flex-wrap gap-4 text-sm text-gray-500 mt-2">
         <span><strong class="text-gray-900"><%= @total_artigos %></strong> artigos</span>
         <span><strong class="text-gray-900"><%= @total_leituras.to_i %></strong> leituras</span>

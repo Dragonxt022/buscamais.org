@@ -8,7 +8,7 @@
   <meta property="og:title"       content="<%= @artigo.titulo %>">
   <meta property="og:description" content="<%= strip_tags(@artigo.resumo.to_s) %>">
   <meta property="og:url"         content="<%= noticia_url(@artigo.slug) %>">
-  <% _img_url = @artigo.imagem_capa_file.attached? ? request.base_url + rails_blob_path(@artigo.imagem_capa_file.blob) : nil %>
+  <% _img_url = @artigo.imagem_capa_file.attached? ? request.base_url + rails_representation_path(@artigo.imagem_capa_file.variant(resize_to_fill: [1200, 630], format: :webp)) : nil %>
   <% if _img_url %>
     <meta property="og:image"        content="<%= _img_url %>">
     <meta property="og:image:width"  content="1200">
@@ -98,6 +98,9 @@
           <p class="text-sm font-semibold text-gray-900"><%= @artigo.author.nome %></p>
           <p class="text-xs text-gray-400">
             <%= l @artigo.publicado_em, format: :long if @artigo.publicado_em %>
+            <% if @artigo.publicado_em && @artigo.updated_at > @artigo.publicado_em + 1.hour %>
+              · <span class="text-gray-500">Atualizado em <%= l @artigo.updated_at, format: :long %></span>
+            <% end %>
           </p>
         </div>
       </div>
@@ -132,7 +135,7 @@
 
   <% if @artigo.imagem_capa_file.attached? %>
     <div class="mb-8 rounded-xl overflow-hidden shimmer" data-controller="shimmer">
-      <%= image_tag url_for(@artigo.imagem_capa_file),
+      <%= image_tag url_for(@artigo.imagem_capa_file.variant(resize_to_limit: [1200, 630], format: :webp)),
           class: "w-full max-h-[480px] object-cover",
           alt: @artigo.titulo %>
     </div>
@@ -237,9 +240,9 @@
             <div class="article-card-img <%= artigo.imagem_capa_file.attached? ? 'shimmer' : '' %>"
                  <%= "data-controller=shimmer" if artigo.imagem_capa_file.attached? %>>
               <% if artigo.imagem_capa_file.attached? %>
-                <%= image_tag url_for(artigo.imagem_capa_file),
+                <%= image_tag url_for(artigo.imagem_capa_file.variant(resize_to_limit: [500, 300], format: :webp)),
                     class: "w-full h-full object-cover",
-                    alt: artigo.titulo %>
+                    alt: artigo.titulo, loading: "lazy" %>
               <% end %>
             </div>
             <div class="p-4">

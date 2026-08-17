@@ -1,0 +1,83 @@
+<% content_for :title, "Política Editorial - Busca Mais" %>
+<% content_for :meta_description, "Política editorial do Busca Mais: como apuramos, verificamos e corrigimos as notícias que publicamos." %>
+
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <div class="mb-10">
+    <p class="text-sm text-blue-600 font-semibold uppercase tracking-wider mb-2">Legal</p>
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Política Editorial</h1>
+    <p class="text-gray-500">Última atualização: <%= l Date.current, format: :long %></p>
+  </div>
+
+  <div class="prose prose-gray max-w-none space-y-8 text-gray-700">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">1. Compromisso com informações verificáveis</h2>
+      <p class="leading-relaxed">
+        O <strong>Busca Mais</strong> se compromete a publicar apenas informações que possam ser verificadas. Não publicamos boatos, rumores não confirmados ou conteúdo que não possamos sustentar com uma fonte identificável.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">2. Identificação das fontes</h2>
+      <p class="leading-relaxed">
+        Sempre que possível, identificamos a origem da informação — seja um órgão público, um documento oficial, uma entrevista ou um comunicado. Parte do nosso conteúdo é baseada em comunicados e publicações de órgãos públicos (como a Prefeitura de Cujubim); nesses casos, identificamos a fonte oficial e acrescentamos contexto para ajudar o leitor a entender o que a informação significa na prática.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">3. Distinção entre notícia, opinião e publicidade</h2>
+      <p class="leading-relaxed">
+        Atualmente, o Busca Mais publica conteúdo jornalístico informativo. Caso venhamos a publicar artigos de opinião ou conteúdo patrocinado no futuro, eles serão sempre identificados de forma clara e separados do conteúdo noticioso, para que o leitor nunca tenha dúvida sobre o que está lendo.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">4. Política para correções</h2>
+      <p class="leading-relaxed">
+        Erros acontecem. Quando identificamos ou somos informados de um erro factual, ele é corrigido assim que possível. Quando a correção altera um fato relevante da matéria, isso fica registrado na própria notícia através da indicação "Atualizado em". Detalhes de como relatar um erro estão na nossa página de <%= link_to "Correções", correcoes_path, class: "text-blue-600 hover:underline" %>.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">5. Tratamento de informações oficiais</h2>
+      <p class="leading-relaxed">
+        Informações vindas de órgãos públicos (prefeitura, secretarias, editais, processos seletivos) são tratadas como ponto de partida, não como produto final. Buscamos sempre traduzir a linguagem oficial em algo útil e compreensível para o leitor, mantendo a fidelidade ao conteúdo original.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">6. Respeito à privacidade</h2>
+      <p class="leading-relaxed">
+        Respeitamos a privacidade das pessoas mencionadas em nossas matérias, especialmente em casos envolvendo menores de idade, vítimas ou situações sensíveis. Consulte também nossa <%= link_to "Política de Privacidade", privacidade_path, class: "text-blue-600 hover:underline" %>.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">7. Compromisso com transparência</h2>
+      <p class="leading-relaxed">
+        Não escondemos quem somos: a página <%= link_to "Sobre Nós", sobre_nos_path, class: "text-blue-600 hover:underline" %> descreve o que é o Busca Mais e quem produz o conteúdo. Não publicamos informações falsas ou exageradas sobre o próprio site.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">8. Conteúdo patrocinado e publicidade</h2>
+      <p class="leading-relaxed">
+        Anúncios exibidos no site são fornecidos por redes de publicidade (como o Google AdSense) e são visualmente distintos do conteúdo editorial. Publicidade não influencia nossas decisões editoriais sobre o que cobrir ou como cobrir.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">9. Contato para correções</h2>
+      <p class="leading-relaxed">
+        Encontrou um erro ou tem uma correção a sugerir? Entre em contato pelo nosso <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>, selecionando a opção "Denúncia / correção".
+      </p>
+    </section>
+
+  </div>
+
+  <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-3">
+    <%= link_to "← Voltar ao início", root_path, class: "text-sm text-gray-500 hover:text-blue-600" %>
+    <span class="text-gray-300">|</span>
+    <%= link_to "Correções", correcoes_path, class: "text-sm text-blue-600 hover:underline" %>
+  </div>
+</div>

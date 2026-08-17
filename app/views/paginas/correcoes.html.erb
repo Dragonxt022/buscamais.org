@@ -1,0 +1,51 @@
+<% content_for :title, "Correções - Busca Mais" %>
+<% content_for :meta_description, "Como informar um erro ou solicitar uma correção em uma notícia do Busca Mais." %>
+
+<div class="max-w-3xl mx-auto px-4 py-16">
+  <div class="mb-10">
+    <p class="text-sm text-blue-600 font-semibold uppercase tracking-wider mb-2">Legal</p>
+    <h1 class="text-4xl font-bold text-gray-900 mb-3">Correções</h1>
+    <p class="text-gray-500">Última atualização: <%= l Date.current, format: :long %></p>
+  </div>
+
+  <div class="prose prose-gray max-w-none space-y-8 text-gray-700">
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">Como informar um erro</h2>
+      <p class="leading-relaxed">
+        Se você encontrou uma informação incorreta, desatualizada ou incompleta em uma de nossas matérias, avise a gente. Você pode:
+      </p>
+      <p class="leading-relaxed">
+        Envie uma mensagem pelo <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %>, escolhendo o assunto "Denúncia / correção", com o link da notícia e qual informação está incorreta.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">Como solicitar uma correção</h2>
+      <p class="leading-relaxed">
+        Ao relatar um erro, inclua sempre que possível: o link da notícia, o trecho específico com o problema e, se tiver, a fonte que sustenta a correção (documento oficial, declaração, etc.). Isso agiliza a verificação e a correção.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">Como o Busca Mais trata atualizações</h2>
+      <p class="leading-relaxed">
+        Erros de digitação ou formatação são corrigidos sem aviso especial. Quando a correção muda um fato relevante da matéria (nome, número, data, atribuição de uma declaração), a notícia passa a exibir a indicação <strong>"Atualizado em"</strong> junto à data de publicação, para que o leitor saiba que o conteúdo foi revisado após a publicação original.
+      </p>
+    </section>
+
+    <section>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">Contato oficial para correções</h2>
+      <p class="leading-relaxed">
+        Use o <%= link_to "formulário de contato", contato_path, class: "text-blue-600 hover:underline" %> — é o único canal oficial do Busca Mais para relatar erros e solicitar correções.
+      </p>
+    </section>
+
+  </div>
+
+  <div class="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-3">
+    <%= link_to "← Voltar ao início", root_path, class: "text-sm text-gray-500 hover:text-blue-600" %>
+    <span class="text-gray-300">|</span>
+    <%= link_to "Política Editorial", politica_editorial_path, class: "text-sm text-blue-600 hover:underline" %>
+  </div>
+</div>

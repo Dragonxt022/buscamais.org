@@ -37,7 +37,11 @@ class ApplicationController < ActionController::Base
   end
 
   def carregar_categorias_menu
-    categorias = Category.ativas.order(:nome)
+    categorias = Category.ativas
+                          .joins(:articles)
+                          .merge(Article.publicados)
+                          .distinct
+                          .order(:nome)
     artigos_por_categoria = Article.publicados
                                    .with_attached_imagem_capa_file
                                    .where(category: categorias)
