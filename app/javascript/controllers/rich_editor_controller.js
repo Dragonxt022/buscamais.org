@@ -91,6 +91,9 @@ export default class extends Controller {
 
     this._quill.on("text-change", () => {
       this.inputTarget.value = this._quill.root.innerHTML
+      // .value= não dispara "input" sozinho — outros controllers (ex.: seo-score)
+      // dependem desse evento pra saber que o conteúdo mudou.
+      this.inputTarget.dispatchEvent(new Event("input", { bubbles: true }))
     })
   }
 

@@ -21,7 +21,7 @@ class NoticiasController < ApplicationController
                            .includes(:author, :category)
                            .where.not(id: excluir_ids)
                            .order(Arel.sql("destaque DESC"), publicado_em: :desc)
-                           .limit(4)
+                           .limit(6)
 
     @mais_lidos = Article.publicados
                           .with_attached_imagem_capa_file

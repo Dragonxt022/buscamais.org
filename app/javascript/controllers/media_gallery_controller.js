@@ -71,7 +71,10 @@ export default class extends Controller {
   select(event) {
     const { signedId, url } = event.currentTarget.dataset
 
-    if (this.hasSgidFieldTarget)  this.sgidFieldTarget.value = signedId
+    if (this.hasSgidFieldTarget) {
+      this.sgidFieldTarget.value = signedId
+      this.sgidFieldTarget.dispatchEvent(new Event("input", { bubbles: true }))
+    }
 
     if (this.hasPreviewTarget) {
       this.previewTarget.src = url

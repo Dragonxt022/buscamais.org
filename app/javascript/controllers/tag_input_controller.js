@@ -61,6 +61,9 @@ export default class extends Controller {
   }
 
   _render() {
+    // .value= não dispara "input" sozinho — outros controllers (ex.: seo-score) dependem dele.
+    this.inputTarget.dispatchEvent(new Event("input", { bubbles: true }))
+
     const selected = this._getTags().map(t => t.toLowerCase())
 
     // Renderiza chips visuais acima do input

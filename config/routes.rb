@@ -91,6 +91,7 @@ Rails.application.routes.draw do
       collection { delete :bulk_destroy }
     end
     resources :albuns, except: [:show]
+    resource :gerador_ia, only: [:new, :create]
   end
 
   # Área administrativa (somente admin)
@@ -129,6 +130,7 @@ Rails.application.routes.draw do
     end
     resources :albuns, except: [:show]
     resources :anuncios, except: [:show]
+    resource :gerador_ia, only: [:new, :create]
     get "analise", to: "dashboard#analise"
     resource :configuracoes, only: [:show, :update]
     resources :notificacoes, only: [:index, :destroy] do

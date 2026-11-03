@@ -23,6 +23,12 @@ class Article < ApplicationRecord
 
   enum :status, { rascunho: 0, aguardando_revisao: 1, agendado: 2, publicado: 3, arquivado: 4 }, default: :rascunho
 
+  # Quantas notícias publicadas podem ficar marcadas como destaque ao mesmo
+  # tempo. Acima disso, a mais antiga (por publicado_em) perde o destaque
+  # automaticamente — evita que a marcação vá se acumulando e perca o sentido
+  # (o carrossel da home só gira as 5 mais recentes de qualquer forma).
+  LIMITE_DESTAQUES = 8
+
   validates :titulo, presence: true, length: { minimum: 5, maximum: 200 }
   validates :resumo, length: { maximum: 500 }, allow_blank: true
 
@@ -35,6 +41,8 @@ class Article < ApplicationRecord
 
   before_save :calcular_tempo_leitura
   before_save :definir_publicado_em
+  after_save :manter_limite_de_destaques,
+             if: -> { destaque? && publicado? && (saved_change_to_destaque? || saved_change_to_status?) }
 
   def should_generate_new_friendly_id?
     titulo_changed? || slug.blank?
@@ -51,6 +59,17 @@ class Article < ApplicationRecord
 
   def definir_publicado_em
     self.publicado_em = Time.current if publicado? && publicado_em.blank?
+  end
+
+  def manter_limite_de_destaques
+    excedente = self.class.publicados.destaques.count - LIMITE_DESTAQUES
+    return unless excedente > 0
+
+    self.class.publicados.destaques
+        .where.not(id: id)
+        .order(publicado_em: :asc)
+        .limit(excedente)
+        .update_all(destaque: false)
   end
 
 end

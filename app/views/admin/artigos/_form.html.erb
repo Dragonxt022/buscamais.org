@@ -1,6 +1,7 @@
 <%= form_with model: artigo,
               url: artigo.new_record? ? admin_artigos_path : admin_artigo_path(artigo),
-              class: "space-y-6" do |f| %>
+              class: "space-y-6",
+              data: { controller: "seo-score" } do |f| %>
   <% if artigo.errors.any? %>
     <div class="bg-red-50 border border-red-200 rounded-lg p-4">
       <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
@@ -19,7 +20,8 @@
         <%= f.label :titulo, "Título *", class: "block text-sm font-semibold text-gray-700 mb-1.5" %>
         <%= f.text_field :titulo,
             class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500",
-            placeholder: "Título do artigo..." %>
+            placeholder: "Título do artigo...",
+            data: { "seo-score-target": "titulo", action: "input->seo-score#analisar" } %>
       </div>
 
       <%# Conteúdo — editor Quill com galeria integrada %>
@@ -32,6 +34,8 @@
         <%# Hidden textarea — valor enviado no form %>
         <textarea name="article[conteudo]" id="article_conteudo"
                   data-rich-editor-target="input"
+                  data-seo-score-target="conteudo"
+                  data-action="input->seo-score#analisar"
                   class="hidden"><%= artigo.conteudo.body&.to_html %></textarea>
 
         <%# Área visual do Quill %>
@@ -99,7 +103,8 @@
         <%= f.text_area :resumo, rows: 3,
             class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none",
             placeholder: "Resumo breve do artigo (máx. 500 caracteres)...",
-            maxlength: 500 %>
+            maxlength: 500,
+            data: { "seo-score-target": "resumo", action: "input->seo-score#analisar" } %>
         <p class="text-xs text-gray-400 mt-1 text-right"><span id="resumo_count">0</span>/500</p>
       </div>
 
@@ -121,6 +126,7 @@
             <div class="relative group rounded-lg overflow-hidden">
               <img src="<%= url_for(artigo.imagem_capa_file) %>"
                    data-media-gallery-target="preview"
+                   data-seo-score-target="imagemPreview"
                    class="w-full aspect-video object-cover"
                    alt="Imagem de capa">
               <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
@@ -136,20 +142,22 @@
               <span class="text-xs">Nenhuma imagem</span>
             </div>
             <img data-media-gallery-target="preview"
+                 data-seo-score-target="imagemPreview"
                  src="" alt="Preview"
                  class="hidden w-full aspect-video object-cover rounded-lg">
           <% end %>
         </div>
 
         <%# Campo oculto para seleção da galeria %>
-        <%= f.hidden_field :imagem_capa_sgid, data: { "media-gallery-target": "sgidField" } %>
+        <%= f.hidden_field :imagem_capa_sgid, data: { "media-gallery-target": "sgidField", "seo-score-target": "imagemSgid", action: "input->seo-score#analisar" } %>
 
         <%# Legenda da imagem %>
         <div class="mt-3">
           <%= f.label :legenda_capa, "Legenda da imagem", class: "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5" %>
           <%= f.text_field :legenda_capa,
               class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
-              placeholder: "Ex.: Foto: Assessoria de Comunicação" %>
+              placeholder: "Ex.: Foto: Assessoria de Comunicação",
+              data: { "seo-score-target": "legenda", action: "input->seo-score#analisar" } %>
         </div>
 
         <%# Ações %>
@@ -234,13 +242,14 @@
         <div class="mb-4">
           <%= f.label :category_id, "Categoria principal", class: "block text-xs font-medium text-gray-500 mb-1" %>
           <%= f.collection_select :category_id, @categorias, :id, :nome, { include_blank: "Selecione..." },
-              class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+              class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none",
+              data: { "seo-score-target": "categoria", action: "change->seo-score#analisar" } %>
           <p class="text-xs text-gray-400 mt-1">Define a cor/selo exibido nos cards.</p>
         </div>
         <div class="mb-4">
           <label class="block text-xs font-medium text-gray-500 mb-1.5">Categorias adicionais</label>
           <div class="flex flex-wrap gap-1.5">
-            <%= f.collection_check_boxes :categorias_extras_ids, @categorias, :id, :nome do |b| %>
+            <%= f.collection_check_boxes :categorias_extra_ids, @categorias, :id, :nome do |b| %>
               <label class="flex items-center gap-1.5 text-xs border border-gray-200 rounded-full px-2.5 py-1 cursor-pointer hover:border-blue-400 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-400 has-[:checked]:text-blue-700">
                 <%= b.check_box(class: "w-3.5 h-3.5") %>
                 <%= b.text %>
@@ -260,7 +269,8 @@
                  name="article[tag_names]"
                  id="article_tag_names"
                  data-tag-input-target="input"
-                 data-action="keydown->tag-input#keydown blur->tag-input#blur"
+                 data-seo-score-target="tags"
+                 data-action="keydown->tag-input#keydown blur->tag-input#blur input->seo-score#analisar"
                  value="<%= artigo.tags.map(&:nome).join(', ') %>"
                  placeholder="Digite tags separadas por vírgula..."
                  autocomplete="off"
@@ -282,6 +292,31 @@
             </div>
           <% end %>
         </div>
+      </div>
+
+      <%# Análise de SEO (estilo Yoast) — calculada no navegador, ao vivo %>
+      <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <p class="text-sm font-semibold text-gray-700 mb-3">Análise de SEO</p>
+
+        <div class="mb-4">
+          <%= f.label :palavra_chave_foco, "Palavra-chave de foco", class: "block text-xs font-medium text-gray-500 mb-1" %>
+          <%= f.text_field :palavra_chave_foco,
+              class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+              placeholder: "Ex.: Processo Seletivo Cujubim",
+              data: { "seo-score-target": "palavraChave", action: "input->seo-score#analisar" } %>
+          <p class="text-xs text-gray-400 mt-1">Opcional. Preencha para checar título, resumo e conteúdo contra um termo específico.</p>
+        </div>
+
+        <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
+          <div data-seo-score-target="score"
+               class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-black shrink-0 ring-4 bg-gray-50 text-gray-400 ring-gray-100">-</div>
+          <div>
+            <p class="text-xs text-gray-400">Pontuação de SEO</p>
+            <p data-seo-score-target="scoreLabel" class="text-sm font-semibold text-gray-500">Calculando...</p>
+          </div>
+        </div>
+
+        <ul data-seo-score-target="lista" class="space-y-2"></ul>
       </div>
 
       <%# Botões %>
