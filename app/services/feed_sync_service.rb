@@ -254,6 +254,9 @@ class FeedSyncService
   # ── Imagem ────────────────────────────────────────────────────────────────
 
   def anexar_imagem(artigo, url)
+    # Muitos feeds não expõem imagem no RSS. Nesse caso, busca a og:image da
+    # página original para a matéria não entrar sem capa no site.
+    url = descobrir_imagem_na_pagina(artigo.fonte_url) if url.blank?
     return if url.blank?
 
     imagem = baixar_imagem(url)
@@ -266,6 +269,25 @@ class FeedSyncService
     )
   rescue => e
     Rails.logger.warn("[FeedSyncService:#{@feed.id}] imagem #{url}: #{e.message}")
+  end
+
+  def descobrir_imagem_na_pagina(pagina_url)
+    return nil if pagina_url.blank?
+
+    html, charset = requisitar(pagina_url, limite_bytes: 2 * 1024 * 1024, timeout_leitura: 15)
+    doc = Nokogiri::HTML(normalizar_texto(html, charset))
+
+    [ 'meta[property="og:image"]', 'meta[property="og:image:url"]', 'meta[name="twitter:image"]' ].each do |seletor|
+      candidato = doc.at_css(seletor)&.[]("content").to_s.strip
+      next if candidato.blank?
+
+      absoluto = resolver_url(candidato, base: pagina_url)
+      return absoluto if absoluto
+    end
+    nil
+  rescue => e
+    Rails.logger.warn("[FeedSyncService:#{@feed.id}] og:image #{pagina_url}: #{e.message}")
+    nil
   end
 
   def baixar_imagem(url)
@@ -345,10 +367,10 @@ class FeedSyncService
     false
   end
 
-  def resolver_url(candidato)
+  def resolver_url(candidato, base: @feed.url)
     return nil if candidato.blank?
 
-    URI.join(@feed.url, candidato.to_s.strip).to_s
+    URI.join(base, candidato.to_s.strip).to_s
   rescue URI::Error
     nil
   end
