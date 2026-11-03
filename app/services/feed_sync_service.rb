@@ -140,8 +140,8 @@ class FeedSyncService
     return nil if html.blank?
 
     link       = texto(node.at_xpath("link"))
-    categorias = node.xpath("category").map { |cat| texto(cat) }.reject(&:blank?)
-    categorias = categorias_por_link(link) if categorias.empty?
+    categorias = categorias_por_link(link)
+    categorias = node.xpath("category").map { |cat| texto(cat) }.reject(&:blank?) if categorias.empty?
 
     Item.new(
       titulo:       texto(node.at_xpath("title")),
