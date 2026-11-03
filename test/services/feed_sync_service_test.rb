@@ -53,6 +53,13 @@ class FeedSyncServiceTest < ActiveSupport::TestCase
     assert_includes html, "A Polícia Civil do Rio investiga"
   end
 
+  test "converte links relativos do feed em links absolutos" do
+    FeedSyncService.new(@feed, xml: @xml).chamar
+
+    artigo = Article.find_by!(fonte_url: "https://midiaextra.com/cadastro-eleitoral-reaberto-servicos-eleitor/")
+    assert_includes artigo.conteudo.body.to_html, "https://midiaextra.com/outra-noticia/"
+  end
+
   test "não duplica matérias em sincronizações seguintes" do
     FeedSyncService.new(@feed, xml: @xml).chamar
     resultado = FeedSyncService.new(@feed, xml: @xml).chamar

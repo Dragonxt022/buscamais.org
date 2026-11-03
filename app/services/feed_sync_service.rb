@@ -32,7 +32,7 @@ class FeedSyncService
   MAX_XML_BYTES      = 10 * 1024 * 1024
   MAX_IMAGE_BYTES    = 8 * 1024 * 1024
   MAX_REDIRECTS      = 3
-  ALLOWED_IMAGE_TYPES = %w[image/jpeg image/png image/webp image/gif].freeze
+  ALLOWED_IMAGE_TYPES = %w[image/jpeg image/jpg image/png image/webp image/gif].freeze
   TAGS_PERMITIDAS    = %w[p br strong em b i u h2 h3 h4 ul ol li blockquote a].freeze
   ATRIBUTOS_PERMITIDOS = %w[href rel target].freeze
 
@@ -235,6 +235,16 @@ class FeedSyncService
       attributes: ATRIBUTOS_PERMITIDOS
     )
     fragmento = Nokogiri::HTML.fragment(limpo)
+
+    # Links relativos do feed precisam virar absolutos para funcionar no site.
+    fragmento.css("a[href]").each do |link|
+      href = link["href"].to_s.strip
+      next if href.blank? || href.start_with?("#", "mailto:", "tel:")
+
+      absoluto = resolver_url(href)
+      link["href"] = absoluto if absoluto
+    end
+
     # A primeira imagem do conteúdo vira a capa; as demais seriam hotlinks
     # para o site de origem, então saem do corpo da matéria.
     fragmento.css("img").remove
@@ -266,7 +276,7 @@ class FeedSyncService
     end
     return nil unless ALLOWED_IMAGE_TYPES.include?(tipo)
 
-    extensao = { "image/jpeg" => "jpg", "image/png" => "png",
+    extensao = { "image/jpeg" => "jpg", "image/jpg" => "jpg", "image/png" => "png",
                  "image/webp" => "webp", "image/gif" => "gif" }.fetch(tipo, "jpg")
 
     { corpo: corpo, content_type: tipo, filename: "capa-feed.#{extensao}" }
