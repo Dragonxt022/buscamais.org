@@ -26,7 +26,7 @@ gem "friendly_id"
 gem "pagy", "~> 9.3"
 gem "invisible_captcha"
 gem "tailwindcss-rails"
-gem "stripe", "~> 13.0"
+gem "stripe", "~> 19.4"
 gem "rack-attack"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
