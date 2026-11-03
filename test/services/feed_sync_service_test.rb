@@ -50,6 +50,7 @@ class FeedSyncServiceTest < ActiveSupport::TestCase
 
     assert_not_includes html, "script"
     assert_not_includes html, "<img"
+    assert_not_includes artigo.conteudo.to_plain_text, "alert("
     assert_includes html, "A Polícia Civil do Rio investiga"
     assert_not_includes artigo.conteudo.to_plain_text, "Da Redação"
   end

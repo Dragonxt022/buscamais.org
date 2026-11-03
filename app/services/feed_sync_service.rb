@@ -237,8 +237,13 @@ class FeedSyncService
   end
 
   def sanitizar(html)
+    # Remove primeiro os blocos perigosos inteiros (inclusive o texto interno):
+    # o sanitizador sozinho tira a tag <script>, mas deixaria "alert(...)".
+    pre_limpeza = Nokogiri::HTML.fragment(html.to_s)
+    pre_limpeza.css("script, style, noscript, iframe, object, embed").each(&:remove)
+
     limpo = Rails::Html::SafeListSanitizer.new.sanitize(
-      html.to_s,
+      pre_limpeza.to_html,
       tags: TAGS_PERMITIDAS,
       attributes: ATRIBUTOS_PERMITIDOS
     )
