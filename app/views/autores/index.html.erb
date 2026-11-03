@@ -24,6 +24,9 @@
           <div class="min-w-0">
             <p class="font-bold text-gray-900"><%= autor.nome %></p>
             <p class="text-xs text-gray-400 capitalize"><%= autor.role.humanize %></p>
+            <% if autor.bio.present? %>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-2"><%= autor.bio %></p>
+            <% end %>
             <p class="text-xs text-gray-400 mt-0.5"><%= autor.articles.publicados.count %> artigos publicados</p>
           </div>
         <% end %>

@@ -7,7 +7,15 @@ class AutoresController < ApplicationController
   end
 
   def show
-    @autor = User.pode_publicar.find_by!(slug: params[:slug])
+    @autor = User.pode_publicar.find_by(slug: params[:slug])
+
+    # Compatibilidade com o slug antigo do autor principal.
+    if @autor.nil? && params[:slug] == "bruno-pissinatti"
+      @autor = User.pode_publicar.find_by(slug: "rodrigo-silva")
+      return redirect_to(autor_path(@autor.slug), status: :moved_permanently) if @autor
+    end
+
+    @autor ||= User.pode_publicar.find_by!(slug: params[:slug])
     @pagy, @artigos = pagy(
       @autor.articles.publicados
                      .with_attached_imagem_capa_file
