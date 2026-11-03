@@ -4,6 +4,7 @@ class Article < ApplicationRecord
 
   belongs_to :author, class_name: "User"
   belongs_to :category, optional: true
+  belongs_to :feed_source, optional: true
 
   has_many :article_tags, dependent: :destroy
   has_many :tags, through: :article_tags
@@ -38,6 +39,7 @@ class Article < ApplicationRecord
   scope :por_categoria,  ->(categoria) { where(category: categoria) }
   scope :premium_only,   -> { where(premium: true) }
   scope :gratuitos_only, -> { where(premium: false) }
+  scope :importados,     -> { where.not(feed_source_id: nil) }
 
   before_save :calcular_tempo_leitura
   before_save :definir_publicado_em

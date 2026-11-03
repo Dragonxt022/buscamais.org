@@ -5,15 +5,13 @@
   root_path_ns       = ns == :admin ? admin_root_path       : editor_root_path
   artigos_path_ns    = ns == :admin ? admin_artigos_path    : editor_artigos_path
   new_artigo_path_ns = ns == :admin ? new_admin_artigo_path : new_editor_artigo_path
-  gerador_ia_path_ns = ns == :admin ? new_admin_gerador_ia_path : new_editor_gerador_ia_path
   midias_path_ns     = ns == :admin ? admin_midias_path     : editor_midias_path
   albuns_path_ns      = ns == :admin ? admin_albuns_path     : editor_albuns_path
 
   in_artigos    = controller_name == "artigos"
   in_categorias = controller_name == "categorias" && ns == :admin
   in_tags       = controller_name == "tags"       && ns == :admin
-  in_gerador_ia = controller_name == "gerador_ia"
-  in_conteudo   = in_artigos || in_categorias || in_tags || in_gerador_ia
+  in_conteudo   = in_artigos || in_categorias || in_tags
 %>
 
 <aside class="w-60 bg-white border-r border-gray-200 flex flex-col min-h-screen shrink-0 overflow-hidden"
@@ -129,17 +127,17 @@
                 <%= lucide_icon "plus", css: "w-4 h-4" %>
                 Novo Artigo
               <% end %>
-              <%= link_to gerador_ia_path_ns,
-                  class: "flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-semibold transition-colors
-                          #{in_gerador_ia ? 'submenu-active text-blue-700 bg-blue-50' : 'text-purple-600 hover:bg-purple-50'}" do %>
-                <%= lucide_icon "sparkles", css: "w-4 h-4" %>
-                Gerar com IA
-              <% end %>
             </div>
           </div>
         </div>
 
         <% if is_admin %>
+          <%= link_to admin_feeds_path, title: "Feeds RSS",
+              class: "sidebar-link flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-colors #{controller_name == 'feeds' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}" do %>
+            <%= lucide_icon "rss" %>
+            <span class="flex-1 min-w-0 truncate whitespace-nowrap" data-sidebar-target="label">Feeds RSS</span>
+          <% end %>
+
           <%# Comentários com badge de pendentes %>
           <% pendentes_count = Comment.pendentes.count rescue 0 %>
           <% denuncias_count = Comment.joins(:comment_reports).distinct.where(comment_reports: { resolvido: false }).count rescue 0 %>

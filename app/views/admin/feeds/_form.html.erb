@@ -1,0 +1,106 @@
+<%= form_with model: [ :admin, feed ], class: "space-y-5" do |f| %>
+  <% if feed.errors.any? %>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+        <% feed.errors.full_messages.each do |mensagem| %>
+          <li><%= mensagem %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-5">
+    <div>
+      <%= f.label :nome, "Nome da fonte *", class: "block text-sm font-semibold text-gray-700 mb-1.5" %>
+      <%= f.text_field :nome, required: true,
+          placeholder: "Ex.: Mídia Extra",
+          class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      <p class="text-xs text-gray-400 mt-1">Aparece apenas no painel, para você identificar a origem.</p>
+    </div>
+
+    <div>
+      <%= f.label :url, "URL do feed RSS *", class: "block text-sm font-semibold text-gray-700 mb-1.5" %>
+      <%= f.url_field :url, required: true,
+          placeholder: "https://exemplo.com/feed/",
+          class: "w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+      <p class="text-xs text-gray-400 mt-1">Aceita RSS 2.0 e Atom. Normalmente termina em <span class="font-mono">/feed/</span> ou <span class="font-mono">/rss.xml</span>.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      <div>
+        <%= f.label :category_id, "Categoria padrão", class: "block text-xs font-medium text-gray-500 mb-1" %>
+        <%= f.collection_select :category_id, @categorias, :id, :nome, { include_blank: "Detectar pelo feed" },
+            class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+        <p class="text-xs text-gray-400 mt-1">Usada quando o feed não trouxer uma categoria que exista no site.</p>
+      </div>
+      <div>
+        <%= f.label :author_id, "Autor das matérias", class: "block text-xs font-medium text-gray-500 mb-1" %>
+        <%= f.collection_select :author_id, @autores, :id, :nome, { include_blank: "Usar o meu usuário" },
+            class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+        <p class="text-xs text-gray-400 mt-1">Quem assina as notícias importadas.</p>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-5">
+      <div>
+        <%= f.label :intervalo_minutos, "Buscar novas notícias a cada", class: "block text-xs font-medium text-gray-500 mb-1" %>
+        <%= f.select :intervalo_minutos,
+            FeedSource::INTERVALOS.map { |minutos|
+              rotulo = if minutos < 60
+                         "#{minutos} minutos"
+                       else
+                         horas = minutos / 60
+                         horas == 1 ? "1 hora" : "#{horas} horas"
+                       end
+              [ rotulo, minutos ]
+            },
+            {},
+            class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+      </div>
+      <div>
+        <%= f.label :limite_por_sincronizacao, "Máximo de matérias por busca", class: "block text-xs font-medium text-gray-500 mb-1" %>
+        <%= f.number_field :limite_por_sincronizacao, min: 1, max: 50, step: 1,
+            class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+        <p class="text-xs text-gray-400 mt-1">Evita importar o histórico inteiro na primeira sincronização.</p>
+      </div>
+    </div>
+
+    <div class="space-y-3 pt-2 border-t border-gray-100">
+      <label class="flex items-start gap-3 cursor-pointer">
+        <%= f.check_box :ativo, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
+        <span>
+          <span class="block text-sm font-semibold text-gray-700">Feed ativo</span>
+          <span class="block text-xs text-gray-400">Quando pausado, o site não busca novas notícias desta fonte.</span>
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <%= f.check_box :publicar_automaticamente, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
+        <span>
+          <span class="block text-sm font-semibold text-gray-700">Publicar automaticamente</span>
+          <span class="block text-xs text-gray-400">Desmarcado, as notícias entram como "aguardando revisão" para um editor aprovar.</span>
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <%= f.check_box :importar_imagem, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
+        <span>
+          <span class="block text-sm font-semibold text-gray-700">Importar imagem de capa</span>
+          <span class="block text-xs text-gray-400">Baixa a imagem do feed para o nosso servidor (até 8 MB). A primeira imagem do texto vira a capa.</span>
+        </span>
+      </label>
+    </div>
+  </div>
+
+  <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-800 leading-relaxed">
+    A importação roda em segundo plano, sem travar o site. Cada matéria é deduplicada pelo identificador do feed e pela URL original,
+    então a mesma notícia não é publicada duas vezes. Texto e resumo entram sanitizados, e as imagens são hospedadas no nosso Active Storage.
+  </div>
+
+  <div class="flex gap-3">
+    <%= f.submit feed.new_record? ? "Cadastrar Feed" : "Salvar Alterações",
+        class: "bg-blue-600 text-white py-2.5 px-6 rounded-lg text-sm font-semibold hover:bg-blue-700 cursor-pointer" %>
+    <%= link_to "Cancelar", admin_feeds_path,
+        class: "text-center border border-gray-300 text-gray-700 py-2.5 px-6 rounded-lg text-sm hover:bg-gray-50" %>
+  </div>
+<% end %>

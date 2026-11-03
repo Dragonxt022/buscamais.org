@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Mídia Extra</title>
+    <link>https://midiaextra.com</link>
+    <description>Feed de teste</description>
+    <language>pt-BR</language>
+
+    <item>
+      <title>Cadastro eleitoral é reaberto e serviços voltam em todo o país</title>
+      <link>https://midiaextra.com/cadastro-eleitoral-reaberto-servicos-eleitor/</link>
+      <dc:creator><![CDATA[Redação Mídia Extra]]></dc:creator>
+      <pubDate>Tue, 03 Nov 2026 16:00:26 +0000</pubDate>
+      <category><![CDATA[Política]]></category>
+      <guid isPermaLink="false">https://midiaextra.com/cadastro-eleitoral-reaberto-servicos-eleitor/</guid>
+      <description><![CDATA[Justiça Eleitoral retoma pedidos de título, transferência, atualização de dados e regularização.]]></description>
+      <content:encoded><![CDATA[<p>A Justiça Eleitoral reabriu nesta terça-feira (3) o cadastro eleitoral em todo o país.</p><img src="https://midiaextra.com/wp-content/uploads/foto.jpg" alt=""><p>Os serviços podem ser solicitados pelo Autoatendimento Eleitoral.</p>]]></content:encoded>
+    </item>
+
+    <item>
+      <title>Polícia investiga queda de asa-delta que matou dois no Rio</title>
+      <link>https://midiaextra.com/policia-investiga-queda-asa-delta-sao/</link>
+      <pubDate>Tue, 03 Nov 2026 14:00:17 +0000</pubDate>
+      <category><![CDATA[Brasil]]></category>
+      <guid isPermaLink="false">https://midiaextra.com/policia-investiga-queda-asa-delta-sao/</guid>
+      <description><![CDATA[Dois ocupantes morreram após o equipamento cair na praia de São Conrado, no Rio.]]></description>
+      <content:encoded><![CDATA[<script>alert("xss")</script><p>A Polícia Civil do Rio investiga a queda.</p>]]></content:encoded>
+    </item>
+
+    <item>
+      <title>Inscrições para vagas remanescentes do Fies terminam nesta terça</title>
+      <link>https://midiaextra.com/inscricoes-fies-vagas-remanescentes-terca/</link>
+      <pubDate>Tue, 03 Nov 2026 12:00:18 +0000</pubDate>
+      <category><![CDATA[Educação]]></category>
+      <guid isPermaLink="false">https://midiaextra.com/inscricoes-fies-vagas-remanescentes-terca/</guid>
+      <description><![CDATA[Prazo para disputar 50 mil vagas remanescentes do Fies acaba hoje.]]></description>
+      <content:encoded><![CDATA[<p>Termina nesta terça-feira (3) o prazo para se inscrever nas vagas remanescentes do Fies.</p>]]></content:encoded>
+    </item>
+  </channel>
+</rss>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_190000) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -100,6 +100,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
     t.text "conteudo"
     t.datetime "created_at", null: false
     t.boolean "destaque", default: false, null: false
+    t.string "external_id"
+    t.bigint "feed_source_id"
+    t.string "fonte_nome"
+    t.string "fonte_url"
     t.string "imagem_capa"
     t.string "legenda_capa"
     t.string "palavra_chave_foco"
@@ -115,6 +119,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
     t.index ["author_id"], name: "index_articles_on_author_id"
     t.index ["category_id"], name: "index_articles_on_category_id"
     t.index ["destaque"], name: "index_articles_on_destaque"
+    t.index ["feed_source_id", "external_id"], name: "index_articles_on_feed_source_id_and_external_id", unique: true
+    t.index ["feed_source_id"], name: "index_articles_on_feed_source_id"
+    t.index ["fonte_url"], name: "index_articles_on_fonte_url"
     t.index ["publicado_em"], name: "index_articles_on_publicado_em"
     t.index ["slug"], name: "index_articles_on_slug", unique: true
     t.index ["status"], name: "index_articles_on_status"
@@ -182,6 +189,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
     t.datetime "respondida_em"
     t.text "resposta"
     t.datetime "updated_at", null: false
+  end
+
+  create_table "feed_sources", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
+    t.boolean "ativo", default: true, null: false
+    t.bigint "author_id"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.boolean "importar_imagem", default: true, null: false
+    t.integer "intervalo_minutos", default: 60, null: false
+    t.integer "limite_por_sincronizacao", default: 10, null: false
+    t.string "nome", null: false
+    t.boolean "publicar_automaticamente", default: true, null: false
+    t.integer "total_importados", default: 0, null: false
+    t.text "ultima_mensagem"
+    t.datetime "ultima_sincronizacao_em"
+    t.string "ultimo_status"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["author_id"], name: "index_feed_sources_on_author_id"
+    t.index ["category_id"], name: "index_feed_sources_on_category_id"
+    t.index ["url"], name: "index_feed_sources_on_url", unique: true
   end
 
   create_table "friendly_id_slugs", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
@@ -386,6 +414,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
   add_foreign_key "article_tags", "articles"
   add_foreign_key "article_tags", "tags"
   add_foreign_key "articles", "categories"
+  add_foreign_key "articles", "feed_sources"
   add_foreign_key "articles", "users", column: "author_id"
   add_foreign_key "comment_likes", "comments"
   add_foreign_key "comment_likes", "users"
@@ -393,6 +422,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_151756) do
   add_foreign_key "comment_reports", "users"
   add_foreign_key "comments", "articles"
   add_foreign_key "comments", "users"
+  add_foreign_key "feed_sources", "categories"
+  add_foreign_key "feed_sources", "users", column: "author_id"
   add_foreign_key "media_files", "albums"
   add_foreign_key "media_files", "users"
   add_foreign_key "notifications", "users"

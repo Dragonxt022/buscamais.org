@@ -2,7 +2,7 @@ class Notification < ApplicationRecord
   belongs_to :user
   belongs_to :notificable, polymorphic: true, optional: true
 
-  TIPOS = %w[novo_comentario comentario_aprovado resposta curtida materia_ia_pronta materia_ia_falhou].freeze
+  TIPOS = %w[novo_comentario comentario_aprovado resposta curtida].freeze
 
   validates :tipo, inclusion: { in: TIPOS }
 
@@ -43,23 +43,6 @@ class Notification < ApplicationRecord
     n
   end
 
-  def self.notificar_materia_ia_pronta(usuario, artigo)
-    create!(
-      user:        usuario,
-      notificable: artigo,
-      tipo:        "materia_ia_pronta",
-      dados:       { artigo: artigo.titulo, id: artigo.id }.to_json
-    )
-  end
-
-  def self.notificar_materia_ia_falhou(usuario, assunto, erro)
-    create!(
-      user:  usuario,
-      tipo:  "materia_ia_falhou",
-      dados: { assunto: assunto, erro: erro.to_s.truncate(200) }.to_json
-    )
-  end
-
   def self.notificar_curtida(like)
     return if like.comment.user == like.user
     n = create!(
@@ -77,8 +60,7 @@ class Notification < ApplicationRecord
   end
 
   def icone
-    { "novo_comentario" => "💬", "comentario_aprovado" => "✅", "resposta" => "↩️", "curtida" => "❤️",
-      "materia_ia_pronta" => "✨", "materia_ia_falhou" => "⚠️" }[tipo] || "🔔"
+    { "novo_comentario" => "💬", "comentario_aprovado" => "✅", "resposta" => "↩️", "curtida" => "❤️" }[tipo] || "🔔"
   end
 
   def mensagem
@@ -88,21 +70,12 @@ class Notification < ApplicationRecord
     when "comentario_aprovado" then "Seu comentário em \"#{d['artigo']}\" foi aprovado"
     when "resposta"          then "#{d['autor']} respondeu seu comentário em \"#{d['artigo']}\""
     when "curtida"           then "#{d['autor']} curtiu seu comentário em \"#{d['artigo']}\""
-    when "materia_ia_pronta" then "Matéria gerada por IA está pronta: #{d['artigo']}"
-    when "materia_ia_falhou" then "Falha ao gerar matéria sobre \"#{d['assunto']}\" — tente novamente"
     else "Nova notificação"
     end
   end
 
   def link
     d = dados_hash
-    case tipo
-    when "materia_ia_pronta"
-      user.administrador? ? "/admin/artigos/#{d['id']}/edit" : "/editor/artigos/#{d['id']}/edit"
-    when "materia_ia_falhou"
-      user.administrador? ? "/admin/gerador_ia/new" : "/editor/gerador_ia/new"
-    else
-      d["slug"] ? "/noticias/#{d['slug']}" : "#"
-    end
+    d["slug"] ? "/noticias/#{d['slug']}" : "#"
   end
 end
