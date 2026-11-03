@@ -6,6 +6,7 @@ class User < ApplicationRecord
   enum :role, { usuario: 0, editor: 1, administrador: 2 }, default: :usuario
 
   has_many :articles,         foreign_key: :author_id, dependent: :nullify
+  has_many :feed_sources,     foreign_key: :author_id, dependent: :nullify
   has_many :comments,         dependent: :destroy
   has_many :comment_likes,    dependent: :destroy
   has_many :notifications,     dependent: :destroy
