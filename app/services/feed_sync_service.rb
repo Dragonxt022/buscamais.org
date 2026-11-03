@@ -50,6 +50,7 @@ class FeedSyncService
     raise "O endereço não devolveu um feed RSS/Atom válido" if doc.root.nil?
     raise "Nenhum autor disponível para assinar as matérias importadas" if autor.nil?
 
+    @channel_title = titulo_do_canal(doc)
     itens = extrair_itens(doc)
 
     itens.first(@feed.limite_por_sincronizacao.to_i).each do |item|
@@ -93,6 +94,13 @@ class FeedSyncService
   end
 
   # ── Parsing ────────────────────────────────────────────────────────────────
+
+  def titulo_do_canal(doc)
+    case doc.root&.name
+    when "feed" then texto(doc.at_xpath("/atom:feed/atom:title", NS))
+    when "rss"  then texto(doc.at_xpath("/rss/channel/title"))
+    end
+  end
 
   def extrair_itens(doc)
     itens =
@@ -248,6 +256,8 @@ class FeedSyncService
     # A primeira imagem do conteúdo vira a capa; as demais seriam hotlinks
     # para o site de origem, então saem do corpo da matéria.
     fragmento.css("img").remove
+
+    FeedContentCleaner.new([ @feed.nome, @channel_title ]).remover_creditos(fragmento)
     fragmento.to_html.strip
   end
 
