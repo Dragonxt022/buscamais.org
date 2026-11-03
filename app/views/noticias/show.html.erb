@@ -161,6 +161,14 @@
       <%= @artigo.conteudo.body&.to_html.to_s.html_safe %>
     </div>
 
+    <% if @artigo.mostrar_fonte? && @artigo.fonte_url.present? %>
+      <p class="text-xs text-gray-500 mb-8">
+        Fonte:
+        <%= link_to @artigo.fonte_nome.presence || "conteúdo original", @artigo.fonte_url,
+            target: "_blank", rel: "noopener", class: "text-blue-600 hover:underline font-semibold" %>
+      </p>
+    <% end %>
+
     <%# Anúncio in-content: exibido apenas para não-assinantes após o corpo %>
     <%= render "shared/anuncio", formato: :in_content %>
 

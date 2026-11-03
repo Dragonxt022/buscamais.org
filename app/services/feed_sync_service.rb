@@ -36,6 +36,21 @@ class FeedSyncService
   TAGS_PERMITIDAS    = %w[p br strong em b i u h2 h3 h4 ul ol li blockquote a].freeze
   ATRIBUTOS_PERMITIDOS = %w[href rel target].freeze
 
+  # A Agência Brasil não manda <category> nos itens; a editoria fica no
+  # caminho da URL (/politica/, /economia/, /internacional/ etc.).
+  CATEGORIAS_EBC = {
+    "politica"       => "Política",
+    "economia"       => "Economia",
+    "educacao"       => "Educação",
+    "saude"          => "Saúde",
+    "esportes"       => "Esportes",
+    "cultura"        => "Cultura",
+    "meio-ambiente"  => "Meio Ambiente",
+    "internacional"  => "Mundo",
+    "justica"        => "Brasil",
+    "geral"          => "Brasil"
+  }.freeze
+
   def initialize(feed, xml: nil)
     @feed = feed
     @xml  = xml
@@ -124,16 +139,31 @@ class FeedSyncService
     html      = texto(node.at_xpath("content:encoded", NS)).presence || descricao
     return nil if html.blank?
 
+    link       = texto(node.at_xpath("link"))
+    categorias = node.xpath("category").map { |cat| texto(cat) }.reject(&:blank?)
+    categorias = categorias_por_link(link) if categorias.empty?
+
     Item.new(
       titulo:       texto(node.at_xpath("title")),
-      link:         texto(node.at_xpath("link")),
+      link:         link,
       guid:         texto(node.at_xpath("guid")),
       publicado_em: parse_data(texto(node.at_xpath("pubDate")).presence || texto(node.at_xpath("dc:date", NS))),
       resumo:       descricao,
       conteudo:     html,
-      categorias:   node.xpath("category").map { |cat| texto(cat) }.reject(&:blank?),
+      categorias:   categorias,
       imagem_url:   extrair_imagem_url(node, html)
     )
+  end
+
+  def categorias_por_link(link)
+    uri = URI.parse(link.to_s)
+    return [] unless uri.host.to_s.end_with?("agenciabrasil.ebc.com.br")
+
+    slug = uri.path.split("/").reject(&:blank?).first
+    nome = CATEGORIAS_EBC[slug]
+    nome ? [ nome ] : []
+  rescue URI::Error
+    []
   end
 
   def item_atom(node)
@@ -159,18 +189,27 @@ class FeedSyncService
   def extrair_imagem_url(node, html)
     urls = []
 
+    destaque = node.at_xpath("imagem-destaque")&.text.to_s.strip
+    urls << destaque if destaque.present?
+
     node.xpath("enclosure").each do |enc|
       urls << enc["url"] if enc["url"].present? && enc["type"].to_s.start_with?("image/")
     end
     node.xpath("media:content", NS).each { |media| urls << media["url"] if media["url"].present? }
     node.xpath("media:thumbnail", NS).each { |media| urls << media["url"] if media["url"].present? }
 
+    urls = urls.compact.map(&:strip).reject(&:blank?).reject { |url| tracking_pixel?(url) }
     urls << primeiro_img(html) if urls.empty?
     urls.compact.first
   end
 
   def primeiro_img(html)
-    Nokogiri::HTML.fragment(html.to_s).at_css("img")&.[]("src")
+    Nokogiri::HTML.fragment(html.to_s).css("img").map { |img| img["src"] }.compact.find { |src| !tracking_pixel?(src) }
+  end
+
+  # Pixels de rastreamento da EBC vêm no corpo do RSS e não servem como capa.
+  def tracking_pixel?(url)
+    url.to_s.match?(/\/ebc\.(png|gif)(\?|\z)/i) || url.to_s.match?(/[?&](width|height)=1(&|\z)/i)
   end
 
   # ── Importação ─────────────────────────────────────────────────────────────
@@ -198,7 +237,8 @@ class FeedSyncService
       feed_source:  @feed,
       external_id:  external_id,
       fonte_nome:   @feed.nome,
-      fonte_url:    link
+      fonte_url:    link,
+      mostrar_fonte: @feed.creditar_fonte?
     )
     artigo.conteudo = conteudo
     artigo.save!

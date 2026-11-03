@@ -26,8 +26,7 @@ class Admin::FeedsController < Admin::BaseController
     else
       carregar_opcoes
       render :new, status: :unprocessable_entity
-    end
-  end
+    end  end
 
   def edit
     carregar_opcoes
@@ -79,7 +78,7 @@ class Admin::FeedsController < Admin::BaseController
   def feed_params
     params.require(:feed_source).permit(
       :nome, :url, :ativo, :intervalo_minutos, :publicar_automaticamente,
-      :importar_imagem, :limite_por_sincronizacao, :category_id, :author_id
+      :importar_imagem, :creditar_fonte, :limite_por_sincronizacao, :category_id, :author_id
     )
   end
 end

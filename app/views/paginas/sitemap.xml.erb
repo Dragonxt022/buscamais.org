@@ -76,7 +76,7 @@
   <% @artigos.each do |artigo| %>
   <url>
     <loc><%= noticia_url(artigo.slug) %></loc>
-    <lastmod><%= artigo.publicado_em.iso8601 %></lastmod>
+    <lastmod><%= artigo.updated_at.iso8601 %></lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

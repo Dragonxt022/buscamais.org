@@ -91,6 +91,14 @@
           <span class="block text-xs text-gray-400">Baixa a imagem do feed para o nosso servidor (até 8 MB). A primeira imagem do texto vira a capa.</span>
         </span>
       </label>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <%= f.check_box :creditar_fonte, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
+        <span>
+          <span class="block text-sm font-semibold text-gray-700">Exibir crédito da fonte</span>
+          <span class="block text-xs text-gray-400">Mostra “Fonte: [nome do feed]” com link no fim da matéria. Obrigatório para conteúdos da Agência Brasil/EBC e recomendado para qualquer conteúdo de terceiros.</span>
+        </span>
+      </label>
     </div>
   </div>
 

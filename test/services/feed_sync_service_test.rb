@@ -100,6 +100,23 @@ class FeedSyncServiceTest < ActiveSupport::TestCase
     assert_equal @categoria, artigo.category
   end
 
+  test "marca o crédito da fonte quando o feed exige" do
+    @feed.update!(creditar_fonte: true)
+
+    FeedSyncService.new(@feed, xml: @xml).chamar
+
+    artigo = @feed.articles.first
+    assert artigo.mostrar_fonte?
+    assert_equal "Mídia Extra", artigo.fonte_nome
+    assert artigo.fonte_url.present?
+  end
+
+  test "não marca crédito quando o feed não exige" do
+    FeedSyncService.new(@feed, xml: @xml).chamar
+
+    assert_not @feed.articles.first.mostrar_fonte?
+  end
+
   test "registra falha quando o endereço não devolve um feed" do
     resultado = FeedSyncService.new(@feed, xml: "<html><body>não é um feed</body></html>").chamar
 
