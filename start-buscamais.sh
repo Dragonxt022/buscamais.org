@@ -3,6 +3,9 @@ set -euo pipefail
 
 cd /home/buscamais/htdocs/buscamais.org
 
+# O PM2 pode iniciar o processo com um PATH sem o rbenv; garante o bundle.
+export PATH="/root/.rbenv/shims:/root/.rbenv/bin:$PATH"
+
 # Carrega DB_*, SECRET_KEY_BASE e demais variáveis do .env.
 set -a
 # shellcheck disable=SC1091
