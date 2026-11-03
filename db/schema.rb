@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_190000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_193000) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -106,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_190000) do
     t.string "fonte_url"
     t.string "imagem_capa"
     t.string "legenda_capa"
+    t.boolean "mostrar_fonte", default: false, null: false
     t.string "palavra_chave_foco"
     t.boolean "premium", default: false, null: false
     t.datetime "publicado_em"
@@ -196,6 +197,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_190000) do
     t.bigint "author_id"
     t.bigint "category_id"
     t.datetime "created_at", null: false
+    t.boolean "creditar_fonte", default: false, null: false
     t.boolean "importar_imagem", default: true, null: false
     t.integer "intervalo_minutos", default: 60, null: false
     t.integer "limite_por_sincronizacao", default: 10, null: false
