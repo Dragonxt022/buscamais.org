@@ -1,0 +1,13 @@
+<% if artigo.reescrita_status.present? %>
+  <% classe_ia, rotulo_ia =
+       case artigo.reescrita_status
+       when "processando" then [ "bg-blue-100 text-blue-700", "Reescrevendo…" ]
+       when "reescrito"   then [ "bg-violet-100 text-violet-700", "Reescrita por IA" ]
+       when "falhou"      then [ "bg-amber-100 text-amber-700", "IA falhou — revisar" ]
+       else                    [ "bg-gray-100 text-gray-500", "Importação direta" ]
+       end %>
+  <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold <%= classe_ia %>"
+        title="<%= artigo.reescrita_modelo.present? ? "Modelo: #{artigo.reescrita_modelo}" : "Sem modelo de IA" %>">
+    <%= rotulo_ia %>
+  </span>
+<% end %>

@@ -1,6 +1,6 @@
 class Admin::ArtigosController < Admin::BaseController
 
-  before_action :carregar_artigo, only: [:show, :edit, :update, :destroy, :publicar, :arquivar, :destacar]
+  before_action :carregar_artigo, only: [:show, :edit, :update, :destroy, :publicar, :arquivar, :destacar, :reescrever]
 
   def index
     scope = Article.includes(:author, :category).with_attached_imagem_capa_file.order(created_at: :desc)
@@ -74,6 +74,26 @@ class Admin::ArtigosController < Admin::BaseController
   def destacar
     @artigo.update!(destaque: !@artigo.destaque)
     redirect_to admin_artigos_path, notice: "Destaque atualizado."
+  end
+
+  def reescrever
+    unless OllamaClient.new.configurado?
+      redirect_to admin_artigo_path(@artigo),
+                  alert: "Configure o modelo do Ollama em Admin → Configurações → Reescrita com IA antes de reescrever."
+      return
+    end
+
+    if @artigo.reescrita_status == "processando" && @artigo.updated_at > 1.hour.ago
+      redirect_to admin_artigo_path(@artigo), notice: "Esta matéria já está sendo reescrita."
+      return
+    end
+
+    ReescritaArtigosJob.perform_later(artigo_id: @artigo.id)
+    redirect_to admin_artigo_path(@artigo),
+                notice: "Reescrita com IA iniciada. Atualize a página em alguns instantes."
+  rescue => e
+    Rails.logger.error("[Admin::ArtigosController] reescrever ##{@artigo.id}: #{e.class}: #{e.message}")
+    redirect_to admin_artigo_path(@artigo), alert: "Não foi possível iniciar a reescrita: #{e.message}"
   end
 
   private

@@ -34,6 +34,42 @@
     <% end %>
   </div>
 
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <div class="flex items-start gap-4">
+      <div class="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0">
+        <%= lucide_icon "sparkles", css: "w-5 h-5" %>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-bold text-gray-800">Reprocessar matérias com IA</p>
+        <p class="text-xs text-gray-500 mt-0.5">
+          Reescreve matérias já importadas que ainda estão com o texto original. As que já foram reescritas e as arquivadas
+          ficam de fora, então você pode repetir o processo para continuar do ponto anterior.
+          <strong class="text-gray-700"><%= @pendencias_ia %></strong> matéria(s) pendente(s).
+        </p>
+        <%= form_with url: reprocessar_admin_feeds_path, method: :post, class: "flex flex-wrap items-end gap-3 mt-3" do %>
+          <div class="w-full sm:w-56">
+            <label class="block text-xs font-medium text-gray-500 mb-1">Fonte</label>
+            <%= select_tag :feed_id, options_from_collection_for_select(@feeds, :id, :nome),
+                include_blank: "Todas as fontes",
+                class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">Quantidade</label>
+            <%= number_field_tag :limite, ReescritaArtigosJob::LIMITE_PADRAO,
+                min: 1, max: ReescritaArtigosJob::LIMITE_MAXIMO,
+                class: "w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
+          </div>
+          <%= submit_tag "Reprocessar com IA",
+              data: { turbo_confirm: "Isso vai substituir o texto original das matérias selecionadas pela versão da IA. Continuar?" },
+              class: "bg-violet-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-violet-700 cursor-pointer" %>
+        <% end %>
+        <p class="text-[11px] text-gray-400 mt-2">
+          Cada matéria leva alguns minutos. O status aparece no badge de cada artigo (Reescrevendo… / Reescrita por IA / IA falhou — revisar).
+        </p>
+      </div>
+    </div>
+  </div>
+
   <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <% if @feeds.empty? %>
       <div class="py-14 px-6 text-center">
@@ -79,6 +115,9 @@
                         <%= feed.nome %>
                         <% unless feed.ativo? %>
                           <span class="text-[10px] font-bold uppercase tracking-wide bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">pausado</span>
+                        <% end %>
+                        <% if feed.reescrita_automatica? %>
+                          <span class="text-[10px] font-bold uppercase tracking-wide bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded" title="Este feed está configurado para reescrever as matérias com a IA local (quando a reescrita estiver ativa nas configurações)">IA</span>
                         <% end %>
                       </p>
                       <a href="<%= feed.url %>" target="_blank" rel="noopener"

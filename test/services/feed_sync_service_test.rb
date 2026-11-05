@@ -1,4 +1,5 @@
 require "test_helper"
+require "minitest/mock"
 
 class FeedSyncServiceTest < ActiveSupport::TestCase
   setup do
@@ -20,6 +21,7 @@ class FeedSyncServiceTest < ActiveSupport::TestCase
       ativo: true,
       publicar_automaticamente: true,
       importar_imagem: false,
+      reescrita_automatica: false,
       limite_por_sincronizacao: 10
     )
     @xml = file_fixture("feed_rss.xml").read
@@ -122,5 +124,58 @@ class FeedSyncServiceTest < ActiveSupport::TestCase
 
     assert_not resultado.sucesso?
     assert_equal "erro", @feed.reload.ultimo_status
+  end
+
+  test "quando a IA não está configurada, guarda o texto original para revisão" do
+    @feed.update!(reescrita_automatica: true)
+
+    cliente = Object.new
+    cliente.define_singleton_method(:configurado?) { false }
+    cliente.define_singleton_method(:modelo) { nil }
+
+    ReescritaEditorial.stub(:ativa?, true) do
+      OllamaClient.stub(:new, cliente) do
+        FeedSyncService.new(@feed, xml: @xml).chamar
+      end
+    end
+
+    artigo = Article.find_by!(fonte_url: "https://midiaextra.com/cadastro-eleitoral-reaberto-servicos-eleitor/")
+    assert artigo.aguardando_revisao?
+    assert_equal "falhou", artigo.reescrita_status
+    assert_includes artigo.conteudo.to_plain_text, "A Justiça Eleitoral reabriu"
+  end
+
+  test "publica a versão reescrita quando a IA devolve um artigo válido" do
+    @feed.update!(reescrita_automatica: true)
+
+    resultado_ia = ReescritaEditorial::Resultado.new(
+      sucesso: true,
+      titulo: "Eleitores voltam a atualizar o título em todo o Brasil",
+      resumo: "Atendimento foi retomado e pode ser feito sem sair de casa.",
+      conteudo: "<p>O cadastro eleitoral voltou a funcionar em todo o território nacional.</p>" \
+                "<h2>Como regularizar a situação</h2><p>O eleitor pode usar o atendimento digital.</p>",
+      palavra_chave: "cadastro eleitoral",
+      angulo: "prático",
+      tags: [ "Eleições", "Justiça Eleitoral" ],
+      modelo: "modelo-teste"
+    )
+
+    servico_fake = Object.new
+    servico_fake.define_singleton_method(:chamar) { resultado_ia }
+
+    ReescritaEditorial.stub(:ativa?, true) do
+      ReescritaEditorial.stub(:new, servico_fake) do
+        FeedSyncService.new(@feed, xml: @xml).chamar
+      end
+    end
+
+    artigo = Article.find_by!(fonte_url: "https://midiaextra.com/cadastro-eleitoral-reaberto-servicos-eleitor/")
+    assert artigo.publicado?
+    assert_equal "Eleitores voltam a atualizar o título em todo o Brasil", artigo.titulo
+    assert_equal "reescrito", artigo.reescrita_status
+    assert_equal "modelo-teste", artigo.reescrita_modelo
+    assert artigo.mostrar_fonte?
+    assert_equal "cadastro eleitoral", artigo.palavra_chave_foco
+    assert_equal [ "Eleições", "Justiça Eleitoral" ].sort, artigo.tags.map(&:nome).sort
   end
 end

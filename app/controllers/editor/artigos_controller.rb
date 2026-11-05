@@ -1,6 +1,6 @@
 class Editor::ArtigosController < Editor::BaseController
 
-  before_action :carregar_artigo, only: [:show, :edit, :update, :destroy, :publicar, :arquivar]
+  before_action :carregar_artigo, only: [:show, :edit, :update, :destroy, :publicar, :arquivar, :reescrever]
 
   def index
     scope = Article.includes(:author, :category)
@@ -78,6 +78,30 @@ class Editor::ArtigosController < Editor::BaseController
     authorize @artigo, :arquivar?
     @artigo.update!(status: :arquivado)
     redirect_to editor_artigos_path, notice: "Artigo arquivado."
+  end
+
+  def reescrever
+    authorize @artigo, :update?
+
+    unless OllamaClient.new.configurado?
+      redirect_to editor_artigo_path(@artigo),
+                  alert: "Configure o modelo do Ollama em Admin → Configurações → Reescrita com IA antes de reescrever."
+      return
+    end
+
+    if @artigo.reescrita_status == "processando" && @artigo.updated_at > 1.hour.ago
+      redirect_to editor_artigo_path(@artigo), notice: "Esta matéria já está sendo reescrita."
+      return
+    end
+
+    ReescritaArtigosJob.perform_later(artigo_id: @artigo.id)
+    redirect_to editor_artigo_path(@artigo),
+                notice: "Reescrita com IA iniciada. Atualize a página em alguns instantes."
+  rescue Pundit::NotAuthorizedError
+    raise
+  rescue => e
+    Rails.logger.error("[Editor::ArtigosController] reescrever ##{@artigo.id}: #{e.class}: #{e.message}")
+    redirect_to editor_artigo_path(@artigo), alert: "Não foi possível iniciar a reescrita: #{e.message}"
   end
 
   private

@@ -84,6 +84,7 @@ Rails.application.routes.draw do
       member do
         patch :publicar
         patch :arquivar
+        post :reescrever
       end
       collection { delete :bulk_destroy }
     end
@@ -101,6 +102,7 @@ Rails.application.routes.draw do
         patch :publicar
         patch :arquivar
         patch :destacar
+        post :reescrever
       end
       collection { delete :bulk_destroy }
     end
@@ -133,6 +135,9 @@ Rails.application.routes.draw do
       member do
         post :sincronizar
         patch :toggle_ativo
+      end
+      collection do
+        post :reprocessar
       end
     end
     get "analise", to: "dashboard#analise"

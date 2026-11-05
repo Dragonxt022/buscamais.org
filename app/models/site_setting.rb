@@ -4,6 +4,7 @@ class SiteSetting < ApplicationRecord
     email_remetente email_nome email_rodape
     google_client_id google_client_secret
     stripe_publishable_key stripe_secret_key stripe_webhook_secret
+    ollama_url ollama_model reescrita_ativa
     ads_ativo ads_publisher_id ads_slot_horizontal ads_slot_quadrado ads_slot_in_content ads_slot_vertical
   ].freeze
 

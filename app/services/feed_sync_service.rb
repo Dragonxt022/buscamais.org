@@ -60,6 +60,9 @@ class FeedSyncService
     importados = 0
     ignorados  = 0
     erros      = 0
+    @total_reescritas = 0
+    @total_falhas_ia  = 0
+    @motivo_falha_ia  = nil
 
     doc = Nokogiri::XML(corpo_do_feed) { |config| config.nonet }
     raise "O endereço não devolveu um feed RSS/Atom válido" if doc.root.nil?
@@ -78,6 +81,11 @@ class FeedSyncService
     end
 
     mensagem = "#{importados} nova(s), #{ignorados} já existente(s)/inválida(s)"
+    mensagem += ", #{@total_reescritas} reescrita(s) pela IA" if @total_reescritas.positive?
+    if @total_falhas_ia.positive?
+      detalhe = @motivo_falha_ia.present? ? ": #{@motivo_falha_ia.truncate(80)}" : ""
+      mensagem += ", #{@total_falhas_ia} sem reescrita (revisão)#{detalhe}"
+    end
     mensagem += ", #{erros} erro(s)" if erros.positive?
     registrar_resultado(erros.positive? ? "parcial" : "ok", mensagem, importados)
 
@@ -218,7 +226,9 @@ class FeedSyncService
     titulo = item.titulo.to_s.squish
     return false if titulo.length < 5
 
-    link        = resolver_url(item.link)
+    link_candidato = item.link.presence ||
+                     (item.guid if item.guid.to_s.match?(%r{\Ahttps?://}i))
+    link        = resolver_url(link_candidato)
     external_id = (item.guid.presence || link).to_s.strip.truncate(255)
     return false if external_id.blank?
     return false if @feed.articles.exists?(external_id: external_id)
@@ -227,26 +237,89 @@ class FeedSyncService
     conteudo = sanitizar(item.conteudo)
     return false if conteudo.blank?
 
+    categoria = categoria_para(item)
+    estado, reescrita = tentar_reescrever(item, conteudo, categoria, link)
+
     artigo = Article.new(
-      titulo:       titulo.truncate(200, omission: "…"),
-      resumo:       montar_resumo(item),
-      status:       @feed.publicar_automaticamente? ? :publicado : :aguardando_revisao,
+      titulo:       ((reescrita&.titulo).presence || titulo).truncate(200, omission: "…"),
+      resumo:       (reescrita&.resumo).presence || montar_resumo(item),
+      status:       status_do_item(estado),
       publicado_em: item.publicado_em || Time.current,
-      category:     categoria_para(item),
+      category:     categoria,
       author:       autor,
       feed_source:  @feed,
       external_id:  external_id,
       fonte_nome:   @feed.nome,
       fonte_url:    link,
-      mostrar_fonte: @feed.creditar_fonte?
+      # A skill editorial exige citar a fonte original. Nas matérias
+      # reescritas o crédito é sempre exibido, mesmo que o feed não exija.
+      mostrar_fonte: reescrita.present? || @feed.creditar_fonte?,
+      reescrita_status: status_da_reescrita(estado),
+      reescrita_modelo: reescrita&.modelo
     )
-    artigo.conteudo = conteudo
+    artigo.conteudo = (reescrita&.conteudo).presence || conteudo
+    artigo.palavra_chave_foco = reescrita.palavra_chave if (reescrita&.palavra_chave).present?
     artigo.save!
 
-    aplicar_tags(artigo, item)
+    @total_reescritas += 1 if estado == :reescrito
+    @total_falhas_ia  += 1 if estado == :falhou
+    aplicar_tags(artigo, item, reescrita)
     anexar_imagem(artigo, resolver_url(item.imagem_url)) if @feed.importar_imagem?
 
     true
+  end
+
+  # Devolve [estado, resultado]:
+  #   :reescrito  → a IA gerou um artigo original (resultado preenchido)
+  #   :falhou     → a IA estava ativa, mas não entregou um texto válido
+  #   :desativada → o feed ou o site não usa reescrita automática
+  def tentar_reescrever(item, conteudo, categoria, link)
+    return [ :desativada, nil ] unless @feed.reescrita_automatica?
+    return [ :desativada, nil ] unless ReescritaEditorial.ativa?
+
+    # Sem URL de origem não há como cumprir a exigência de creditar a fonte.
+    if link.blank?
+      @motivo_falha_ia = "item sem URL de origem"
+      return [ :falhou, nil ]
+    end
+
+    resultado = ReescritaEditorial.new(
+      titulo:     item.titulo,
+      conteudo:   conteudo,
+      fonte_nome: @feed.nome,
+      fonte_url:  link,
+      categoria:  categoria&.nome,
+      data:       item.publicado_em
+    ).chamar
+
+    if resultado.sucesso?
+      Rails.logger.info("[FeedSyncService:#{@feed.id}] reescrita (#{resultado.angulo}): #{resultado.titulo}")
+      [ :reescrito, resultado ]
+    else
+      @motivo_falha_ia = resultado.erro
+      Rails.logger.warn("[FeedSyncService:#{@feed.id}] reescrita: #{resultado.erro}")
+      [ :falhou, nil ]
+    end
+  rescue => e
+    @motivo_falha_ia = "#{e.class}: #{e.message}"
+    Rails.logger.error("[FeedSyncService:#{@feed.id}] reescrita: #{e.class}: #{e.message}")
+    [ :falhou, nil ]
+  end
+
+  # Se a IA falhar, a matéria entra para revisão em vez de publicar o texto
+  # copiado da fonte. Sem reescrita configurada, vale a opção do feed.
+  def status_do_item(estado)
+    return :aguardando_revisao if estado == :falhou
+
+    @feed.publicar_automaticamente? ? :publicado : :aguardando_revisao
+  end
+
+  def status_da_reescrita(estado)
+    case estado
+    when :reescrito then "reescrito"
+    when :falhou    then "falhou"
+    else                 "desativada"
+    end
   end
 
   def montar_resumo(item)
@@ -263,8 +336,13 @@ class FeedSyncService
     @feed.category
   end
 
-  def aplicar_tags(artigo, item)
-    nomes = Array(item.categorias).map { |nome| nome.to_s.squish }.reject(&:blank?).uniq.first(5)
+  def aplicar_tags(artigo, item, reescrita = nil)
+    nomes = if (reescrita&.tags).present?
+              Array(reescrita.tags)
+            else
+              Array(item.categorias)
+            end
+    nomes = nomes.map { |nome| nome.to_s.squish }.reject(&:blank?).uniq(&:downcase).first(5)
     return if nomes.empty?
 
     artigo.tags = nomes.map { |nome| Tag.find_or_create_by!(nome: nome) }
@@ -295,7 +373,11 @@ class FeedSyncService
       next if href.blank? || href.start_with?("#", "mailto:", "tel:")
 
       absoluto = resolver_url(href)
-      link["href"] = absoluto if absoluto
+      if absoluto&.match?(%r{\Ahttps?://}i)
+        link["href"] = absoluto
+      else
+        link.remove_attribute("href")
+      end
     end
 
     # A primeira imagem do conteúdo vira a capa; as demais seriam hotlinks

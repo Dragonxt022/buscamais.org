@@ -115,7 +115,12 @@
               </span>
             <% end %>
           </td>
-          <td class="px-5 py-3"><%= render "shared/status_badge", status: artigo.status %></td>
+          <td class="px-5 py-3">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <%= render "shared/status_badge", status: artigo.status %>
+              <%= render "shared/reescrita_badge", artigo: artigo %>
+            </div>
+          </td>
           <td class="px-5 py-3 text-gray-500">
             <%= l(artigo.publicado_em || artigo.created_at, format: :short) %>
           </td>

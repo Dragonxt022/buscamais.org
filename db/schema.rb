@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_03_193000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_05_120100) do
   create_table "action_text_rich_texts", charset: "utf8mb4", collation: "utf8mb4_general_ci", force: :cascade do |t|
     t.text "body", size: :long
     t.datetime "created_at", null: false
@@ -110,6 +110,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_193000) do
     t.string "palavra_chave_foco"
     t.boolean "premium", default: false, null: false
     t.datetime "publicado_em"
+    t.string "reescrita_modelo"
+    t.string "reescrita_status"
     t.text "resumo"
     t.string "slug", null: false
     t.integer "status", default: 0, null: false
@@ -124,6 +126,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_193000) do
     t.index ["feed_source_id"], name: "index_articles_on_feed_source_id"
     t.index ["fonte_url"], name: "index_articles_on_fonte_url"
     t.index ["publicado_em"], name: "index_articles_on_publicado_em"
+    t.index ["reescrita_status"], name: "index_articles_on_reescrita_status"
     t.index ["slug"], name: "index_articles_on_slug", unique: true
     t.index ["status"], name: "index_articles_on_status"
   end
@@ -203,6 +206,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_03_193000) do
     t.integer "limite_por_sincronizacao", default: 10, null: false
     t.string "nome", null: false
     t.boolean "publicar_automaticamente", default: true, null: false
+    t.boolean "reescrita_automatica", default: true, null: false
     t.integer "total_importados", default: 0, null: false
     t.text "ultima_mensagem"
     t.datetime "ultima_sincronizacao_em"

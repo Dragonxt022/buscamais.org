@@ -41,12 +41,17 @@ class Article < ApplicationRecord
   scope :gratuitos_only, -> { where(premium: false) }
   scope :importados,     -> { where.not(feed_source_id: nil) }
 
+  # Usado pelo reprocessamento com IA: mantém a URL antiga para não quebrar
+  # links já indexados quando o título é substituído.
+  attr_accessor :preservar_slug
+
   before_save :calcular_tempo_leitura
   before_save :definir_publicado_em
   after_save :manter_limite_de_destaques,
              if: -> { destaque? && publicado? && (saved_change_to_destaque? || saved_change_to_status?) }
 
   def should_generate_new_friendly_id?
+    return false if preservar_slug
     titulo_changed? || slug.blank?
   end
 

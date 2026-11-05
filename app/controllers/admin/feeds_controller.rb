@@ -5,6 +5,11 @@ class Admin::FeedsController < Admin::BaseController
     @feeds = FeedSource.includes(:category, :author).order(created_at: :desc)
     @total_importados = Article.importados.count
     @ultima_sincronizacao = FeedSource.maximum(:ultima_sincronizacao_em)
+    @pendencias_ia = Article.importados
+                            .where(reescrita_status: [ nil, "desativada", "falhou" ])
+                            .where.not(fonte_url: [ nil, "" ])
+                            .where.not(status: Article.statuses["arquivado"])
+                            .count
   end
 
   def new
@@ -12,6 +17,8 @@ class Admin::FeedsController < Admin::BaseController
       intervalo_minutos: 60,
       publicar_automaticamente: true,
       importar_imagem: true,
+      creditar_fonte: true,
+      reescrita_automatica: true,
       limite_por_sincronizacao: 10
     )
     carregar_opcoes
@@ -50,18 +57,39 @@ class Admin::FeedsController < Admin::BaseController
   end
 
   def sincronizar
-    resultado = @feed.sincronizar!
-
-    if resultado.sucesso?
-      redirect_to admin_feeds_path, notice: "#{@feed.nome}: #{resultado.mensagem}"
-    else
-      redirect_to admin_feeds_path, alert: "#{@feed.nome}: #{resultado.mensagem}"
-    end
+    FeedSyncJob.perform_later(@feed.id)
+    redirect_to admin_feeds_path,
+                notice: "#{@feed.nome}: sincronização iniciada. O resultado aparece na lista em instantes."
+  rescue => e
+    Rails.logger.error("[Admin::FeedsController] sincronizar ##{@feed.id}: #{e.class}: #{e.message}")
+    redirect_to admin_feeds_path, alert: "Não foi possível iniciar a sincronização: #{e.message}"
   end
 
   def toggle_ativo
     @feed.update!(ativo: !@feed.ativo)
     redirect_to admin_feeds_path, notice: @feed.ativo? ? "Feed ativado." : "Feed pausado."
+  end
+
+  def reprocessar
+    unless OllamaClient.new.configurado?
+      redirect_to admin_feeds_path,
+                  alert: "Configure o modelo do Ollama em Admin → Configurações → Reescrita com IA antes de reprocessar."
+      return
+    end
+
+    limite = params[:limite].to_i
+    limite = ReescritaArtigosJob::LIMITE_PADRAO if limite <= 0
+
+    ReescritaArtigosJob.perform_later(
+      feed_id: params[:feed_id].presence,
+      limite: limite
+    )
+
+    redirect_to admin_feeds_path,
+                notice: "Reprocessamento com IA iniciado. As matérias vão mudando de status conforme forem reescritas."
+  rescue => e
+    Rails.logger.error("[Admin::FeedsController] reprocessar: #{e.class}: #{e.message}")
+    redirect_to admin_feeds_path, alert: "Não foi possível iniciar o reprocessamento: #{e.message}"
   end
 
   private
@@ -78,7 +106,8 @@ class Admin::FeedsController < Admin::BaseController
   def feed_params
     params.require(:feed_source).permit(
       :nome, :url, :ativo, :intervalo_minutos, :publicar_automaticamente,
-      :importar_imagem, :creditar_fonte, :limite_por_sincronizacao, :category_id, :author_id
+      :importar_imagem, :creditar_fonte, :reescrita_automatica,
+      :limite_por_sincronizacao, :category_id, :author_id
     )
   end
 end

@@ -79,7 +79,12 @@
             <p class="font-medium text-gray-900"><%= artigo.titulo.truncate(65) %></p>
           </td>
           <td class="text-gray-500"><%= artigo.category&.nome || "—" %></td>
-          <td><%= render "shared/status_badge", status: artigo.status %></td>
+          <td>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <%= render "shared/status_badge", status: artigo.status %>
+              <%= render "shared/reescrita_badge", artigo: artigo %>
+            </div>
+          </td>
           <td class="text-gray-500"><%= l artigo.created_at, format: :short %></td>
           <td>
             <div class="flex items-center gap-3">

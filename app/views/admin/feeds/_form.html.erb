@@ -63,7 +63,7 @@
         <%= f.label :limite_por_sincronizacao, "Máximo de matérias por busca", class: "block text-xs font-medium text-gray-500 mb-1" %>
         <%= f.number_field :limite_por_sincronizacao, min: 1, max: 50, step: 1,
             class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none" %>
-        <p class="text-xs text-gray-400 mt-1">Evita importar o histórico inteiro na primeira sincronização.</p>
+        <p class="text-xs text-gray-400 mt-1">Evita importar o histórico inteiro na primeira sincronização. Com a IA ligada, cada matéria leva alguns minutos.</p>
       </div>
     </div>
 
@@ -93,6 +93,14 @@
       </label>
 
       <label class="flex items-start gap-3 cursor-pointer">
+        <%= f.check_box :reescrita_automatica, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
+        <span>
+          <span class="block text-sm font-semibold text-gray-700">Reescrever com IA (Ollama)</span>
+          <span class="block text-xs text-gray-400">Transforma o texto do feed em um artigo original, com novo título, ângulo e estrutura. Se a IA falhar, a matéria entra para revisão em vez de publicar o texto copiado.</span>
+        </span>
+      </label>
+
+      <label class="flex items-start gap-3 cursor-pointer">
         <%= f.check_box :creditar_fonte, class: "mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600" %>
         <span>
           <span class="block text-sm font-semibold text-gray-700">Exibir crédito da fonte</span>
@@ -103,17 +111,18 @@
   </div>
 
   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-900 leading-relaxed">
-    <p class="font-bold mb-1">Atenção para a revisão do Google AdSense</p>
+    <p class="font-bold mb-1">Reescrita automática e Google AdSense</p>
     <p>
-      Publicar o texto integral de outro site sem reescrever, acrescentar contexto ou creditar a fonte pode ser tratado como
-      <strong>conteúdo de baixo valor</strong>. Use o feed como pauta: mantenha a publicação automática desligada, revise cada item e
-      reescreva a matéria com as informações e o contexto do Busca Mais.
+      Com a reescrita automática ligada, o feed serve apenas como <strong>pauta</strong>: a IA gera um artigo novo, com ângulo e
+      estrutura próprios, e o crédito da fonte é sempre exibido. Se o Ollama estiver indisponível ou o texto gerado ficar parecido
+      demais com o original, a matéria entra como <strong>aguardando revisão</strong> — nunca é publicada copiada.
     </p>
   </div>
 
   <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs text-blue-800 leading-relaxed">
     A importação roda em segundo plano, sem travar o site. Cada matéria é deduplicada pelo identificador do feed e pela URL original,
-    então a mesma notícia não é publicada duas vezes. Texto e resumo entram sanitizados, e as imagens são hospedadas no nosso Active Storage.
+    então a mesma notícia não é publicada duas vezes. Texto e resumo entram sanitizados, a reescrita pela IA local é opcional,
+    e as imagens são hospedadas no nosso Active Storage.
   </div>
 
   <div class="flex gap-3">
